@@ -4,17 +4,17 @@ import {fileURLToPath} from 'node:url';
 import {spawn} from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const apiDocsDir = path.resolve(__dirname, '..', 'docs', 'api');
+const docsDir = path.resolve(__dirname, '..', 'docs');
 const srcDir = path.resolve(__dirname, '..', '..', 'src');
 
-// Clean the API docs directory
+// Clean the API docs file
 async function cleanApiDocs() {
+  const apiFile = path.join(docsDir, 'api.md');
   try {
-    await fs.rm(apiDocsDir, {recursive: true, force: true});
+    await fs.rm(apiFile, {force: true});
   } catch (error) {
-    // Ignore if directory doesn't exist
+    // Ignore if file doesn't exist
   }
-  await fs.mkdir(apiDocsDir, {recursive: true});
 }
 
 // Run jsdoc2md command
@@ -68,7 +68,7 @@ async function getSourceFiles(dir) {
 
 // Generate API docs
 async function generateApiDocs() {
-  console.log('[INFO] Cleaning API docs directory...');
+  console.log('[INFO] Cleaning API docs file...');
   await cleanApiDocs();
 
   console.log('[INFO] Finding source files...');
@@ -78,10 +78,32 @@ async function generateApiDocs() {
   console.log('[INFO] Generating API documentation...');
   let markdown = await runJsdoc2md(sourceFiles);
 
-  // Escape JSX-like syntax for MDX compatibility
+  // Convert HTML to MDX-compatible markdown
   console.log('[INFO] Post-processing markdown for MDX compatibility...');
 
-  // Replace curly braces with HTML entities in text (but not in code blocks)
+  // Remove ALL HTML tags that jsdoc-to-markdown generates
+  // MDX is very strict about HTML and these cause parsing errors
+  markdown = markdown
+    // Remove definition lists
+    .replace(/<\/?dl>/g, '')
+    // Convert <dt> to list items
+    .replace(/<dt>(.*?)<\/dt>/g, '- $1')
+    // Remove <dd> but keep content
+    .replace(/<dd>/g, '  ')
+    .replace(/<\/dd>/g, '')
+    // Remove paragraph tags
+    .replace(/<\/?p>/g, '')
+    // Remove unordered list tags (keep the list items)
+    .replace(/<\/?ul>/g, '')
+    // Convert <li> to markdown list items
+    .replace(/<li>(.*?)<\/li>/g, '- $1')
+    // Remove any remaining common HTML tags
+    .replace(/<\/?strong>/g, '**')
+    .replace(/<\/?em>/g, '*')
+    .replace(/<\/?code>/g, '`')
+    .replace(/<br\s*\/?>/g, '\n');
+
+  // Escape JSX-like syntax (curly braces) in regular text
   const lines = markdown.split('\n');
   let inCodeBlock = false;
   const processedLines = lines.map(line => {
@@ -96,13 +118,12 @@ async function generateApiDocs() {
       return line;
     }
 
-    // Escape curly braces in regular text (not in backticks or HTML tags)
+    // Escape curly braces in regular text (not in backticks)
     const parts = line.split(/(`[^`]*`)/);
     const escaped = parts.map((part, i) => {
       // Keep inline code (odd indices) unchanged
       if (i % 2 === 1) return part;
-      // Replace curly braces with HTML entities, but preserve HTML tags
-      // Don't escape < and > as they're needed for HTML tags in markdown
+      // Replace curly braces with HTML entities
       return part
         .replace(/{/g, '&#123;')
         .replace(/}/g, '&#125;');
@@ -113,7 +134,7 @@ async function generateApiDocs() {
   markdown = processedLines.join('\n');
 
   // Write the main API file
-  const apiFile = path.join(apiDocsDir, 'index.md');
+  const apiFile = path.join(docsDir, 'api.md');
   const frontMatter = `---
 id: api
 title: API Reference
