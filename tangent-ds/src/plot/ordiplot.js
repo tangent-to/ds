@@ -114,8 +114,8 @@ export function ordiplot(result, {
     });
   }
 
-  // Add loadings for PCA and RDA
-  if (showLoadings && loadingsData && (type === 'pca' || type === 'rda')) {
+  // Add loadings for PCA, LDA, and RDA
+  if (showLoadings && loadingsData && (type === 'pca' || type === 'lda' || type === 'rda')) {
     config.data.loadings = loadingsData;
     config.marks.push({
       type: 'arrow',
@@ -175,14 +175,17 @@ export function ordiplot(result, {
  * @private
  */
 function detectOrdinationType(result) {
-  if (result.scores && result.loadings && result.eigenvalues) {
-    return 'pca';
-  }
+  // Check for LDA first (most specific - has 'class' field in scores)
   if (result.scores && result.scores[0] && 'class' in result.scores[0]) {
     return 'lda';
   }
+  // Check for RDA (has canonical scores/loadings)
   if (result.canonicalScores && result.canonicalLoadings) {
     return 'rda';
+  }
+  // Check for PCA (has scores, loadings, eigenvalues)
+  if (result.scores && result.loadings && result.eigenvalues) {
+    return 'pca';
   }
   throw new Error('Cannot detect ordination type. Please specify type option.');
 }
@@ -225,7 +228,7 @@ function extractOrdinationData(result, type, axis1, axis2, colorBy, labels, load
     };
 
   } else if (type === 'lda') {
-    const { scores, classMeanScores } = result;
+    const { scores, loadings, classMeanScores } = result;
 
     // Check if we have both axes
     const hasAxis2 = scores[0] && scores[0][`ld${axis2}`] !== undefined;
@@ -238,6 +241,18 @@ function extractOrdinationData(result, type, axis1, axis2, colorBy, labels, load
       label: labels ? labels[i] : `${i}`,
       class: score.class
     }));
+
+    // Extract loadings if available
+    if (loadings) {
+      loadingsData = loadings.map((loading, i) => ({
+        x1: 0,
+        y1: 0,
+        x2: loading[`ld${axis1}`] * loadingScale,
+        y2: hasAxis2 && loading[`ld${axis2}`] !== undefined ? loading[`ld${axis2}`] * loadingScale : 0,
+        variable: loading.variable || `Var${i + 1}`,
+        index: i
+      }));
+    }
 
     // Extract centroids if available
     if (classMeanScores && Array.isArray(classMeanScores)) {
