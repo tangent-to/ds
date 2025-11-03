@@ -41,14 +41,69 @@ function computeDistanceMatrix(data) {
 }
 
 /**
+ * Compute mean vector for a cluster
+ * @param {Array<number>} cluster - Indices in cluster
+ * @param {Array<Array<number>>} data - Data matrix
+ * @returns {Array<number>} Mean vector
+ */
+function clusterMean(cluster, data) {
+  const dimension = data[0].length;
+  const meanVector = Array(dimension).fill(0);
+
+  for (const index of cluster) {
+    const point = data[index];
+    for (let i = 0; i < dimension; i++) {
+      meanVector[i] += point[i];
+    }
+  }
+
+  const size = cluster.length;
+  for (let i = 0; i < dimension; i++) {
+    meanVector[i] /= size;
+  }
+
+  return meanVector;
+}
+
+/**
+ * Compute Ward linkage distance between two clusters
+ * @param {Array<number>} cluster1 - Indices in cluster 1
+ * @param {Array<number>} cluster2 - Indices in cluster 2
+ * @param {Array<Array<number>>} data - Data matrix
+ * @returns {number} Ward distance
+ */
+function wardDistance(cluster1, cluster2, data) {
+  const size1 = cluster1.length;
+  const size2 = cluster2.length;
+  const mean1 = clusterMean(cluster1, data);
+  const mean2 = clusterMean(cluster2, data);
+
+  let squaredDiff = 0;
+  for (let i = 0; i < mean1.length; i++) {
+    const diff = mean1[i] - mean2[i];
+    squaredDiff += diff * diff;
+  }
+
+  return (size1 * size2) / (size1 + size2) * squaredDiff;
+}
+
+/**
  * Find minimum distance between two clusters
  * @param {Array<number>} cluster1 - Indices in cluster 1
  * @param {Array<number>} cluster2 - Indices in cluster 2
  * @param {Array<Array<number>>} distances - Distance matrix
  * @param {string} linkage - Linkage method
+ * @param {Array<Array<number>>} data - Data matrix (required for Ward)
  * @returns {number} Distance between clusters
  */
-function clusterDistance(cluster1, cluster2, distances, linkage) {
+function clusterDistance(cluster1, cluster2, distances, linkage, data) {
+  if (linkage === "ward") {
+    if (!data) {
+      throw new Error("Ward linkage requires access to the original data matrix.");
+    }
+    return wardDistance(cluster1, cluster2, data);
+  }
+
   const dists = [];
 
   for (const i of cluster1) {
@@ -71,7 +126,7 @@ function clusterDistance(cluster1, cluster2, distances, linkage) {
 /**
  * Fit hierarchical clustering
  * @param {Array<Array<number>>} X - Data matrix
- * @param {Object} options - {linkage: 'single'|'complete'|'average'}
+ * @param {Object} options - {linkage: 'single'|'complete'|'average'|'ward'}
  * @returns {Object} {dendrogram, distances}
  */
 export function fit(X, { linkage = "average" } = {}) {
@@ -138,6 +193,7 @@ export function fit(X, { linkage = "average" } = {}) {
           clusters[j],
           distances,
           linkage,
+          data,
         );
         if (dist < minDist) {
           minDist = dist;

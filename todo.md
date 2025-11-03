@@ -3,21 +3,24 @@ TODO
     - change name Ai for model objects to Model
     - manual tests in tangent-notebooks and Observable
     - rewrite tangent-notebook and Obsrevable tutorials
+    
+
 - planned features
     - implement tensorflowjs
     - implement Gaussian processes inspired by https://github.com/jmonlabs/jmon-algo/tree/main/src/algorithms/generative/gaussian-processes, then generate python tests and examples
     - fix LDA
+    - implement CCA
 
 DOING
 
-- Set up TypeDoc extraction and inject it into Docusaurus properly - to be tested
+
 
 DONE
 - scikit-learn's-like API across the whole pakcage, ml, mvs and plot
 - fix logistic regression
 - fix kmeans
 - test Python similarity
-- implement KNN, decision trees, random forest and generalized additive models (both in classification and regression)
+- implement KNN, decision trees, random rest and generalized additive models (both in classification and regression)
 - implement python tests and examples for KNN, decision trees, random forest and generalized additive models
 - fix PCA, implement SVD
 - review train, validation, preprocessing, tunig and interpret
@@ -32,3 +35,11 @@ Before the workflow can run successfully, you'll need to:
 - implement CCA
 - implement scaling
 - check if PCA, LDA, CCA and RDA can predict the scores
+- fix loading labels
+- fix scaling
+- fix on-hot encoding
+- auto triplot
+- scale a center to true by default
+- Set up TypeDoc extraction and inject it into Docusaurus properly - to be tested
+- implement Ward hierarchical clustering
+- In ordination classes, the .show() method indicates the pltting library as .show(Plot) to avoid including the plotting library in the package. Could you do it similarly throught mva.js and ther modules? For instance, add the plot library object as argument to hierarchical clustering like .show(d3-dendrogram)

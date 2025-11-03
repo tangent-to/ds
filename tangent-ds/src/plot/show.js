@@ -19,13 +19,25 @@ const SUPPORTED_MARKS = new Set([
 ]);
 
 /**
- * Attach a .show() helper to the configuration if marks are present.
- * @param {Object} config - Plot configuration object
+ * Attach a .show() helper using a custom renderer normalization and render function.
+ * @param {Object} config - Visualization configuration object
+ * @param {Object} options - { errorMessage, normalizeRenderer, render }
  * @returns {Object} The same config with a non-enumerable show() helper
  */
-export function attachShow(config) {
-  if (!config || typeof config !== 'object' || !Array.isArray(config.marks)) {
+export function attachCustomShow(
+  config,
+  {
+    errorMessage = 'show() requires a renderer.',
+    normalizeRenderer = (renderer) => renderer,
+    render
+  } = {}
+) {
+  if (!config || typeof config !== 'object') {
     return config;
+  }
+
+  if (typeof render !== 'function') {
+    throw new Error('attachCustomShow requires a render(callback) function.');
   }
 
   if (typeof config.show === 'function') {
@@ -36,16 +48,77 @@ export function attachShow(config) {
     enumerable: false,
     value(renderer, overrides = {}) {
       if (!renderer) {
-        throw new Error('show() requires a renderer. Pass the Observable Plot module, e.g. config.show(Plot).');
+        throw new Error(errorMessage);
       }
 
-      const plotModule = normalizeRenderer(renderer);
-      const spec = buildObservablePlotSpec(config, plotModule, overrides);
-      return plotModule.plot(spec);
+      const normalized = normalizeRenderer(renderer);
+      return render({
+        renderer: normalized,
+        config,
+        overrides
+      });
     }
   });
 
   return config;
+}
+
+/**
+ * Attach a .show() helper to the configuration if marks are present.
+ * @param {Object} config - Plot configuration object
+ * @returns {Object} The same config with a non-enumerable show() helper
+ */
+export function attachShow(config) {
+  if (!config || typeof config !== 'object' || !Array.isArray(config.marks)) {
+    return config;
+  }
+
+  return attachCustomShow(config, {
+    errorMessage: 'show() requires a renderer. Pass the Observable Plot module, e.g. config.show(Plot).',
+    normalizeRenderer,
+    render({ renderer, config: originalConfig, overrides }) {
+      const spec = buildObservablePlotSpec(originalConfig, renderer, overrides);
+      return renderer.plot(spec);
+    }
+  });
+}
+
+/**
+ * Attach a .show() helper for dendrogram-like visualizations.
+ * Allows calling config.show(renderer) where renderer is either a function
+ * or an object with `render` or `dendrogram` method.
+ * @param {Object} config - Dendrogram visualization configuration
+ * @returns {Object} Config with .show() helper
+ */
+export function attachTreeShow(config) {
+  return attachCustomShow(config, {
+    errorMessage: 'show() requires a dendrogram renderer. Pass a function or object, e.g. config.show(d3Dendrogram).',
+    normalizeRenderer: normalizeTreeRenderer,
+    render({ renderer, config: originalSpec, overrides }) {
+      const { data: baseData, config: baseConfig = {}, ...restBase } = originalSpec;
+      const { data: overrideData, config: overrideConfig, ...restOverrides } = overrides || {};
+
+      const filteredOverrides = { ...restOverrides };
+      delete filteredOverrides.type;
+
+      const finalConfig = {
+        ...baseConfig,
+        ...(typeof filteredOverrides === 'object' ? filteredOverrides : {})
+      };
+
+      if (overrideConfig && typeof overrideConfig === 'object') {
+        Object.assign(finalConfig, overrideConfig);
+      }
+
+      const finalSpec = {
+        ...restBase,
+        data: overrideData ?? baseData,
+        config: finalConfig
+      };
+
+      return renderer(finalSpec);
+    }
+  });
 }
 
 function normalizeRenderer(renderer) {
@@ -54,6 +127,22 @@ function normalizeRenderer(renderer) {
   }
 
   throw new Error('Unsupported renderer passed to show(). Pass the Observable Plot module (import * as Plot).');
+}
+
+function normalizeTreeRenderer(renderer) {
+  if (typeof renderer === 'function') {
+    return renderer;
+  }
+
+  if (renderer && typeof renderer.render === 'function') {
+    return renderer.render.bind(renderer);
+  }
+
+  if (renderer && typeof renderer.dendrogram === 'function') {
+    return renderer.dendrogram.bind(renderer);
+  }
+
+  throw new Error('Unsupported dendrogram renderer passed to show(). Provide a function or an object with render() or dendrogram() method.');
 }
 
 function buildObservablePlotSpec(config, Plot, overrides) {

@@ -18,6 +18,7 @@ export default {
   "5c868d36": [() => import(/* webpackChunkName: "5c868d36" */ "@site/docs/tutorial-basics/create-a-page.md"), "@site/docs/tutorial-basics/create-a-page.md", require.resolveWeak("@site/docs/tutorial-basics/create-a-page.md")],
   "5e95c892": [() => import(/* webpackChunkName: "5e95c892" */ "@theme/DocsRoot"), "@theme/DocsRoot", require.resolveWeak("@theme/DocsRoot")],
   "5e9f5e1a": [() => import(/* webpackChunkName: "5e9f5e1a" */ "@generated/docusaurus.config"), "@generated/docusaurus.config", require.resolveWeak("@generated/docusaurus.config")],
+  "5fbc5cf1": [() => import(/* webpackChunkName: "5fbc5cf1" */ "@site/docs/api.md"), "@site/docs/api.md", require.resolveWeak("@site/docs/api.md")],
   "621db11d": [() => import(/* webpackChunkName: "621db11d" */ "@theme/Blog/Pages/BlogAuthorsListPage"), "@theme/Blog/Pages/BlogAuthorsListPage", require.resolveWeak("@theme/Blog/Pages/BlogAuthorsListPage")],
   "6875c492": [() => import(/* webpackChunkName: "6875c492" */ "@theme/BlogTagsPostsPage"), "@theme/BlogTagsPostsPage", require.resolveWeak("@theme/BlogTagsPostsPage")],
   "6ee81c64": [() => import(/* webpackChunkName: "6ee81c64" */ "@generated/docusaurus-plugin-content-blog/default/p/tangent-ds-blog-authors-yangshun-4de.json"), "@generated/docusaurus-plugin-content-blog/default/p/tangent-ds-blog-authors-yangshun-4de.json", require.resolveWeak("@generated/docusaurus-plugin-content-blog/default/p/tangent-ds-blog-authors-yangshun-4de.json")],

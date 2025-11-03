@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { fit, cut, cutHeight } from '../src/mva/hca.js';
 import { HCA } from '../src/mva/index.js';
+import { plotHCA } from '../src/plot/plotHCA.js';
 
 describe('HCA - Hierarchical Clustering', () => {
   describe('fit', () => {
@@ -33,6 +34,21 @@ describe('HCA - Hierarchical Clustering', () => {
       
       expect(model.dendrogram.length).toBe(2);
       expect(model.linkage).toBe('complete');
+    });
+
+    it('should work with ward linkage', () => {
+      const X = [
+        [0, 0],
+        [0, 1],
+        [10, 10],
+        [10, 11]
+      ];
+      const model = fit(X, { linkage: 'ward' });
+
+      expect(model.dendrogram.length).toBe(3);
+      expect(model.linkage).toBe('ward');
+      expect(model.dendrogram[0].distance).toBeCloseTo(0.5, 5);
+      expect(model.dendrogram[1].distance).toBeGreaterThanOrEqual(model.dendrogram[0].distance);
     });
 
     it('should have increasing distances in dendrogram', () => {
@@ -147,5 +163,72 @@ describe('HCA - class API', () => {
 
     expect(summary.linkage).toBeDefined();
     expect(summary.merges).toBeGreaterThan(0);
+  });
+
+  it('should support ward linkage through estimator class', () => {
+    const X = [
+      [0, 0],
+      [0, 1],
+      [10, 10],
+      [10, 11]
+    ];
+
+    const estimator = new HCA({ linkage: 'ward' });
+    estimator.fit(X);
+
+    const summary = estimator.summary();
+    expect(summary.linkage).toBe('ward');
+
+    const labels = estimator.cut(2);
+    expect(new Set(labels).size).toBe(2);
+  });
+});
+
+describe('HCA - visualization helpers', () => {
+  const sampleData = [
+    [0, 0],
+    [0, 1],
+    [10, 10],
+    [10, 11]
+  ];
+
+  it('plotHCA attaches show helper requiring renderer', () => {
+    const model = fit(sampleData, { linkage: 'average' });
+    const spec = plotHCA(model);
+
+    expect(typeof spec.show).toBe('function');
+    expect(() => spec.show()).toThrow(/dendrogram renderer/);
+
+    const renderFn = vi.fn(() => 'rendered');
+    const result = spec.show(renderFn, { width: 800, orientation: 'horizontal' });
+
+    expect(result).toBe('rendered');
+    expect(renderFn).toHaveBeenCalledTimes(1);
+
+    const renderArg = renderFn.mock.calls[0][0];
+    expect(renderArg.type).toBe('dendrogram');
+    expect(renderArg.config.width).toBe(800);
+    expect(renderArg.config.orientation).toBe('horizontal');
+    expect(renderArg.data).toEqual(spec.data);
+    expect(spec.config.width).toBe(640);
+  });
+
+  it('plotHCA show supports renderer objects', () => {
+    const model = fit(sampleData);
+    const spec = plotHCA(model);
+    const renderer = {
+      render: vi.fn(() => 'ok')
+    };
+
+    const result = spec.show(renderer);
+    expect(result).toBe('ok');
+    expect(renderer.render).toHaveBeenCalledTimes(1);
+  });
+
+  it('plotHCA show rejects unsupported renderer objects', () => {
+    const model = fit(sampleData);
+    const spec = plotHCA(model);
+
+    expect(() => spec.show({})).toThrow(/Unsupported dendrogram renderer/);
   });
 });

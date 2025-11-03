@@ -19,5 +19,9 @@
   "previous": {
     "title": "Manage Docs Versions",
     "permalink": "/tangent-ds/docs/tutorial-extras/manage-docs-versions"
+  },
+  "next": {
+    "title": "API",
+    "permalink": "/tangent-ds/docs/api"
   }
 }

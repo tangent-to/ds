@@ -242,7 +242,7 @@ rda.fit(response, explanatory);
 #### Hierarchical Clustering
 
 ```javascript
-const hca = new mva.HCA({ method: 'ward' });
+const hca = new mva.HCA({ linkage: 'ward' });
 hca.fit(data);
 console.log(hca.model.dendrogram);
 ```

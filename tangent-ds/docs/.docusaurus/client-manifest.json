@@ -101,6 +101,9 @@
     "5e95c892": [
       9647
     ],
+    "5fbc5cf1": [
+      7624
+    ],
     "621db11d": [
       1869,
       9785,
@@ -448,9 +451,9 @@
     "4736": {
       "js": [
         {
-          "file": "assets/js/e44a2883.b32872c6.js",
-          "hash": "fd93d7e1862908c4",
-          "publicPath": "/tangent-ds/assets/js/e44a2883.b32872c6.js"
+          "file": "assets/js/e44a2883.5032a32d.js",
+          "hash": "8cbf48ee62544375",
+          "publicPath": "/tangent-ds/assets/js/e44a2883.5032a32d.js"
         }
       ]
     },
@@ -475,9 +478,9 @@
     "5354": {
       "js": [
         {
-          "file": "assets/js/runtime~main.e881d5c4.js",
-          "hash": "c1434c33f1dba815",
-          "publicPath": "/tangent-ds/assets/js/runtime~main.e881d5c4.js"
+          "file": "assets/js/runtime~main.30d9dc6c.js",
+          "hash": "cab945dad2084aa4",
+          "publicPath": "/tangent-ds/assets/js/runtime~main.30d9dc6c.js"
         }
       ]
     },
@@ -562,6 +565,15 @@
         }
       ]
     },
+    "7624": {
+      "js": [
+        {
+          "file": "assets/js/5fbc5cf1.52f5a240.js",
+          "hash": "7b45c81db237634f",
+          "publicPath": "/tangent-ds/assets/js/5fbc5cf1.52f5a240.js"
+        }
+      ]
+    },
     "7643": {
       "js": [
         {
@@ -628,9 +640,9 @@
     "8792": {
       "js": [
         {
-          "file": "assets/js/main.ef6198ff.js",
-          "hash": "8af720c7ba4d2e82",
-          "publicPath": "/tangent-ds/assets/js/main.ef6198ff.js"
+          "file": "assets/js/main.85cfd32c.js",
+          "hash": "9370fc8bd53db6fc",
+          "publicPath": "/tangent-ds/assets/js/main.85cfd32c.js"
         }
       ]
     },
@@ -691,9 +703,9 @@
     "9373": {
       "js": [
         {
-          "file": "assets/js/e8f044c2.2d8f3926.js",
-          "hash": "680057d9f38a3b5f",
-          "publicPath": "/tangent-ds/assets/js/e8f044c2.2d8f3926.js"
+          "file": "assets/js/e8f044c2.60bd9201.js",
+          "hash": "cdae3fec916cbfb3",
+          "publicPath": "/tangent-ds/assets/js/e8f044c2.60bd9201.js"
         }
       ]
     },

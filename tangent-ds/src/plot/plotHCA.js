@@ -3,6 +3,8 @@
  * Dendrogram configuration
  */
 
+import { attachTreeShow } from './show.js';
+
 /**
  * Generate dendrogram data structure
  * @param {Object} result - HCA result from mva.hca.fit()
@@ -36,7 +38,7 @@ export function plotHCA(result) {
     });
   });
   
-  return {
+  return attachTreeShow({
     type: 'dendrogram',
     data: tree,
     config: {
@@ -45,7 +47,7 @@ export function plotHCA(result) {
       linkage: result.linkage,
       orientation: 'vertical'
     }
-  };
+  });
 }
 
 /**

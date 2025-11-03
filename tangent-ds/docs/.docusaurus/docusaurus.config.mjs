@@ -90,6 +90,12 @@ export default {
           "label": "Tutorial"
         },
         {
+          "type": "doc",
+          "docId": "api",
+          "position": "left",
+          "label": "API"
+        },
+        {
           "to": "/blog",
           "label": "Blog",
           "position": "left"
