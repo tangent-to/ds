@@ -177,11 +177,11 @@ describe('HCA - Hierarchical Clustering', () => {
         [10, 10], [10, 11] // Cluster 2
       ];
       
-      const model = fit(X);
-      const labels = cut(model, 2);
-      
-      expect(labels.length).toBe(4);
-      expect(new Set(labels).size).toBe(2);
+    const model = fit(X);
+    const labels = cut(model, 2);
+
+    expect(labels.length).toBe(4);
+    expect(new Set(labels).size).toBe(2);
       
       // Points 0,1 should be in same cluster
       expect(labels[0]).toBe(labels[1]);
@@ -193,20 +193,20 @@ describe('HCA - Hierarchical Clustering', () => {
 
     it('should handle k=n (all separate)', () => {
       const X = [[1], [2], [3]];
-      const model = fit(X);
-      const labels = cut(model, 3);
-      
-      expect(labels.length).toBe(3);
-      expect(new Set(labels).size).toBe(3);
+    const model = fit(X);
+    const labels = cut(model, 3);
+
+    expect(labels.length).toBe(3);
+    expect(new Set(labels).size).toBe(3);
     });
 
     it('should handle k=1 (all together)', () => {
       const X = [[1], [2], [3]];
-      const model = fit(X);
-      const labels = cut(model, 1);
-      
-      expect(labels.length).toBe(3);
-      expect(new Set(labels).size).toBe(1);
+    const model = fit(X);
+    const labels = cut(model, 1);
+
+    expect(labels.length).toBe(3);
+    expect(new Set(labels).size).toBe(1);
     });
 
     it('should throw error for invalid k', () => {
@@ -286,6 +286,23 @@ describe('HCA - class API', () => {
 
     const labels = estimator.cut(2);
     expect(new Set(labels).size).toBe(2);
+  });
+
+  it('should produce exactly k clusters when cutting', () => {
+    const X = [
+      [0, 0],
+      [0, 1],
+      [10, 10],
+      [10, 11],
+      [20, 20]
+    ];
+
+    const estimator = new HCA({ linkage: 'average' });
+    estimator.fit(X);
+    const labels = estimator.cut(3);
+
+    expect(labels.length).toBe(5);
+    expect(new Set(labels).size).toBe(3);
   });
 });
 

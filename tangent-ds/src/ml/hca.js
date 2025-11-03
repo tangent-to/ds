@@ -232,28 +232,33 @@ export function cut(model, k) {
     return Array.from({ length: n }, (_, i) => i);
   }
 
-  const clusters = Array.from({ length: n }, (_, i) => [i]);
-
-  for (let i = 0; i < dendrogram.length && clusters.length > k; i++) {
-    const merge = dendrogram[i];
-    const { cluster1, cluster2 } = merge;
-
-    const idx1 = clusters.findIndex((cluster) =>
-      cluster.length === cluster1.length &&
-      cluster.every((value) => cluster1.includes(value))
-    );
-    const idx2 = clusters.findIndex((cluster) =>
-      cluster.length === cluster2.length &&
-      cluster.every((value) => cluster2.includes(value))
-    );
-
-    if (idx1 !== -1 && idx2 !== -1) {
-      const merged = [...clusters[idx1], ...clusters[idx2]].sort((a, b) => a - b);
-      clusters.splice(idx2, 1);
-      clusters.splice(idx1, 1, merged);
-    }
+  const clusterMap = new Map();
+  for (let i = 0; i < n; i++) {
+    clusterMap.set(String(i), [i]);
   }
 
+  const joinKey = (arr) => arr.join('|');
+
+  for (let i = 0; i < dendrogram.length && clusterMap.size > k; i++) {
+    const merge = dendrogram[i];
+    const key1 = joinKey(merge.cluster1);
+    const key2 = joinKey(merge.cluster2);
+
+    const cluster1 = clusterMap.get(key1);
+    const cluster2 = clusterMap.get(key2);
+
+    if (!cluster1 || !cluster2) {
+      continue;
+    }
+
+    clusterMap.delete(key1);
+    clusterMap.delete(key2);
+
+    const merged = [...cluster1, ...cluster2].sort((a, b) => a - b);
+    clusterMap.set(joinKey(merged), merged);
+  }
+
+  const clusters = [...clusterMap.values()];
   const labels = Array(n).fill(-1);
   clusters.forEach((cluster, idx) => {
     cluster.forEach((item) => {
@@ -271,7 +276,12 @@ export function cutHeight(model, height) {
     throw new Error("height must be non-negative");
   }
 
-  const clusters = Array.from({ length: n }, (_, i) => [i]);
+  const clusterMap = new Map();
+  for (let i = 0; i < n; i++) {
+    clusterMap.set(String(i), [i]);
+  }
+
+  const joinKey = (arr) => arr.join('|');
 
   for (let i = 0; i < dendrogram.length; i++) {
     const merge = dendrogram[i];
@@ -281,22 +291,24 @@ export function cutHeight(model, height) {
       continue;
     }
 
-    const idx1 = clusters.findIndex((cluster) =>
-      cluster.length === cluster1.length &&
-      cluster.every((value) => cluster1.includes(value))
-    );
-    const idx2 = clusters.findIndex((cluster) =>
-      cluster.length === cluster2.length &&
-      cluster.every((value) => cluster2.includes(value))
-    );
+    const key1 = joinKey(cluster1);
+    const key2 = joinKey(cluster2);
 
-    if (idx1 !== -1 && idx2 !== -1) {
-      const merged = [...clusters[idx1], ...clusters[idx2]].sort((a, b) => a - b);
-      clusters.splice(idx2, 1);
-      clusters.splice(idx1, 1, merged);
+    const cluster1Arr = clusterMap.get(key1);
+    const cluster2Arr = clusterMap.get(key2);
+
+    if (!cluster1Arr || !cluster2Arr) {
+      continue;
     }
+
+    clusterMap.delete(key1);
+    clusterMap.delete(key2);
+
+    const merged = [...cluster1Arr, ...cluster2Arr].sort((a, b) => a - b);
+    clusterMap.set(joinKey(merged), merged);
   }
 
+  const clusters = [...clusterMap.values()];
   const labels = Array(n).fill(-1);
   clusters.forEach((cluster, idx) => {
     cluster.forEach((item) => {

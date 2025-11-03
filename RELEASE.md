@@ -1,12 +1,13 @@
-# capture your changes
-git add .
-git commit -m "<meaningful summary>"
-git status
+# One-command release
 
-# bump and tag (npm creates commit + tag now)
-cd tangent-ds
-npm version patch   # or minor / major
-cd ..
+```bash
+scripts/release.sh -m "feat: add new clustering plot"
+```
 
-# publish
-git push origin main --follow-tags
+The script will:
+
+1. Stage and commit your current changes with the provided message.
+2. Bump the patch version inside `tangent-ds/package.json`.
+3. Commit the version bump, create the matching tag, and push both branch and tag.
+
+Make sure your feature work is ready before running the script. To inspect the version it set, run `npm pkg get version` inside `tangent-ds/`.
