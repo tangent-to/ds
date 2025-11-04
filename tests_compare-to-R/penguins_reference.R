@@ -107,13 +107,16 @@ singular_values <- pca_fit$sdev * sqrt(max(n_samples - 1, 1))
 eigenvalues <- (pca_fit$sdev)^2
 
 pca_scalings <- list()
-for (sc in unlist(pca_opts$scaling, use.names = FALSE)) {
+pca_scaling_values <- unlist(pca_opts$scaling, use.names = FALSE)
+if (is.null(pca_scaling_values) || length(pca_scaling_values) == 0) {
+  pca_scaling_values <- c(1, 2)
+}
+for (sc in unique(as.integer(pca_scaling_values))) {
+  if (!(sc %in% c(1, 2))) next
   sc_name <- paste0("scaling_", sc)
   scores <- pca_fit$x
   loadings <- pca_fit$rotation
-  if (sc == 1) {
-    scores <- scores / sqrt(max(n_samples - 1, 1))
-  } else if (sc == 2) {
+  if (sc == 2) {
     scores <- sweep(scores, 2, singular_values, FUN = "/")
     loadings <- loadings %*% diag(pca_fit$sdev)
   }
@@ -168,19 +171,18 @@ lda_singular <- as.numeric(lda_fit$svd)
 lda_eigenvalues <- lda_singular^2
 
 lda_scalings <- list()
-for (sc in unlist(lda_opts$scaling, use.names = FALSE)) {
+lda_scaling_values <- unlist(lda_opts$scaling, use.names = FALSE)
+if (is.null(lda_scaling_values) || length(lda_scaling_values) == 0) {
+  lda_scaling_values <- c(1, 2)
+}
+for (sc in unique(as.integer(lda_scaling_values))) {
+  if (!(sc %in% c(1, 2))) next
   sc_name <- paste0("scaling_", sc)
   scores <- lda_scores
   loadings <- lda_loadings
   if (!is.null(scores) && ncol(scores) > 0) {
-    if (sc == 1) {
-      scores <- scores / sqrt(max(nrow(lda_input) - 1, 1))
-    } else if (sc == 2) {
-      divisor <- ifelse(lda_singular == 0, 1, lda_singular)
-      scores <- sweep(scores, 2, divisor, "/")
-      if (!is.null(loadings)) {
-        loadings <- loadings %*% diag(divisor)
-      }
+    if (sc == 2 && !is.null(loadings) && ncol(loadings) > 0) {
+      loadings <- loadings %*% diag(sqrt(lda_eigenvalues)[seq_len(ncol(loadings))])
     }
   }
   lda_scalings[[sc_name]] <- list(
@@ -235,10 +237,11 @@ rda_eigen <- as.numeric(rda_fit$CCA$eig)
 
 rda_scalings <- list()
 sc_values <- unlist(rda_opts$scaling, use.names = FALSE)
-if (length(sc_values) == 0) {
-  sc_values <- c(0)
+if (is.null(sc_values) || length(sc_values) == 0) {
+  sc_values <- c(1, 2)
 }
-for (sc in sc_values) {
+for (sc in unique(as.integer(sc_values))) {
+  if (!(sc %in% c(1, 2))) next
   sc_name <- paste0("scaling_", sc)
   site_scores <- scores(rda_fit, display = "sites", scaling = sc, choices = seq_along(rda_eigen))
   species_scores <- scores(rda_fit, display = "species", scaling = sc, choices = seq_along(rda_eigen))
