@@ -11,6 +11,7 @@ import * as pca from './pca.js';
 import * as lda from './lda.js';
 import * as rda from './rda.js';
 import * as cca from './cca.js';
+import * as composition from './composition.js';
 
 import PCA from './estimators/PCA.js';
 import { LDA } from './estimators/LDA.js';
@@ -23,6 +24,7 @@ export {
   lda,
   rda,
   cca,
+  composition,
 
   // Class-based estimators
   PCA,
