@@ -21,29 +21,19 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: |
-          cd tangent-ds
-          npm ci
+        run: npm ci
 
       - name: Run tests
-        run: |
-          cd tangent-ds
-          npm run test:run
+        run: npm run test:run
 
       - name: Build browser bundle
-        run: |
-          cd tangent-ds
-          npm run build:browser
+        run: npm run build:browser
 
       - name: Verify package
-        run: |
-          cd tangent-ds
-          npm run verify
+        run: npm run verify
 
       - name: Publish to npm
-        run: |
-          cd tangent-ds
-          npm publish --provenance --access public
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -61,20 +51,16 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          cd tangent-ds
-          npm ci
+        run: npm ci
 
       - name: Generate documentation
-        run: |
-          cd tangent-ds
-          npm run docs:generate
+        run: npm run docs:generate
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./tangent-ds/docs
+          publish_dir: ./docs
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           enable_jekyll: true
