@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'tangent-ds/src/**'
-      - 'tangent-ds/scripts/generate-docs.js'
-      - 'tangent-ds/docs/**'
-      - 'tangent-ds/README.md'
+      - 'src/**'
+      - 'scripts/generate-docs.js'
+      - 'docs/**'
+      - 'README.md'
 
   # Allow manual trigger
   workflow_dispatch:
@@ -27,20 +27,16 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          cd tangent-ds
-          npm ci
+        run: npm ci
 
       - name: Generate documentation
-        run: |
-          cd tangent-ds
-          npm run docs:generate
+        run: npm run docs:generate
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./tangent-ds/docs
+          publish_dir: ./docs
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           enable_jekyll: true
