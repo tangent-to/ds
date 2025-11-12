@@ -4,43 +4,46 @@ Machine Learning module exports
 
 ## Exports
 
-- `// K-means clustering (functional and class-based)
-  kmeans` (named)
-- `KMeans` (named)
-- `hca` (named)
-- `HCA` (named)
-- `KNNClassifier` (named)
-- `KNNRegressor` (named)
 - `DecisionTreeClassifier` (named)
 - `DecisionTreeRegressor` (named)
-- `RandomForestClassifier` (named)
-- `RandomForestRegressor` (named)
-- `GAMRegressor` (named)
 - `GAMClassifier` (named)
-- `PolynomialRegressor` (named)
-- `MLPRegressor` (named)
-- `// Polynomial regression
-  polynomial` (named)
-- `// Silhouette analysis utilities
-  silhouette` (named)
-- `// Multilayer Perceptron
-  mlp` (named)
-- `// Validation utilities
-  validation` (named)
-- `// Preprocessing
-  preprocessing` (named)
-- `// Metrics
-  metrics` (named)
-- `// Utilities
-  utils` (named)
+- `GAMRegressor` (named)
+- `GridSearchCV` (named)
+- `HCA` (named)
+- `hca` (named)
 - `// Model interpretation
   interpret` (named)
+- `KMeans` (named)
+- `// K-means clustering (functional and class-based)
+  kmeans` (named)
+- `KNNClassifier` (named)
+- `KNNRegressor` (named)
 - `// Loss functions
   loss` (named)
+- `// Metrics
+  metrics` (named)
+- `// Multilayer Perceptron
+  mlp` (named)
+- `MLPRegressor` (named)
+- `// Pipeline
+  Pipeline` (named)
+- `// Polynomial regression
+  polynomial` (named)
+- `PolynomialRegressor` (named)
+- `// Preprocessing
+  preprocessing` (named)
+- `RandomForestClassifier` (named)
+- `RandomForestRegressor` (named)
+- `Recipe` (named)
+- `// Recipe pattern for inspectable preprocessing
+  recipe` (named)
+- `// Silhouette analysis utilities
+  silhouette` (named)
 - `// Training utilities
   train` (named)
 - `// Hyperparameter tuning
   tuning` (named)
-- `// Pipeline
-  Pipeline` (named)
-- `GridSearchCV` (named)
+- `// Utilities
+  utils` (named)
+- `// Validation utilities
+  validation` (named)

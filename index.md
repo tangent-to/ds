@@ -1,171 +1,95 @@
 ---
-layout: default
+layout: home
 title: Home
+nav_order: 1
+description: "tangent/ds is a data science toolkit for JavaScript/TypeScript, bringing statistical analysis and machine learning to the browser and Node.js/Deno."
+permalink: /
 ---
 
-# @tangent.to/ds
+# Data science for JavaScript
+{: .fs-9 }
 
-A minimalist, browser-friendly data science library in modern JavaScript (ESM).
+Analyze data, build models, visualize results—all in JavaScript.
+{: .fs-6 .fw-300 }
 
-## Quick Links
+[Get Started](getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[View on GitHub](https://github.com/tangent-to/ds){: .btn .fs-5 .mb-4 .mb-md-0 }
 
-- [API Reference](API.md) - Complete API documentation
-- [GitHub Repository](https://github.com/tangent-to/tangent-ds)
-- [npm Package](https://www.npmjs.com/package/@tangent.to/ds)
+---
+
+## Quick example
+
+```javascript
+import * as ds from '@tangent/ds';
+import * as Plot from '@observablehq/plot';
+
+// Run PCA in 3 lines
+const pca = new ds.mva.PCA({ center: true, scale: true });
+pca.fit({ data: myData, X: ["var1", "var2", "var3"] });
+ds.plot.ordiplot(pca.model).show(Plot);
+```
+
+---
+
+## Features
+
+### Multivariate analysis
+Ordination techniques (PCA, LDA, RDA) and clustering algorithms (hierarchical, k-means) for exploring complex datasets.
+
+[Try Ordination](tutorials/ordination){: .btn .btn-outline }
+
+### Statistical analysis
+Comprehensive statistical toolkit including t-tests, ANOVA, generalized linear models (GLM), and mixed-effects models.
+
+[Explore Statistics](tutorials/statistics){: .btn .btn-outline }
+
+### Machine learning
+Build predictive models with K-nearest neighbors, multilayer perceptrons, decision trees, and more. Complete with cross-validation and hyperparameter tuning.
+
+[Learn ML](tutorials/machine-learning){: .btn .btn-outline }
+
+### Visualization
+Publication-ready plots powered by Observable Plot. Create biplots, confusion matrices, dendrograms, and more.
+
+[See Examples](examples){: .btn .btn-outline }
+
+---
+
+## Why tangent/ds?
+
+**Native JavaScript**
+: No Python or R required. Run analyses directly in the browser or Node.js/Deno.
+
+**Modern API**
+: Clean, intuitive API inspired by scikit-learn and R's tidyverse.
+
+**Toolkit**
+: From data preprocessing to model evaluation, in one package.
+
+---
 
 ## Installation
 
 ```bash
-npm install @tangent.to/ds
+# npm
+npm install @tangent/ds
+
+# deno
+deno add @tangent/ds
 ```
 
-## Quick Start
+[Read the full guide →](getting-started)
 
-```javascript
-import { core, stats, ml, mva, plot } from '@tangent.to/ds';
+---
 
-// Generalized Linear Models
-const model = new stats.GLM({ family: 'gaussian' });
-model.fit(X, y);
-const predictions = model.predict(X_new);
+## Community
 
-// K-Means clustering
-const kmeans = new ml.KMeans({ k: 3 });
-kmeans.fit(data);
+- **GitHub**: [tangent-to/ds](https://github.com/tangent-to/ds)
+- **Issues**: [Report bugs](https://github.com/tangent-to/ds/issues)
+- **Discussions**: [Ask questions](https://github.com/tangent-to/ds/discussions)
 
-// PCA
-const pca = new mva.PCA({ center: true, scale: false });
-pca.fit(data);
-```
-
-## Modules
-
-### [Core Module](core.md)
-Linear algebra, tables, math, optimization, and formulas.
-
-### [Stats Module](stats.md)
-Distributions, GLM/GLMM, hypothesis tests, and model comparison.
-
-**Key Features:**
-- Unified `GLM` class for all regression models (gaussian, binomial, poisson, gamma, etc.)
-- Mixed-effects models (GLMM) with random intercepts and slopes
-- Hypothesis tests (t-tests, chi-square, ANOVA)
-- Model comparison tools (AIC, BIC, likelihood ratio tests)
-
-### [ML Module](ml.md)
-Machine learning algorithms: clustering, classification, and regression.
-
-**Algorithms:**
-- K-Means clustering
-- K-Nearest Neighbors (KNN)
-- Decision Trees & Random Forests
-- Generalized Additive Models (GAM)
-- Polynomial Regression
-- Neural Networks (MLP)
-
-### [MVA Module](mva.md)
-Multivariate analysis: PCA, LDA, RDA, CCA, and hierarchical clustering.
-
-**Methods:**
-- Principal Component Analysis (PCA)
-- Linear Discriminant Analysis (LDA)
-- Redundancy Analysis (RDA)
-- Canonical Correlation Analysis (CCA)
-- Hierarchical Clustering
-
-### [Plot Module](plot.md)
-Observable Plot configuration generators for data visualization.
-
-**Plot Types:**
-- ROC curves and confusion matrices
-- PCA biplots and scree plots
-- Feature importance plots
-- Residual and QQ plots
-- GLM diagnostic plots
-
-## API Examples
-
-### Generalized Linear Models (GLM)
-
-```javascript
-// Linear regression (Gaussian family)
-const lm = new stats.GLM({ family: 'gaussian' });
-lm.fit(X, y);
-
-// Logistic regression (Binomial family)
-const logit = new stats.GLM({ family: 'binomial', link: 'logit' });
-logit.fit(X, y);
-
-// Poisson regression
-const poisson = new stats.GLM({ family: 'poisson' });
-poisson.fit(X, y);
-
-// Mixed-effects model (GLMM) with random intercepts
-const lmm = new stats.GLM({
-  family: 'gaussian',
-  randomEffects: { intercept: groups }
-});
-lmm.fit(X, y);
-
-// Get results
-console.log(model.summary());
-console.log(model.coefficients);
-```
-
-### Formula Syntax
-
-```javascript
-const model = new stats.GLM({ family: 'gaussian' });
-model.fit({
-  formula: 'y ~ x1 + x2 + x3',
-  data: myData
-});
-
-// Mixed models with random effects
-model.fit({
-  formula: 'y ~ x1 + x2 + (1 | group)',
-  data: myData
-});
-```
-
-### Machine Learning
-
-```javascript
-// K-Means clustering
-const kmeans = new ml.KMeans({ k: 3 });
-kmeans.fit(data);
-console.log(kmeans.labels);
-
-// Random Forest classifier
-const rf = new ml.RandomForestClassifier({ nEstimators: 100 });
-rf.fit(X_train, y_train);
-const predictions = rf.predict(X_test);
-
-// Cross-validation
-const scores = ml.validation.crossValidate(model, X, y, { cv: 5 });
-```
-
-### Multivariate Analysis
-
-```javascript
-// PCA
-const pca = new mva.PCA({ center: true, scale: false });
-pca.fit(X);
-console.log(pca.model.explainedVarianceRatio);
-const X_transformed = pca.transform(X);
-
-// LDA
-const lda = new mva.LDA();
-lda.fit(X, y);
-const X_lda = lda.transform(X);
-```
-
-## Resources
-
-- [Full API Reference](API.md)
-- [Examples Directory](https://github.com/tangent-to/tangent-ds/tree/main/tangent-ds/examples)
-- [GitHub Issues](https://github.com/tangent-to/tangent-ds/issues)
+---
 
 ## License
 
-GPL-3.0
+tangent/ds is distributed under the [GPL-3 License](https://github.com/tangent-to/ds/blob/main/LICENSE).
