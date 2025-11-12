@@ -1,4 +1,4 @@
-# Stats Module
+# Stats module
 
 Stats module exports
 

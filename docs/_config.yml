@@ -1,67 +1,113 @@
-# Jekyll configuration for @tangent.to/ds documentation
-
 # Site settings
-title: "@tangent.to/ds"
-description: "A minimalist, browser-friendly data science library in modern JavaScript (ESM)"
-baseurl: "/ds" # The subpath of your site, e.g. /blog
-url: "https://tangent-to.github.io" # The base hostname & protocol
+title: "tangent/ds"
+tagline: "data science toolkit for JavaScript"
+description: "Statistical analysis and machine learning for JavaScript/TypeScript. Analyze data, build models, visualize results."
+url: "https://tangent-to.github.io"
+baseurl: "/ds"
+
+# Repository
+repository: tangent-to/ds
 
 # Theme
-theme: jekyll-theme-cayman
-# Alternative themes: minima, jekyll-theme-slate, jekyll-theme-minimal
+remote_theme: just-the-docs/just-the-docs
+color_scheme: light
+
+# Logo
+logo: "/assets/images/logo.png"
+
+# Search
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Heading anchor links
+heading_anchors: true
+
+# Aux links (top right)
+aux_links:
+  "View on GitHub":
+    - "https://github.com/tangent-to/ds"
+  "NPM Package":
+    - "https://www.npmjs.com/package/@tangent/ds"
+
+# Footer
+footer_content: 'Copyright &copy; 2025 Tangent. Distributed under the <a href="https://github.com/tangent-to/ds/blob/main/LICENSE">GPL-3 License</a>.'
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Google Analytics (optional - add your ID later)
+# ga_tracking: UA-XXXXXXXX-X
+# ga_tracking_anonymize_ip: true
 
 # Build settings
 markdown: kramdown
+highlighter: rouge
 kramdown:
   input: GFM
   syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
 
-# Navigation
-navigation:
-  - title: Home
-    url: /
-  - title: API Reference
-    url: /API.html
-  - title: Core
-    url: /core.html
-  - title: Stats
-    url: /stats.html
-  - title: ML
-    url: /ml.html
-  - title: MVA
-    url: /mva.html
-  - title: Plot
-    url: /plot.html
+# Collections
+collections:
+  tutorials:
+    permalink: "/:collection/:path/"
+    output: true
+  api:
+    permalink: "/:collection/:path/"
+    output: true
 
-# Exclude from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor
-  - .sass-cache
-  - .jekyll-cache
+# Just the Docs specific settings
+just_the_docs:
+  collections:
+    tutorials:
+      name: Tutorials
+      nav_exclude: false
+      search_exclude: false
+    api:
+      name: API Reference
+      nav_exclude: false
+      search_exclude: false
+
+# Default front matter
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "tutorials"
+    values:
+      layout: "default"
+      parent: Tutorials
+  - scope:
+      path: ""
+      type: "api"
+    values:
+      layout: "default"
+      parent: "API Reference"
 
 # Plugins
 plugins:
-  - jekyll-relative-links
-  - jekyll-optional-front-matter
-  - jekyll-readme-index
-  - jekyll-titles-from-headings
+  - jekyll-seo-tag
+  - jekyll-github-metadata
+  - jekyll-include-cache
 
-# Plugin settings
-relative_links:
-  enabled: true
-  collections: false
-
-optional_front_matter:
-  remove_originals: false
-
-titles_from_headings:
-  enabled: true
-  strip_title: false
-  collections: false
-
-# GitHub metadata
-repository: tangent-to/ds
-github_username: tangent-to
+# Exclude from processing
+exclude:
+  - node_modules/
+  - vendor/
+  - Gemfile
+  - Gemfile.lock
+  - README.md

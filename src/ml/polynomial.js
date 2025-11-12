@@ -3,16 +3,22 @@
  * Extends linear regression with polynomial features
  */
 
-import { toMatrix, Matrix } from '../core/linalg.js';
+import { Matrix, toMatrix } from '../core/linalg.js';
 import { fitGLM as lmFit, predictGLM as lmPredict } from '../stats/glm.js';
 
 // Minimal lm namespace for compatibility
 const lm = {
   fit: (X, y, opts) => lmFit(X, y, { ...opts, family: 'gaussian' }),
   predict: (coefficients, X, opts) => {
-    const model = { coefficients, family: 'gaussian', link: 'identity', intercept: opts?.intercept !== false, p: coefficients.length };
+    const model = {
+      coefficients,
+      family: 'gaussian',
+      link: 'identity',
+      intercept: opts?.intercept !== false,
+      p: coefficients.length,
+    };
     return lmPredict(model, X, opts);
-  }
+  },
 };
 
 /**
@@ -36,16 +42,16 @@ export function polynomialFeatures(X, degree) {
       data.push(row);
     }
   }
-  
+
   const n = data.length;
   const nFeatures = data[0].length;
-  
+
   // For multivariate, we create all polynomial combinations
   // For now, support univariate (single feature)
   if (nFeatures !== 1) {
     throw new Error('Polynomial regression currently supports only univariate input');
   }
-  
+
   const polyFeatures = [];
   for (let i = 0; i < n; i++) {
     const x = data[i][0];
@@ -55,7 +61,7 @@ export function polynomialFeatures(X, degree) {
     }
     polyFeatures.push(row);
   }
-  
+
   return polyFeatures;
 }
 
@@ -70,29 +76,37 @@ export function fit(X, y, { degree = 2, intercept = true } = {}) {
   if (degree < 1) {
     throw new Error('Degree must be at least 1');
   }
-  
+
   // Convert 1D array to 2D
   let inputData;
   if (Array.isArray(X) && !Array.isArray(X[0])) {
-    inputData = X.map(x => [x]);
+    inputData = X.map((x) => [x]);
   } else {
     inputData = X;
   }
-  
+
   // Create polynomial features
   const polyX = polynomialFeatures(inputData, degree);
-  
+
   // Fit linear regression on polynomial features
   const model = lm.fit(polyX, y, { intercept });
-  
+
+  const ssRes = model.residuals ? model.residuals.reduce((sum, r) => sum + r * r, 0) : 0;
+  const meanY = y.reduce((sum, val) => sum + val, 0) / y.length;
+  const ssTot = y.reduce((sum, val) => sum + (val - meanY) ** 2, 0);
+  const rSquared = ssTot === 0 ? 1 : 1 - (ssRes / ssTot);
+  const n = y.length;
+  const p = model.coefficients.length;
+  const adjRSquared = (n - p) <= 0 ? rSquared : 1 - (1 - rSquared) * ((n - 1) / (n - p));
+
   return {
     coefficients: model.coefficients,
     degree,
     fitted: model.fitted,
     residuals: model.residuals,
-    rSquared: model.rSquared,
-    adjRSquared: model.adjRSquared,
-    se: model.se
+    rSquared,
+    adjRSquared,
+    se: model.se,
   };
 }
 
@@ -107,14 +121,14 @@ export function predict(model, X, { intercept = true } = {}) {
   // Convert 1D array to 2D
   let inputData;
   if (Array.isArray(X) && !Array.isArray(X[0])) {
-    inputData = X.map(x => [x]);
+    inputData = X.map((x) => [x]);
   } else {
     inputData = X;
   }
-  
+
   // Create polynomial features
   const polyX = polynomialFeatures(inputData, model.degree);
-  
+
   // Use linear regression predict
   return lm.predict(model.coefficients, polyX, { intercept });
 }

@@ -4,17 +4,17 @@
  * More numerically stable than eigendecomposition of covariance matrix
  */
 
-import { svd, Matrix, toMatrix } from "../core/linalg.js";
-import { mean, stddev } from "../core/math.js";
-import { prepareX } from "../core/table.js";
+import { Matrix, svd, toMatrix } from '../core/linalg.js';
+import { mean, stddev } from '../core/math.js';
+import { prepareX } from '../core/table.js';
 import {
-  normalizeScaling,
-  scaleOrdination,
-  toScoreObjects,
-  toLoadingObjects,
   columnsToRows,
   eigenvaluePowers,
-} from "./scaling.js";
+  normalizeScaling,
+  scaleOrdination,
+  toLoadingObjects,
+  toScoreObjects,
+} from './scaling.js';
 
 /**
  * Standardize data (center and optionally scale)
@@ -48,9 +48,7 @@ function standardize(data, scale = false) {
   }
 
   // Scale data
-  const scaled = centered.map((row) =>
-    row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0)
-  );
+  const scaled = centered.map((row) => row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0));
 
   return { standardized: scaled, means, sds };
 }
@@ -68,22 +66,27 @@ export function fit(
     center = true,
     columns = null,
     data: data_in = null,
-    omit_missing = true,
+    naOmit = true,
+    omit_missing, // alias for naOmit (Python-style)
     scaling = 0,
   } = {},
 ) {
-  // Support declarative style: fit({ data, columns, scale, center, omit_missing })
+  // Normalize naOmit parameter (naOmit is primary, omit_missing is alias)
+  let shouldOmitMissing = omit_missing !== undefined ? omit_missing : naOmit;
+
+  // Support declarative style: fit({ data, columns, scale, center, naOmit })
   if (
-    X && typeof X === "object" && !Array.isArray(X) && (X.data || X.columns)
+    X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)
   ) {
     const opts = X;
     data_in = opts.data !== undefined ? opts.data : data_in;
     columns = opts.columns !== undefined ? opts.columns : columns;
     scale = opts.scale !== undefined ? opts.scale : scale;
     center = opts.center !== undefined ? opts.center : center;
-    omit_missing = opts.omit_missing !== undefined
+    // Handle both naOmit (primary) and omit_missing (alias)
+    shouldOmitMissing = opts.omit_missing !== undefined
       ? opts.omit_missing
-      : omit_missing;
+      : (opts.naOmit !== undefined ? opts.naOmit : shouldOmitMissing);
     scaling = opts.scaling !== undefined ? opts.scaling : scaling;
   }
 
@@ -94,12 +97,20 @@ export function fit(
   let featureNames = null;
   if (data_in) {
     // Prepare numeric matrix from table-like input
-    const prepared = prepareX({ columns, data: data_in, omit_missing });
+    const prepared = prepareX({ columns, data: data_in, naOmit: shouldOmitMissing });
+    data = prepared.X;
+    if (prepared.columns && prepared.columns.length) {
+      featureNames = prepared.columns.map((name) => String(name));
+    }
+  } else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+    // Array of objects (table-like data) - use prepareX
+    const prepared = prepareX({ columns, data: X, naOmit: shouldOmitMissing });
     data = prepared.X;
     if (prepared.columns && prepared.columns.length) {
       featureNames = prepared.columns.map((name) => String(name));
     }
   } else if (Array.isArray(X)) {
+    // Array of arrays (numeric matrix)
     data = X.map((row) => Array.isArray(row) ? row : [row]);
   } else {
     const mat = toMatrix(X);
@@ -116,7 +127,7 @@ export function fit(
   if (!featureNames) {
     if (Array.isArray(columns) && columns.length) {
       featureNames = columns.map((name) => String(name));
-    } else if (typeof columns === "string") {
+    } else if (typeof columns === 'string') {
       featureNames = [String(columns)];
     }
   }
@@ -125,7 +136,7 @@ export function fit(
   const p = data[0].length;
 
   if (n < 2) {
-    throw new Error("Need at least 2 samples for PCA");
+    throw new Error('Need at least 2 samples for PCA');
   }
 
   // Standardize if requested
@@ -182,9 +193,10 @@ export function fit(
   });
 
   const scores = toScoreObjects(scaled.scores, 'pc');
-  const variableNames = Array.isArray(featureNames) && featureNames.length === rawLoadingMatrix.length
-    ? featureNames
-    : rawLoadingMatrix.map((_, idx) => `var${idx + 1}`);
+  const variableNames =
+    Array.isArray(featureNames) && featureNames.length === rawLoadingMatrix.length
+      ? featureNames
+      : rawLoadingMatrix.map((_, idx) => `var${idx + 1}`);
   const loadings = toLoadingObjects(scaled.loadings, variableNames, 'pc');
 
   const model = {
@@ -239,9 +251,7 @@ export function transform(model, X) {
   }
 
   if (scale && sds) {
-    data = data.map((row) =>
-      row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0)
-    );
+    data = data.map((row) => row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0));
   }
 
   const basis = components || deriveComponentsFromLoadings(model.loadings);
@@ -270,9 +280,7 @@ export function transform(model, X) {
 
   const exponent = scaling === 1 ? 0.5 : 0;
   const siteFactors = eigenvaluePowers(eigenvalues, exponent);
-  const scaledScores = rawScores.map((row) =>
-    row.map((val, idx) => val * siteFactors[idx])
-  );
+  const scaledScores = rawScores.map((row) => row.map((val, idx) => val * siteFactors[idx]));
 
   return toScoreObjects(scaledScores, 'pc');
 }

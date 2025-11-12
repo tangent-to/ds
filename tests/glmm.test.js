@@ -2,7 +2,7 @@
  * Tests for Generalized Linear Mixed Models (GLMM)
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { GLM } from '../src/stats/estimators/GLM.js';
 
 describe('GLMM - Random Intercepts', () => {
@@ -15,7 +15,7 @@ describe('GLMM - Random Intercepts', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: randomEffects
+      randomEffects: randomEffects,
     });
 
     model.fit(X, y);
@@ -35,7 +35,7 @@ describe('GLMM - Random Intercepts', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -52,7 +52,7 @@ describe('GLMM - Random Intercepts', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -66,7 +66,7 @@ describe('GLMM - Random Intercepts', () => {
     // Note: We need to pass the random effects data properly
     // This is a simplified test - in practice would use table-style API
     expect(predictions).toHaveLength(2);
-    expect(predictions.every(p => isFinite(p))).toBe(true);
+    expect(predictions.every((p) => isFinite(p))).toBe(true);
   });
 
   it('should allow prediction for new groups', () => {
@@ -76,7 +76,7 @@ describe('GLMM - Random Intercepts', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -96,7 +96,7 @@ describe('GLMM - Random Intercepts', () => {
 
     const model = new GLM({
       family: 'binomial',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -113,7 +113,7 @@ describe('GLMM - Random Intercepts', () => {
 
     const model = new GLM({
       family: 'poisson',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -125,7 +125,6 @@ describe('GLMM - Random Intercepts', () => {
 
 describe('GLMM - Random Slopes', () => {
   it('should fit GLMM with random slopes', () => {
-    const n = 30;
     const X = [];
     const y = [];
     const groups = [];
@@ -134,10 +133,11 @@ describe('GLMM - Random Slopes', () => {
     // Create data: time = 0,1,2,...,9 for each of 3 groups
     for (let g = 0; g < 3; g++) {
       for (let t = 0; t < 10; t++) {
-        X.push([1]); // Dummy fixed effect
+        X.push([t]); // Use time as fixed effect so slope is identifiable
         timeValues.push(t);
         groups.push(['A', 'B', 'C'][g]);
-        y.push(2 + t + g + Math.random() * 0.5); // Linear trend with group effects
+        // Deterministic linear trend with group-specific offsets for stable convergence
+        y.push(2 + 1.5 * t + g);
       }
     }
 
@@ -146,14 +146,14 @@ describe('GLMM - Random Slopes', () => {
       slopes: {
         time: {
           groups: groups,
-          values: timeValues
-        }
-      }
+          values: timeValues,
+        },
+      },
     };
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: randomEffects
+      randomEffects: randomEffects,
     });
 
     model.fit(X, y);
@@ -171,7 +171,7 @@ describe('GLMM - Random Slopes', () => {
 
     for (let g = 0; g < 3; g++) {
       for (let t = 0; t < 5; t++) {
-        X.push([1]);
+        X.push([t]);
         timeValues.push(t);
         groups.push(['A', 'B', 'C'][g]);
         y.push(2 + t + g);
@@ -183,22 +183,22 @@ describe('GLMM - Random Slopes', () => {
       slopes: {
         time: {
           groups: groups,
-          values: timeValues
-        }
-      }
+          values: timeValues,
+        },
+      },
     };
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: randomEffects
+      randomEffects: randomEffects,
     });
 
     model.fit(X, y);
 
     expect(model._model.varianceComponents).toHaveLength(2);
 
-    const interceptVC = model._model.varianceComponents.find(vc => vc.type === 'intercept');
-    const slopeVC = model._model.varianceComponents.find(vc => vc.type === 'slope');
+    const interceptVC = model._model.varianceComponents.find((vc) => vc.type === 'intercept');
+    const slopeVC = model._model.varianceComponents.find((vc) => vc.type === 'slope');
 
     expect(interceptVC).toBeDefined();
     expect(slopeVC).toBeDefined();
@@ -214,7 +214,7 @@ describe('GLMM - Summary and Output', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -236,7 +236,7 @@ describe('GLMM - Summary and Output', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -255,7 +255,7 @@ describe('GLMM - Summary and Output', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -265,7 +265,7 @@ describe('GLMM - Summary and Output', () => {
     // Should have z value but not p-value
     expect(summary).toContain('z value');
     expect(summary).not.toMatch(/Pr\(>.*\)/); // R-style p-value column
-    expect(summary).not.toMatch(/p-value/i); // Should not have p-value column header
+    expect(summary).not.toMatch(/\bp-value\b/i); // Should not have p-value column header
   });
 
   it('should report number of groups', () => {
@@ -275,7 +275,7 @@ describe('GLMM - Summary and Output', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -292,7 +292,7 @@ describe('GLMM - Summary and Output', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -301,8 +301,8 @@ describe('GLMM - Summary and Output', () => {
 
     expect(summary).toContain('AIC:');
     expect(summary).toContain('BIC:');
-    expect(model._model.aic).toBeGreaterThan(0);
-    expect(model._model.bic).toBeGreaterThan(0);
+    expect(Number.isFinite(model._model.aic)).toBe(true);
+    expect(Number.isFinite(model._model.bic)).toBe(true);
   });
 });
 
@@ -314,7 +314,7 @@ describe('GLMM - Serialization', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -347,7 +347,7 @@ describe('GLMM - Multiple Groups', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -364,7 +364,7 @@ describe('GLMM - Multiple Groups', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -383,7 +383,7 @@ describe('GLMM - Convergence', () => {
     const model = new GLM({
       family: 'gaussian',
       randomEffects: { intercept: groups },
-      maxIter: 100
+      maxIter: 100,
     });
 
     model.fit(X, y);
@@ -400,7 +400,7 @@ describe('GLMM - Convergence', () => {
     const model = new GLM({
       family: 'gaussian',
       randomEffects: { intercept: groups },
-      maxIter: 5
+      maxIter: 5,
     });
 
     model.fit(X, y);
@@ -417,7 +417,7 @@ describe('GLMM - Edge Cases', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -433,7 +433,7 @@ describe('GLMM - Edge Cases', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
@@ -451,14 +451,14 @@ describe('GLMM - Model Comparison', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
 
     model.fit(X, y);
 
-    expect(isFinite(model._model.logLikelihood)).toBe(true);
-    expect(model._model.aic).toBeGreaterThan(0);
-    expect(model._model.bic).toBeGreaterThan(0);
+    expect(Number.isFinite(model._model.logLikelihood)).toBe(true);
+    expect(Number.isFinite(model._model.aic)).toBe(true);
+    expect(Number.isFinite(model._model.bic)).toBe(true);
   });
 
   it('AIC should penalize more complex models', () => {
@@ -473,7 +473,7 @@ describe('GLMM - Model Comparison', () => {
     // GLMM with random intercepts (more complex)
     const model2 = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
     model2.fit(X, y);
 

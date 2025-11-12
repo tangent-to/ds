@@ -3,17 +3,17 @@
  * Implementation mirrors scikit-learn's SVD solver to ensure comparable results.
  */
 
-import { svd, Matrix, solveLeastSquares, eig } from "../core/linalg.js";
-import { mean, stddev } from "../core/math.js";
-import { prepareXY } from "../core/table.js";
+import { eig, Matrix, solveLeastSquares, svd } from '../core/linalg.js';
+import { mean, stddev } from '../core/math.js';
+import { prepareXY } from '../core/table.js';
 import {
   columnsToRows,
+  eigenvaluePowers,
   normalizeScaling,
   scaleOrdination,
-  toScoreObjects,
   toLoadingObjects,
-  eigenvaluePowers,
-} from "./scaling.js";
+  toScoreObjects,
+} from './scaling.js';
 
 function toNumericMatrix(X) {
   return X.map((row) => Array.isArray(row) ? row.map(Number) : [Number(row)]);
@@ -23,17 +23,25 @@ export function fit(X, y, options = {}) {
   let featureNames = null;
   let scale = options.scale !== undefined ? options.scale : false;
   let scaling = options.scaling !== undefined ? options.scaling : 2;
+  // Normalize naOmit parameter (naOmit is primary, omit_missing is alias)
+  let naOmit = options.omit_missing !== undefined
+    ? options.omit_missing
+    : (options.naOmit !== undefined ? options.naOmit : true);
 
   if (
-    X && typeof X === "object" && !Array.isArray(X) &&
-    ("X" in X) && ("y" in X) && ("data" in X)
+    X && typeof X === 'object' && !Array.isArray(X) &&
+    ('X' in X) && ('y' in X) && ('data' in X)
   ) {
     const opts = X; // Save original object before reassignment
+    // Handle both naOmit (primary) and omit_missing (alias)
+    naOmit = opts.omit_missing !== undefined
+      ? opts.omit_missing
+      : (opts.naOmit !== undefined ? opts.naOmit : naOmit);
     const prepared = prepareXY({
       X: opts.X,
       y: opts.y,
       data: opts.data,
-      omit_missing: opts.omit_missing !== undefined ? opts.omit_missing : true,
+      naOmit: naOmit,
     });
     X = prepared.X;
     y = prepared.y;
@@ -57,18 +65,18 @@ export function fit(X, y, options = {}) {
   const data = toNumericMatrix(X);
   const n = data.length;
   if (n === 0) {
-    throw new Error("LDA: empty dataset");
+    throw new Error('LDA: empty dataset');
   }
   const p = data[0].length;
 
   if (n !== y.length) {
-    throw new Error("X and y must have same number of samples");
+    throw new Error('X and y must have same number of samples');
   }
 
   const classes = [...new Set(y)];
   const k = classes.length;
   if (k < 2) {
-    throw new Error("Need at least 2 classes for LDA");
+    throw new Error('Need at least 2 classes for LDA');
   }
 
   const classIndices = [];
@@ -117,9 +125,7 @@ export function fit(X, y, options = {}) {
       const sd = stddev(col, false); // population std
       sds.push(sd);
     }
-    centered = centered.map((row) =>
-      row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0)
-    );
+    centered = centered.map((row) => row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0));
   }
 
   const centeredMatrix = new Matrix(centered);
@@ -134,7 +140,7 @@ export function fit(X, y, options = {}) {
   }
   const rank = validIndices.length;
   if (rank === 0) {
-    throw new Error("LDA: singular data matrix.");
+    throw new Error('LDA: singular data matrix.');
   }
 
   const projector = new Matrix(p, rank);
@@ -206,7 +212,7 @@ export function fit(X, y, options = {}) {
   }
 
   const SwMatrix = new Matrix(Sw_w);
- const SbMatrix = new Matrix(Sb_w);
+  const SbMatrix = new Matrix(Sb_w);
   const SwInvSb = solveLeastSquares(SwMatrix, SbMatrix);
   const { values: eigenvaluesRaw, vectors: eigenvectorsRaw } = eig(SwInvSb);
 
@@ -263,7 +269,7 @@ export function fit(X, y, options = {}) {
   const scores = toScoreObjects(
     scaled.scores,
     'ld',
-    (idx) => ({ class: y[idx] })
+    (idx) => ({ class: y[idx] }),
   );
 
   const variableNames = featureNames && featureNames.length === p

@@ -122,7 +122,7 @@ export function variance(arr, sample = true, options = {}) {
   if (!Number.isFinite(m)) {
     return NaN;
   }
-  const squaredDiffs = data.map(x => (x - m) ** 2);
+  const squaredDiffs = data.map((x) => (x - m) ** 2);
   const divisor = useSample ? data.length - 1 : data.length;
   if (divisor <= 0) {
     return NaN;
@@ -141,6 +141,24 @@ export function variance(arr, sample = true, options = {}) {
 export function stddev(arr, sample = true, options = {}) {
   return Math.sqrt(variance(arr, sample, options));
 }
+
+/**
+ * Alias for stddev (standard deviation)
+ * @param {number[]} arr - Array of numbers
+ * @param {boolean} sample - If true, use sample variance (n-1)
+ * @param {Object} [options] - { naOmit?: boolean }
+ * @returns {number} Standard deviation
+ */
+export const std = stddev;
+
+/**
+ * Alias for stddev (standard deviation) - R-style naming
+ * @param {number[]} arr - Array of numbers
+ * @param {boolean} sample - If true, use sample variance (n-1)
+ * @param {Object} [options] - { naOmit?: boolean }
+ * @returns {number} Standard deviation
+ */
+export const sd = stddev;
 
 function sanitizeNumericArray(arr, options = {}) {
   if (!Array.isArray(arr)) {
@@ -179,8 +197,16 @@ export function quantile(arr, p, options = {}) {
   if (!Array.isArray(arr)) {
     throw new Error('Expected an array of numbers');
   }
+
+  // If p is an array, compute quantiles for each probability
+  if (Array.isArray(p)) {
+    return p.map((prob) => quantile(arr, prob, options));
+  }
+
   const { naOmit = false, method = 'linear' } = options;
-  const data = naOmit ? sanitizeNumericArray(arr, { naOmit }) : arr.filter((v) => Number.isFinite(v));
+  const data = naOmit
+    ? sanitizeNumericArray(arr, { naOmit })
+    : arr.filter((v) => Number.isFinite(v));
   if (!naOmit && data.length !== arr.length) {
     throw new Error('Encountered non-finite values. Pass { naOmit: true } to ignore them.');
   }
@@ -219,4 +245,64 @@ export function summaryQuantiles(arr, probs = [0, 0.25, 0.5, 0.75, 1], options =
     out[p] = quantile(arr, p, options);
   }
   return out;
+}
+
+/**
+ * Compute minimum value of an array
+ * @param {Array<number>} arr - Array of numbers
+ * @param {Object} options - Options { naOmit: boolean }
+ * @returns {number} Minimum value or NaN if empty
+ */
+export function min(arr, options = {}) {
+  const data = sanitizeNumericArray(arr, options);
+  if (!data.length) return NaN;
+  return Math.min(...data);
+}
+
+/**
+ * Compute maximum value of an array
+ * @param {Array<number>} arr - Array of numbers
+ * @param {Object} options - Options { naOmit: boolean }
+ * @returns {number} Maximum value or NaN if empty
+ */
+export function max(arr, options = {}) {
+  const data = sanitizeNumericArray(arr, options);
+  if (!data.length) return NaN;
+  return Math.max(...data);
+}
+
+/**
+ * Generate a sequence of numbers
+ * @param {number} start - Start value (inclusive)
+ * @param {number} stop - Stop value (inclusive)
+ * @param {number} step - Step size (default: 1)
+ * @returns {Array<number>} Array of evenly spaced numbers
+ *
+ * @example
+ * range(0, 10, 2) // [0, 2, 4, 6, 8, 10]
+ * range(1, 5)     // [1, 2, 3, 4, 5]
+ * range(1, 2, 0.5) // [1, 1.5, 2]
+ */
+export function range(start, stop, step = 1) {
+  if (step === 0) {
+    throw new Error('range: step cannot be zero');
+  }
+  if (step > 0 && start > stop) {
+    throw new Error('range: start must be <= stop when step is positive');
+  }
+  if (step < 0 && start < stop) {
+    throw new Error('range: start must be >= stop when step is negative');
+  }
+
+  const result = [];
+  if (step > 0) {
+    for (let x = start; x <= stop; x += step) {
+      result.push(x);
+    }
+  } else {
+    for (let x = start; x >= stop; x += step) {
+      result.push(x);
+    }
+  }
+  return result;
 }

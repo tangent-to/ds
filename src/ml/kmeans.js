@@ -3,9 +3,9 @@
  * Uses k-means++ initialization for better convergence
  */
 
-import { toMatrix } from "../core/linalg.js";
-import { mean } from "../core/math.js";
-import { prepareX } from "../core/table.js";
+import { toMatrix } from '../core/linalg.js';
+import { mean } from '../core/math.js';
+import { prepareX } from '../core/table.js';
 
 /**
  * Euclidean distance between two points
@@ -181,7 +181,7 @@ export function fit(
   // If first arg is an options-object (contains `data` or `columns`), treat it as such.
   let data;
   if (
-    X && typeof X === "object" && !Array.isArray(X) && (X.data || X.columns)
+    X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)
   ) {
     const opts = X;
     data_in = opts.data !== undefined ? opts.data : data_in;
@@ -197,7 +197,12 @@ export function fit(
     const prepared = prepareX({ columns, data: data_in });
     // prepared.X is array of arrays (rows)
     data = prepared.X;
+  } else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+    // Array of objects (table-like data) - use prepareX
+    const prepared = prepareX({ columns, data: X });
+    data = prepared.X;
   } else if (Array.isArray(X)) {
+    // Array of arrays (numeric matrix)
     data = X.map((row) => Array.isArray(row) ? row : [row]);
   } else {
     const mat = toMatrix(X);

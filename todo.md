@@ -1,16 +1,13 @@
 TODO
-- for first release
-    - rewrite tangent-notebook and Obsrevable tutorials
-    
-
 - planned features
+    - implement Tukey HSD test
+    - ml: y can take multiple targets (one model per target, for now)
     - implement tensorflowjs
+    - implement xgboost
     - implement Gaussian processes inspired by https://github.com/jmonlabs/jmon-algo/tree/main/src/algorithms/generative/gaussian-processes, then generate python tests and examples
-    - fix LDA
     - implement CCA
 
 DOING
-    - reboot scaling
 
 
 DONE
@@ -28,7 +25,7 @@ DONE
 Before the workflow can run successfully, you'll need to:
 - Add NPM_TOKEN secret to GitHub repository settings (see RELEASE.md for details)
 - Ensure GitHub Pages is enabled in repository settings
-- Test by pushing a tag: git tag v0.7.1 && git push origin 
+- Test by pushing a tag: git tag v0.7.1 && git push origin
 - review arquero dependency
 - implement CCA
 - implement scaling
@@ -41,3 +38,9 @@ Before the workflow can run successfully, you'll need to:
 - Set up TypeDoc extraction and inject it into Docusaurus properly - to be tested
 - implement Ward hierarchical clustering
 - In ordination classes, the .show() method indicates the pltting library as .show(Plot) to avoid including the plotting library in the package. Could you do it similarly throught mva.js and ther modules? For instance, add the plot library object as argument to hierarchical clustering like .show(d3-dendrogram)
+- rewrite tangent-notebook and Obsrevable tutorials
+- reboot scaling
+- fix LDA
+- update docu
+- recipe interface
+- check the noteboks

@@ -8,7 +8,7 @@
  * - Random intercepts and slopes
  */
 
-import { Matrix, SingularValueDecomposition, inverse } from 'ml-matrix';
+import { inverse, Matrix, SingularValueDecomposition } from 'ml-matrix';
 import { createFamily } from './families.js';
 import { mean, sum } from '../core/math.js';
 
@@ -34,7 +34,7 @@ export function fitGLM(X, y, options = {}) {
     maxIter = 100,
     tol = 1e-8,
     regularization = null,
-    dispersion = 'estimate' // 'estimate', 'fixed', or numeric value
+    dispersion = 'estimate', // 'estimate', 'fixed', or numeric value
   } = options;
 
   const n = X.length;
@@ -44,7 +44,7 @@ export function fitGLM(X, y, options = {}) {
   const familyObj = createFamily({ family, link });
 
   // Add intercept if requested
-  let Xmat = intercept ? addIntercept(X) : X.map(row => [...row]);
+  let Xmat = intercept ? addIntercept(X) : X.map((row) => [...row]);
   const ncoef = Xmat[0].length;
 
   // Initialize weights and offset
@@ -100,8 +100,11 @@ export function fitGLM(X, y, options = {}) {
     phi = 1.0; // Fixed at 1 for Binomial and Poisson
   } else {
     // Estimate dispersion from Pearson chi-square
-    const pearsonChiSq = sum(pearsonResiduals.map(r => r * r));
+    const pearsonChiSq = sum(pearsonResiduals.map((r) => r * r));
     phi = pearsonChiSq / (n - ncoef);
+    if (familyObj.family === 'binomial' || familyObj.family === 'poisson') {
+      phi = 1.0;
+    }
   }
 
   // Compute standard errors
@@ -110,7 +113,7 @@ export function fitGLM(X, y, options = {}) {
     mu,
     w,
     phi,
-    familyObj
+    familyObj,
   );
 
   // Compute confidence intervals (95%)
@@ -118,7 +121,7 @@ export function fitGLM(X, y, options = {}) {
     const se = standardErrors[i];
     return {
       lower: coef - 1.96 * se,
-      upper: coef + 1.96 * se
+      upper: coef + 1.96 * se,
     };
   });
 
@@ -159,7 +162,7 @@ export function fitGLM(X, y, options = {}) {
     dfResidual: n - ncoef,
     family: familyObj.family,
     link: familyObj.link.name,
-    intercept
+    intercept,
   };
 }
 
@@ -176,7 +179,10 @@ function computeWorkingWeights(y, mu, eta, offset, weights, family) {
 
   for (let i = 0; i < n; i++) {
     const v = Math.max(variance[i], 1e-10);
-    const dmu = Math.max(Math.abs(mu_eta[i]), 1e-10);
+    let dmu = mu_eta[i];
+    if (Math.abs(dmu) < 1e-10) {
+      dmu = (dmu >= 0 ? 1 : -1) * 1e-10;
+    }
 
     // Working response
     z[i] = eta[i] - offset[i] + (y[i] - mu[i]) / dmu;
@@ -196,8 +202,8 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
   const p = X[0].length;
 
   // Create weighted design matrix: W^(1/2) * X
-  const sqrtW = weights.map(w => Math.sqrt(Math.max(w, 0)));
-  const WX = X.map((row, i) => row.map(x => sqrtW[i] * x));
+  const sqrtW = weights.map((w) => Math.sqrt(Math.max(w, 0)));
+  const WX = X.map((row, i) => row.map((x) => sqrtW[i] * x));
   const Wy = y.map((yi, i) => sqrtW[i] * yi);
 
   const XtX = new Matrix(WX).transpose().mmul(new Matrix(WX));
@@ -260,8 +266,8 @@ function computeStandardErrors(X, mu, weights, phi, family) {
   }
 
   // Information matrix: I = X'WX
-  const sqrtW = W.map(w => Math.sqrt(Math.max(w, 0)));
-  const WX = X.map((row, i) => row.map(x => sqrtW[i] * x));
+  const sqrtW = W.map((w) => Math.sqrt(Math.max(w, 0)));
+  const WX = X.map((row, i) => row.map((x) => sqrtW[i] * x));
   const XtWX = new Matrix(WX).transpose().mmul(new Matrix(WX));
 
   // Covariance matrix: Cov = φ * (X'WX)^(-1)
@@ -294,7 +300,7 @@ function computeStandardErrors(X, mu, weights, phi, family) {
 
   return {
     standardErrors,
-    covarianceMatrix: covMatrix.to2DArray()
+    covarianceMatrix: covMatrix.to2DArray(),
   };
 }
 
@@ -328,20 +334,12 @@ function computeDevianceResiduals(y, mu, weights, family) {
  * Compute log-likelihood (approximate for non-canonical links)
  */
 function computeLogLikelihood(y, mu, weights, phi, family) {
-  const n = y.length;
-  const deviance = family.deviance(y, mu, weights);
-
-  // Approximate log-likelihood from deviance
-  // For exponential families: logLik ≈ -deviance/(2φ) + constant
-  let logLik = -deviance / (2 * phi);
-
-  // Add constant term (depends on family)
-  if (family.family === 'gaussian') {
-    const sumW = sum(weights);
-    logLik -= (sumW / 2) * Math.log(2 * Math.PI * phi);
+  if (typeof family.logLikelihood === 'function') {
+    return family.logLikelihood(y, mu, weights, phi);
   }
 
-  return logLik;
+  const deviance = family.deviance(y, mu, weights);
+  return -deviance / (2 * phi);
 }
 
 /**
@@ -379,16 +377,28 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     intercept = true,
     maxIter = 100,
     tol = 1e-6,
-    dispersion = 'estimate'
+    dispersion = 'estimate',
   } = options;
 
   const n = X.length;
+
+  // Validate random effects
+  if (
+    !randomEffects ||
+    (!randomEffects.intercept &&
+      (!randomEffects.slopes || Object.keys(randomEffects.slopes).length === 0))
+  ) {
+    throw new Error(
+      'No random effects specified. randomEffects must have either ' +
+        '{ intercept: [...groups] } or { slopes: {...} }',
+    );
+  }
 
   // Create family object
   const familyObj = createFamily({ family, link });
 
   // Add intercept if requested
-  let Xmat = intercept ? addIntercept(X) : X.map(row => [...row]);
+  let Xmat = intercept ? addIntercept(X) : X.map((row) => [...row]);
   const nFixedCoef = Xmat[0].length;
 
   // Initialize weights and offset
@@ -398,7 +408,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
   // Parse random effects structure
   const { Z, groupInfo, nRandomCoef } = buildRandomEffectsMatrix(
     n,
-    randomEffects
+    randomEffects,
   );
 
   // Initialize fixed and random effects
@@ -444,7 +454,13 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     mu = familyObj.link.linkinv(eta);
 
     logLik = computeMarginalLogLikelihood(
-      y, mu, uNew, theta, w, familyObj, groupInfo
+      y,
+      mu,
+      uNew,
+      theta,
+      w,
+      familyObj,
+      groupInfo,
     );
 
     // Check convergence
@@ -473,7 +489,15 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
 
   // Compute standard errors for fixed effects
   const { standardErrors, covarianceMatrix } = computeGLMMStandardErrors(
-    Xmat, Z, mu, beta, u, theta, w, familyObj, groupInfo
+    Xmat,
+    Z,
+    mu,
+    beta,
+    u,
+    theta,
+    w,
+    familyObj,
+    groupInfo,
   );
 
   // Compute confidence intervals (95%)
@@ -481,7 +505,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     const se = standardErrors[i];
     return {
       lower: coef - 1.96 * se,
-      upper: coef + 1.96 * se
+      upper: coef + 1.96 * se,
     };
   });
 
@@ -518,7 +542,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     dfResidual: n - nFixedCoef,
     family: familyObj.family,
     link: familyObj.link.name,
-    intercept
+    intercept,
   };
 }
 
@@ -542,7 +566,7 @@ function buildRandomEffectsMatrix(n, randomEffects) {
       groups: uniqueGroups,
       groupMap,
       nGroups: uniqueGroups.length,
-      startIdx: nRandomCoef
+      startIdx: nRandomCoef,
     });
 
     nRandomCoef += uniqueGroups.length;
@@ -561,7 +585,7 @@ function buildRandomEffectsMatrix(n, randomEffects) {
       groupMap,
       nGroups: uniqueGroups.length,
       startIdx: nRandomCoef,
-      values // store values for Z matrix construction
+      values, // store values for Z matrix construction
     });
 
     nRandomCoef += uniqueGroups.length;
@@ -572,7 +596,7 @@ function buildRandomEffectsMatrix(n, randomEffects) {
 
   // Fill in random intercepts
   if (interceptGroup) {
-    const info = groupInfo.find(g => g.type === 'intercept');
+    const info = groupInfo.find((g) => g.type === 'intercept');
     for (let i = 0; i < n; i++) {
       const groupIdx = info.groupMap[interceptGroup[i]];
       Z[i][info.startIdx + groupIdx] = 1;
@@ -580,7 +604,7 @@ function buildRandomEffectsMatrix(n, randomEffects) {
   }
 
   // Fill in random slopes
-  for (const info of groupInfo.filter(g => g.type === 'slope')) {
+  for (const info of groupInfo.filter((g) => g.type === 'slope')) {
     const { values, groupMap, startIdx } = info;
     const groups = slopes[info.variable].groups;
 
@@ -597,7 +621,11 @@ function buildRandomEffectsMatrix(n, randomEffects) {
  * Initialize variance components
  */
 function initializeVarianceComponents(groupInfo) {
-  return groupInfo.map(() => ({ variance: 1.0 }));
+  return groupInfo.map((info) => ({
+    variance: 1.0,
+    startIdx: info.startIdx,
+    nGroups: info.nGroups,
+  }));
 }
 
 /**
@@ -632,12 +660,14 @@ function updateRandomEffects(X, Z, y, weights, beta, theta) {
   // Build system: (Z'WZ + D^{-1})u = Z'Wy
   // where D = block diagonal variance matrix
 
-  const sqrtW = weights.map(w => Math.sqrt(Math.max(w, 0)));
-  const WZ = Z.map((row, i) => row.map(z => sqrtW[i] * z));
+  const sqrtW = weights.map((w) => Math.sqrt(Math.max(w, 0)));
+  const WZ = Z.map((row, i) => row.map((z) => sqrtW[i] * z));
   const Wy = yResid.map((r, i) => sqrtW[i] * r);
 
-  const ZtWZ = new Matrix(WZ).transpose().mmul(new Matrix(WZ));
-  const ZtWy = new Matrix(WZ).transpose().mmul(Matrix.columnVector(Wy));
+  const WZMatrix = new Matrix(WZ);
+  const WZt = WZMatrix.transpose();
+  const ZtWZ = WZt.mmul(WZMatrix);
+  const ZtWy = WZt.mmul(Matrix.columnVector(Wy));
 
   // Add precision matrix (inverse of variance)
   for (let i = 0; i < theta.length; i++) {
@@ -653,13 +683,29 @@ function updateRandomEffects(X, Z, y, weights, beta, theta) {
     }
   }
 
-  // Solve
+  // Solve: (Z'WZ + D^{-1})u = Z'Wy
   try {
     const u = ZtWZ.solve(ZtWy);
     return Array.from(u.getColumn(0));
   } catch (e) {
-    const u = inverse(ZtWZ).mmul(ZtWy);
-    return Array.from(u.getColumn(0));
+    // If solve fails, try inverse
+    try {
+      const ZtWZinv = inverse(ZtWZ);
+      const u = ZtWZinv.mmul(ZtWy);
+      return Array.from(u.getColumn(0));
+    } catch (e2) {
+      // Last resort: SVD-based solution
+      try {
+        const svd = new SingularValueDecomposition(ZtWZ);
+        const u = svd.solve(ZtWy);
+        return Array.from(u.getColumn(0));
+      } catch (e3) {
+        throw new Error(
+          `Failed to solve random effects system. ` +
+            `Direct solve: ${e.message}. Inverse: ${e2.message}. SVD: ${e3.message}`,
+        );
+      }
+    }
   }
 }
 
@@ -681,7 +727,7 @@ function updateVarianceComponents(u, groupInfo) {
 
     return {
       ...info,
-      variance: Math.max(variance, 1e-6) // ensure positive
+      variance: Math.max(variance, 1e-6), // ensure positive
     };
   });
 }
@@ -741,8 +787,8 @@ function computeGLMMStandardErrors(X, Z, mu, beta, u, theta, weights, family, gr
   }
 
   // Approximate covariance: (X'WX)^{-1}
-  const sqrtW = W.map(w => Math.sqrt(Math.max(w, 0)));
-  const WX = X.map((row, i) => row.map(x => sqrtW[i] * x));
+  const sqrtW = W.map((w) => Math.sqrt(Math.max(w, 0)));
+  const WX = X.map((row, i) => row.map((x) => sqrtW[i] * x));
   const XtWX = new Matrix(WX).transpose().mmul(new Matrix(WX));
 
   let covMatrix;
@@ -772,7 +818,7 @@ function computeGLMMStandardErrors(X, Z, mu, beta, u, theta, weights, family, gr
 
   return {
     standardErrors,
-    covarianceMatrix: covMatrix.to2DArray()
+    covarianceMatrix: covMatrix.to2DArray(),
   };
 }
 
@@ -788,7 +834,7 @@ export function predictGLM(model, X, options = {}) {
     type = 'response', // 'link', 'response', 'confidence', 'prediction'
     interval = false,
     level = 0.95,
-    offset = null
+    offset = null,
   } = options;
 
   const n = X.length;
@@ -823,7 +869,7 @@ export function predictGLMM(model, X, randomEffectsData, options = {}) {
   const {
     type = 'response',
     allowNewGroups = true,
-    offset = null
+    offset = null,
   } = options;
 
   const n = X.length;
@@ -835,7 +881,7 @@ export function predictGLMM(model, X, randomEffectsData, options = {}) {
     n,
     randomEffectsData,
     model.groupInfo,
-    allowNewGroups
+    allowNewGroups,
   );
 
   // Linear predictor
@@ -863,7 +909,7 @@ function buildRandomEffectsMatrixForPrediction(n, randomEffectsData, groupInfo, 
   const Z = Array(n).fill(null).map(() => Array(nRandomCoef).fill(0));
 
   // Handle random intercepts
-  const interceptInfo = groupInfo.find(g => g.type === 'intercept');
+  const interceptInfo = groupInfo.find((g) => g.type === 'intercept');
   if (interceptInfo && randomEffectsData && randomEffectsData.intercept) {
     const groups = randomEffectsData.intercept;
     for (let i = 0; i < n; i++) {
@@ -872,14 +918,16 @@ function buildRandomEffectsMatrixForPrediction(n, randomEffectsData, groupInfo, 
         const groupIdx = interceptInfo.groupMap[group];
         Z[i][interceptInfo.startIdx + groupIdx] = 1;
       } else if (!allowNewGroups) {
-        throw new Error(`Unknown group: ${group}. Set allowNewGroups=true to predict with zero random effect.`);
+        throw new Error(
+          `Unknown group: ${group}. Set allowNewGroups=true to predict with zero random effect.`,
+        );
       }
       // If new group and allowNewGroups=true, leave as 0 (population-level prediction)
     }
   }
 
   // Handle random slopes
-  for (const info of groupInfo.filter(g => g.type === 'slope')) {
+  for (const info of groupInfo.filter((g) => g.type === 'slope')) {
     const varName = info.variable;
     if (randomEffectsData && randomEffectsData.slopes && randomEffectsData.slopes[varName]) {
       const { groups, values } = randomEffectsData.slopes[varName];
@@ -889,7 +937,9 @@ function buildRandomEffectsMatrixForPrediction(n, randomEffectsData, groupInfo, 
           const groupIdx = info.groupMap[group];
           Z[i][info.startIdx + groupIdx] = values[i];
         } else if (!allowNewGroups) {
-          throw new Error(`Unknown group: ${group}. Set allowNewGroups=true to predict with zero random effect.`);
+          throw new Error(
+            `Unknown group: ${group}. Set allowNewGroups=true to predict with zero random effect.`,
+          );
         }
         // If new group and allowNewGroups=true, leave as 0
       }
@@ -918,7 +968,7 @@ function computeIntervals(predictions, X, model, level, scale, familyObj = null)
     intervals[i] = {
       fit: predictions[i],
       lower: predictions[i] - z * se,
-      upper: predictions[i] + z * se
+      upper: predictions[i] + z * se,
     };
 
     // Transform to response scale if needed
@@ -939,14 +989,22 @@ function computeIntervals(predictions, X, model, level, scale, familyObj = null)
  * Add intercept column to design matrix
  */
 function addIntercept(X) {
-  return X.map(row => [1, ...row]);
+  return X.map((row) => {
+    // Handle both 1D (single predictor) and 2D (multiple predictors) input
+    if (Array.isArray(row)) {
+      return [1, ...row];
+    } else {
+      // Single value - wrap it in an array
+      return [1, row];
+    }
+  });
 }
 
 /**
  * Matrix-vector multiplication
  */
 function matrixVectorMultiply(A, x) {
-  return A.map(row => sum(row.map((aij, j) => aij * x[j])));
+  return A.map((row) => sum(row.map((aij, j) => aij * x[j])));
 }
 
 // ============================================================================
@@ -964,7 +1022,13 @@ export function fitLM(X, y, options = {}) {
  * Predict from linear model (functional API)
  */
 export function predictLM(coefficients, X, options = {}) {
-  const model = { coefficients, family: 'gaussian', link: 'identity', intercept: options.intercept !== false, p: coefficients.length };
+  const model = {
+    coefficients,
+    family: 'gaussian',
+    link: 'identity',
+    intercept: options.intercept !== false,
+    p: coefficients.length,
+  };
   return predictGLM(model, X, options);
 }
 
@@ -979,6 +1043,12 @@ export function fitLogit(X, y, options = {}) {
  * Predict from logistic model (functional API)
  */
 export function predictLogit(coefficients, X, options = {}) {
-  const model = { coefficients, family: 'binomial', link: 'logit', intercept: options.intercept !== false, p: coefficients.length };
+  const model = {
+    coefficients,
+    family: 'binomial',
+    link: 'logit',
+    intercept: options.intercept !== false,
+    p: coefficients.length,
+  };
   return predictGLM(model, X, options);
 }

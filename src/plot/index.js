@@ -3,31 +3,31 @@
  * Observable Plot configuration generators for data analysis
  */
 
-// Ordination plots (original implementations)
-export { plotPCA, plotScree } from './plotPCA.js';
-export { plotLDA } from './plotLDA.js';
-export { plotHCA, dendrogramLayout } from './plotHCA.js';
-export { plotRDA } from './plotRDA.js';
-
-// Unified ordination plot
+// Unified ordination plot (use this for PCA, LDA, RDA)
 export { ordiplot } from './ordiplot.js';
+
+// Scree plot for variance explained
+export { plotScree } from './plotScree.js';
+
+// Clustering/hierarchical plots
+export { dendrogramLayout, plotHCA } from './plotHCA.js';
 
 // Classification metrics plots
 export {
-  plotROC,
-  plotPrecisionRecall,
+  plotCalibration,
   plotConfusionMatrix,
-  plotCalibration
+  plotPrecisionRecall,
+  plotROC,
 } from './classification.js';
 
 // Model interpretation plots
 export {
-  plotFeatureImportance,
-  plotPartialDependence,
   plotCorrelationMatrix,
-  plotResiduals,
+  plotFeatureImportance,
+  plotLearningCurve,
+  plotPartialDependence,
   plotQQ,
-  plotLearningCurve
+  plotResiduals,
 } from './utils.js';
 
 // Renderer helpers
@@ -37,11 +37,11 @@ export { plotSilhouette } from './plotSilhouette.js';
 
 // GLM/GLMM diagnostic plots
 export {
-  residualPlot,
-  scaleLocationPlot,
-  qqPlot,
-  residualsLeveragePlot,
   diagnosticDashboard,
   effectPlot,
-  partialResidualPlot
+  partialResidualPlot,
+  qqPlot,
+  residualPlot,
+  residualsLeveragePlot,
+  scaleLocationPlot,
 } from './diagnostics.js';

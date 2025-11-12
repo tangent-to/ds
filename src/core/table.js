@@ -3,7 +3,24 @@
  * Accepts arrays of objects or Arquero-like tables
  */
 
-import { Matrix } from "./linalg.js";
+import { Matrix } from './linalg.js';
+
+/**
+ * Normalize naOmit/omit_missing parameter names
+ * Accepts both R-style (naOmit) and Python-style (omit_missing)
+ * @param {Object} options - Options object that may contain naOmit or omit_missing
+ * @returns {boolean} The normalized boolean value (defaults to true)
+ */
+export function normalizeNaOmit(options = {}) {
+  // naOmit is primary (R-style), omit_missing is alias (Python-style)
+  if ('naOmit' in options) {
+    return options.naOmit;
+  }
+  if ('omit_missing' in options) {
+    return options.omit_missing;
+  }
+  return true; // default
+}
 
 /**
  * Check if input has Arquero-like interface
@@ -11,7 +28,7 @@ import { Matrix } from "./linalg.js";
  * @returns {boolean} True if has .objects() method
  */
 function isArqueroLike(data) {
-  return data && typeof data.objects === "function";
+  return data && typeof data.objects === 'function';
 }
 
 /**
@@ -26,7 +43,7 @@ export function normalize(data) {
   if (Array.isArray(data)) {
     return data;
   }
-  throw new Error("Data must be array of objects or Arquero-like table");
+  throw new Error('Data must be array of objects or Arquero-like table');
 }
 
 /**
@@ -39,21 +56,19 @@ export function toMatrix(data, columns) {
   const rows = normalize(data);
 
   if (rows.length === 0) {
-    throw new Error("Cannot create matrix from empty data");
+    throw new Error('Cannot create matrix from empty data');
   }
 
   // If no columns specified, use all numeric columns
   if (!columns) {
     const firstRow = rows[0];
-    columns = Object.keys(firstRow).filter((key) =>
-      typeof firstRow[key] === "number"
-    );
+    columns = Object.keys(firstRow).filter((key) => typeof firstRow[key] === 'number');
   }
 
   const matrix = rows.map((row) =>
     columns.map((col) => {
       const val = row[col];
-      if (typeof val !== "number") {
+      if (typeof val !== 'number') {
         throw new Error(`Column ${col} contains non-numeric value: ${val}`);
       }
       return val;
@@ -73,12 +88,12 @@ export function toVector(data, column) {
   const rows = normalize(data);
 
   if (rows.length === 0) {
-    throw new Error("Cannot create vector from empty data");
+    throw new Error('Cannot create vector from empty data');
   }
 
   return rows.map((row) => {
     const val = row[column];
-    if (typeof val !== "number") {
+    if (typeof val !== 'number') {
       throw new Error(`Column ${column} contains non-numeric value: ${val}`);
     }
     return val;
@@ -143,12 +158,46 @@ export function select(data, columns) {
 }
 
 /**
+ * Apply a matrix of values to specific columns on each row.
+ * Useful for re-attaching transformed feature matrices to table rows.
+ *
+ * @param {Array<Object>} rows - Source rows (will be copied unless copy=false)
+ * @param {Array<string>} columns - Column names corresponding to matrix columns
+ * @param {Array<Array<number>>} matrix - Values to assign per row/column
+ * @param {Object} options - { copy: true } to control cloning behaviour
+ * @returns {Array<Object>} Rows with columns assigned
+ */
+export function applyColumns(rows, columns, matrix, { copy = true } = {}) {
+  if (!Array.isArray(rows)) {
+    throw new Error('applyColumns expects rows to be an array of objects');
+  }
+  if (!Array.isArray(columns) || !columns.length) {
+    throw new Error('applyColumns requires a non-empty columns array');
+  }
+  if (!Array.isArray(matrix) || matrix.length !== rows.length) {
+    throw new Error('applyColumns expects matrix to match rows length');
+  }
+
+  return rows.map((row, rowIdx) => {
+    const target = copy ? { ...row } : row;
+    const values = matrix[rowIdx];
+    if (!Array.isArray(values) || values.length !== columns.length) {
+      throw new Error('applyColumns expects each matrix row to match columns length');
+    }
+    for (let colIdx = 0; colIdx < columns.length; colIdx++) {
+      target[columns[colIdx]] = values[colIdx];
+    }
+    return target;
+  });
+}
+
+/**
  * Helper: check if a value is numeric (finite number)
  * @param {*} v
  * @returns {boolean}
  */
 function isNumeric(v) {
-  return typeof v === "number" && Number.isFinite(v);
+  return typeof v === 'number' && Number.isFinite(v);
 }
 
 /**
@@ -158,7 +207,7 @@ function isNumeric(v) {
  */
 function isMissing(v) {
   return v === null || v === undefined ||
-    (typeof v === "number" && Number.isNaN(v));
+    (typeof v === 'number' && Number.isNaN(v));
 }
 
 /**
@@ -208,7 +257,7 @@ export class LabelEncoder {
   }
 
   toJSON() {
-    return { __class__: "LabelEncoder", classes: this.classes_ };
+    return { __class__: 'LabelEncoder', classes: this.classes_ };
   }
 
   static fromJSON(obj = {}) {
@@ -226,10 +275,11 @@ export class LabelEncoder {
  * Note: this encoder returns an array of arrays (one-hot vectors)
  */
 export class OneHotEncoder {
-  constructor({ handleUnknown = "ignore" } = {}) {
+  constructor({ handleUnknown = 'ignore' } = {}) {
     this.categories_ = [];
     this.catIndex = new Map();
     this.handleUnknown = handleUnknown; // "ignore" or "error"
+    this._columnConfigs = null;
   }
 
   fit(values = []) {
@@ -254,7 +304,7 @@ export class OneHotEncoder {
       }
       const idx = this.catIndex.get(v);
       if (idx === undefined) {
-        if (this.handleUnknown === "ignore") {
+        if (this.handleUnknown === 'ignore') {
           return new Array(k).fill(0);
         } else {
           throw new Error(`Unknown category encountered during transform: ${v}`);
@@ -284,7 +334,7 @@ export class OneHotEncoder {
    * @param {Object} options - { data, columns }
    * @returns {OneHotEncoder} this
    */
-  _fitDeclarative({ data, columns }) {
+  _fitDeclarative({ data, columns, dropFirst = false }) {
     if (!columns) {
       throw new Error('OneHotEncoder: columns parameter is required for declarative API');
     }
@@ -295,13 +345,17 @@ export class OneHotEncoder {
     // Store column configuration
     this._columns = columnList;
     this._encoders = new Map();
+    this._columnConfigs = new Map();
 
     // Create an encoder for each column
     for (const col of columnList) {
       const encoder = new OneHotEncoder({ handleUnknown: this.handleUnknown });
-      const values = rows.map(row => row[col]);
+      const values = rows.map((row) => row[col]);
       encoder.fit(values);
       this._encoders.set(col, encoder);
+      this._columnConfigs.set(col, {
+        dropFirst: Boolean(dropFirst),
+      });
     }
 
     return this;
@@ -319,18 +373,21 @@ export class OneHotEncoder {
 
     const rows = normalize(data);
 
-    return rows.map(row => {
+    return rows.map((row) => {
       const encoded = {};
 
       for (const [col, encoder] of this._encoders.entries()) {
         const value = row[col];
         const oneHotVec = encoder.transform([value])[0];
         const featureNames = encoder.getFeatureNames(`${col}_`);
+        const config = this._columnConfigs?.get(col);
+        const startIdx = config?.dropFirst ? 1 : 0;
 
         // Add each one-hot feature as a separate property
-        featureNames.forEach((name, idx) => {
+        for (let idx = startIdx; idx < featureNames.length; idx++) {
+          const name = featureNames[idx];
           encoded[name] = oneHotVec[idx];
-        });
+        }
       }
 
       return encoded;
@@ -351,12 +408,15 @@ export class OneHotEncoder {
    * Get all feature names for declarative API
    * @returns {Array<string>} All feature names across all columns
    */
-  getFeatureNames(prefix = "") {
+  getFeatureNames(prefix = '') {
     // If using declarative API, return all feature names
     if (this._encoders) {
       const names = [];
       for (const [col, encoder] of this._encoders.entries()) {
-        names.push(...encoder.getFeatureNames(`${col}_`));
+        const columnNames = encoder.getFeatureNames(`${col}_`);
+        const config = this._columnConfigs?.get(col);
+        const startIdx = config?.dropFirst ? 1 : 0;
+        names.push(...columnNames.slice(startIdx));
       }
       return names;
     }
@@ -366,7 +426,7 @@ export class OneHotEncoder {
   }
 
   toJSON() {
-    return { __class__: "OneHotEncoder", categories: this.categories_ };
+    return { __class__: 'OneHotEncoder', categories: this.categories_ };
   }
 
   static fromJSON(obj = {}) {
@@ -382,25 +442,32 @@ export class OneHotEncoder {
 /**
  * Prepare feature matrix X from table-like data.
  * Supports optional categorical encoding:
- *   prepareX({ columns, data, omit_missing = true, encode = null })
+ *   prepareX({ columns, data, naOmit = true, encode = null, encoders = null })
  *
  * encode can be:
  *   - null/false: no encoding (default)
  *   - true: auto-label encode any non-numeric columns
  *   - { colName: 'label' | 'onehot' } mapping per-column
+ * encoders allows you to reuse previously fitted encoders per column.
  *
  * Returns:
  *   { X, columns, n, rows, encoders } where encoders is a mapping of column->encoder used
  */
-export function prepareX({ columns, data, omit_missing = true, encode = null } = {}) {
+export function prepareX(
+  { columns, data, naOmit, omit_missing, encode = null, encoders = null } = {},
+) {
+  // Normalize naOmit parameter (accept both naOmit and omit_missing)
+  const shouldOmitMissing = naOmit !== undefined
+    ? naOmit
+    : (omit_missing !== undefined ? omit_missing : true);
   if (!columns) {
     // If no columns specified, select numeric columns from first row
     const rows0 = normalize(data);
     if (rows0.length === 0) {
-      throw new Error("Cannot prepare X from empty data");
+      throw new Error('Cannot prepare X from empty data');
     }
     columns = Object.keys(rows0[0]).filter((k) => isNumeric(rows0[0][k]));
-  } else if (typeof columns === "string") {
+  } else if (typeof columns === 'string') {
     columns = [columns];
   }
 
@@ -414,13 +481,14 @@ export function prepareX({ columns, data, omit_missing = true, encode = null } =
     }
   }
 
-  // If omit_missing is true, drop rows with missing in any requested columns
-  const preFiltered = omit_missing
+  // If naOmit/omit_missing is true, drop rows with missing in any requested columns
+  const preFiltered = shouldOmitMissing
     ? rows.filter((r) => columns.every((c) => !isMissing(r[c])))
     : rows.slice();
 
   // Determine per-column encoders if requested
-  const encoders = {}; // columnName -> encoder instance
+  const providedEncoders = encoders || {};
+  const resolvedEncoders = {}; // columnName -> encoder instance
   const finalColumnNames = []; // will hold expanded column names (for one-hot)
   // For onehot columns we will expand the columns into multiple feature names
 
@@ -436,43 +504,60 @@ export function prepareX({ columns, data, omit_missing = true, encode = null } =
 
   // Decide encoders based on `encode` param
   for (const col of columns) {
+    const existingEncoder = providedEncoders[col];
     const numeric = columnIsNumeric(col);
-    if (numeric) {
-      encoders[col] = null;
+
+    if (numeric && !existingEncoder) {
+      resolvedEncoders[col] = null;
       finalColumnNames.push(col);
       continue;
     }
 
-    // Non-numeric column
+    if (existingEncoder instanceof LabelEncoder) {
+      resolvedEncoders[col] = existingEncoder;
+      finalColumnNames.push(col);
+      continue;
+    }
+
+    if (existingEncoder instanceof OneHotEncoder) {
+      resolvedEncoders[col] = existingEncoder;
+      for (const cname of existingEncoder.getFeatureNames(`${col}_`)) {
+        finalColumnNames.push(cname);
+      }
+      continue;
+    }
+
+    // Non-numeric column without provided encoder
     if (!encode) {
-      // If user did not request encoding, throw informative error
-      throw new Error(`Column ${col} contains non-numeric values; pass encode option to prepareX to encode categorical columns`);
+      throw new Error(
+        `Column ${col} contains non-numeric values; pass encode option to prepareX or supply encoders to encode categorical columns`,
+      );
     }
 
     // Determine requested encoding for this column
     let mode = null;
     if (encode === true) {
-      mode = "label";
-    } else if (typeof encode === "string") {
+      mode = 'label';
+    } else if (typeof encode === 'string') {
       mode = encode; // 'label' or 'onehot'
-    } else if (encode && typeof encode === "object") {
+    } else if (encode && typeof encode === 'object') {
       mode = encode[col] || null;
     }
 
     // Default fallback
-    if (!mode) mode = "label";
+    if (!mode) mode = 'label';
 
-    if (mode === "label") {
+    if (mode === 'label') {
       const le = new LabelEncoder();
       const vals = preFiltered.map((r) => r[col]);
       le.fit(vals);
-      encoders[col] = le;
+      resolvedEncoders[col] = le;
       finalColumnNames.push(col); // label encoder produces one numeric column with same name
-    } else if (mode === "onehot" || mode === "ohe") {
+    } else if (mode === 'onehot' || mode === 'ohe') {
       const ohe = new OneHotEncoder();
       const vals = preFiltered.map((r) => r[col]);
       ohe.fit(vals);
-      encoders[col] = ohe;
+      resolvedEncoders[col] = ohe;
       // expand finalColumnNames with category-specific names
       for (const cname of ohe.getFeatureNames(`${col}_`)) {
         finalColumnNames.push(cname);
@@ -486,7 +571,7 @@ export function prepareX({ columns, data, omit_missing = true, encode = null } =
   const X = preFiltered.map((row) => {
     const outRow = [];
     for (const col of columns) {
-      const enc = encoders[col];
+      const enc = resolvedEncoders[col];
       const v = row[col];
       if (!enc) {
         // Expect numeric
@@ -509,7 +594,13 @@ export function prepareX({ columns, data, omit_missing = true, encode = null } =
     return outRow;
   });
 
-  return { X, columns: finalColumnNames, n: X.length, rows: preFiltered, encoders };
+  return {
+    X,
+    columns: finalColumnNames,
+    n: X.length,
+    rows: preFiltered,
+    encoders: resolvedEncoders,
+  };
 }
 
 /**
@@ -530,10 +621,10 @@ export function oneHotEncodeTable({
   dropFirst = true,
   keepOriginal = false,
   prefix = true,
-  handleUnknown = "ignore"
+  handleUnknown = 'ignore',
 } = {}) {
   if (!data) {
-    throw new Error("oneHotEncodeTable: data parameter is required");
+    throw new Error('oneHotEncodeTable: data parameter is required');
   }
 
   const rows = normalize(data);
@@ -577,40 +668,47 @@ export function oneHotEncodeTable({
       categories,
       dropFirst,
       columnNames,
-      encoder
+      encoder,
     });
   }
 
   return {
     data: resultRows,
-    dummyInfo
+    dummyInfo,
   };
 }
 
 /**
  * Prepare feature matrix X and response vector y from table-like data.
  * Supports categorical encoding for X and y via `encode` option:
- *   prepareXY({ X, y, data, omit_missing = true, encode = null })
+ *   prepareXY({ X, y, data, naOmit = true, encode = null, encoders = null })
  *
  * encode semantics same as prepareX. For y, only 'label' encoding is supported
- * (maps categories to integer class labels).
+ * (maps categories to integer class labels). Supply `encoders` to reuse previously
+ * fitted encoders (e.g., from a training split) and keep label IDs consistent.
  *
  * Returns:
  *   { X, y, columnsX, n, rows, encoders } where encoders may include encoders.y
  */
-export function prepareXY({ X, y, data, omit_missing = true, encode = null } = {}) {
+export function prepareXY(
+  { X, y, data, naOmit, omit_missing, encode = null, encoders = null } = {},
+) {
+  // Normalize naOmit parameter (accept both naOmit and omit_missing)
+  const shouldOmitMissing = naOmit !== undefined
+    ? naOmit
+    : (omit_missing !== undefined ? omit_missing : true);
   if (!data) {
     throw new Error(
-      "Data argument is required when using column names for X/y",
+      'Data argument is required when using column names for X/y',
     );
   }
 
   // Normalize X param to columns array
-  const columnsX = (typeof X === "string") ? [X] : Array.isArray(X) ? X : null;
+  const columnsX = (typeof X === 'string') ? [X] : Array.isArray(X) ? X : null;
 
-  if (!columnsX || typeof y !== "string") {
+  if (!columnsX || typeof y !== 'string') {
     throw new Error(
-      "prepareXY expects X (string or array of strings) and y (string)",
+      'prepareXY expects X (string or array of strings) and y (string)',
     );
   }
 
@@ -625,53 +723,70 @@ export function prepareXY({ X, y, data, omit_missing = true, encode = null } = {
     }
   }
 
-  // If omit_missing: filter rows where any of the X columns or y are missing
-  const preFiltered = omit_missing
+  // If naOmit/omit_missing: filter rows where any of the X columns or y are missing
+  const preFiltered = shouldOmitMissing
     ? rows.filter((r) => {
       return columnsX.every((c) => !isMissing(r[c])) && !isMissing(r[y]);
     })
     : rows.slice();
 
   // For X we will reuse prepareX logic by delegating to prepareX with the same encode map
+  const providedEncoders = encoders || {};
+  const { y: providedYEncoder, ...providedXEncoders } = providedEncoders;
+
   const xPrep = prepareX({
     columns: columnsX,
     data: preFiltered,
-    omit_missing: false, // already filtered above
-    encode: encode,
+    naOmit: false, // already filtered above
+    encode,
+    encoders: providedXEncoders,
   });
 
   // Handle y: if numeric, simply extract; if non-numeric and encode indicates label encoding (or encode===true), apply LabelEncoder
   const yValsRaw = preFiltered.map((row) => row[y]);
   let yvec = [];
-  let encoders = xPrep.encoders || {};
+  let encodersOut = { ...xPrep.encoders };
+  const existingYEncoder = providedYEncoder;
   // decide y encoder
   const yNeedsEncoding = !yValsRaw.every((v) => isNumeric(v));
   if (yNeedsEncoding) {
     // Determine if user requested encoding for y
     let yMode = null;
-    if (encode === true) yMode = "label";
-    else if (typeof encode === "string") yMode = encode;
-    else if (encode && typeof encode === "object") yMode = encode[y] || null;
-    if (!yMode) {
-      // default to label encoding for y if non-numeric and no explicit instruction
-      yMode = "label";
-    }
-
-    if (yMode === "label") {
-      const le = new LabelEncoder();
-      le.fit(yValsRaw);
-      yvec = le.transform(yValsRaw);
-      encoders = { ...encoders, y: le };
+    if (existingYEncoder instanceof LabelEncoder) {
+      yvec = existingYEncoder.transform(yValsRaw);
+      encodersOut = { ...encodersOut, y: existingYEncoder };
     } else {
-      throw new Error("prepareXY: only 'label' encoding is supported for y (response)");
+      if (encode === true) yMode = 'label';
+      else if (typeof encode === 'string') yMode = encode;
+      else if (encode && typeof encode === 'object') yMode = encode[y] || null;
+      if (!yMode) {
+        // default to label encoding for y if non-numeric and no explicit instruction
+        yMode = 'label';
+      }
+
+      if (yMode === 'label') {
+        const le = new LabelEncoder();
+        le.fit(yValsRaw);
+        yvec = le.transform(yValsRaw);
+        encodersOut = { ...encodersOut, y: le };
+      } else {
+        throw new Error("prepareXY: only 'label' encoding is supported for y (response)");
+      }
     }
   } else {
     yvec = yValsRaw.map((v) => Number(v));
   }
 
   if (xPrep.X.length !== yvec.length) {
-    throw new Error("Mismatch between prepared X rows and y length");
+    throw new Error('Mismatch between prepared X rows and y length');
   }
 
-  return { X: xPrep.X, y: yvec, columnsX: xPrep.columns, n: xPrep.n, rows: preFiltered, encoders };
+  return {
+    X: xPrep.X,
+    y: yvec,
+    columnsX: xPrep.columns,
+    n: xPrep.n,
+    rows: preFiltered,
+    encoders: encodersOut,
+  };
 }

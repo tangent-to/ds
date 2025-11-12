@@ -53,6 +53,11 @@ lm.fit(X, y);
 const logit = new stats.GLM({ family: 'binomial', link: 'logit' });
 logit.fit(X, y);
 
+// Multiclass classification (one-vs-rest)
+const multiclass = new stats.GLM({ family: 'binomial', multiclass: 'ovr' });
+multiclass.fit({ X: ['feature1', 'feature2'], y: 'species', data });
+const predictions = multiclass.predict({ X: ['feature1', 'feature2'], data: newData });
+
 // Poisson regression
 const poisson = new stats.GLM({ family: 'poisson' });
 poisson.fit(X, y);
@@ -226,8 +231,8 @@ const config = plot.plotROC(yTrue, yPred);
 // Confusion matrix
 const config = plot.plotConfusionMatrix(yTrue, yPred);
 
-// PCA biplot
-const config = plot.plotPCA(pca.model);
+// PCA biplot (unified ordination plot)
+const config = plot.ordiplot(pca.model, { type: 'pca', showLoadings: true, loadingFactor: 0 });
 
 // GLM diagnostics
 const config = plot.diagnosticDashboard(model);
@@ -257,9 +262,15 @@ npm run test:coverage   # With coverage
 
 See [docs/API.md](docs/API.md) for complete API reference.
 
+### User Guides
+
+- [Multiclass Classification](examples/user-guide/05-multiclass.md) - Guide to multiclass GLMs
+- [Testing Against R](examples/user-guide/06-testing-against-R.md) - Comparing outputs with R
+
 ## Examples
 
-See `examples/` directory for working examples.
+See `examples/` directory for working examples:
+- `examples/stats/multinomial_glm_example.js` - Multiclass classification demo
 
 ## License
 

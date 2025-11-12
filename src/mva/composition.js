@@ -9,7 +9,7 @@
  * including log-ratio transformations (CLR, ALR, ILR) and related utilities.
  */
 
-import { matrix, transpose, multiply, subtract, add, sqrt, sum as matSum, log as matLog, exp as matExp, pow as matPow } from '../core/linalg.js';
+// All operations use built-in Math functions, no linalg imports needed
 
 /**
  * Validates that all values in the array are positive
@@ -19,7 +19,7 @@ import { matrix, transpose, multiply, subtract, add, sqrt, sum as matSum, log as
  */
 function _checkPositive(mat, name = 'mat') {
   const arr = Array.isArray(mat[0]) ? mat.flat() : mat;
-  if (arr.some(x => x < 0)) {
+  if (arr.some((x) => x < 0)) {
     throw new Error(`${name} cannot contain negative values`);
   }
 }
@@ -30,7 +30,7 @@ function _checkPositive(mat, name = 'mat') {
  * @returns {Array} Geometric means of each row
  */
 function _gmean(mat) {
-  return mat.map(row => {
+  return mat.map((row) => {
     const logSum = row.reduce((sum, x) => sum + Math.log(x), 0);
     return Math.exp(logSum / row.length);
   });
@@ -86,12 +86,12 @@ export function closure(mat) {
   const { mat: mat2d, was1d } = _ensureMatrix(mat);
   _checkPositive(mat2d, 'mat');
 
-  const closed = mat2d.map(row => {
+  const closed = mat2d.map((row) => {
     const rowSum = row.reduce((sum, x) => sum + x, 0);
     if (rowSum === 0) {
       throw new Error('Cannot close composition with zero sum');
     }
-    return row.map(x => x / rowSum);
+    return row.map((x) => x / rowSum);
   });
 
   return _restoreShape(closed, was1d);
@@ -107,8 +107,8 @@ export function multiplicativeReplacement(mat, delta = 1e-6) {
   const { mat: mat2d, was1d } = _ensureMatrix(mat);
   _checkPositive(mat2d, 'mat');
 
-  const replaced = mat2d.map(row => {
-    const numZeros = row.filter(x => x === 0).length;
+  const replaced = mat2d.map((row) => {
+    const numZeros = row.filter((x) => x === 0).length;
     if (numZeros === 0) {
       return row;
     }
@@ -116,7 +116,7 @@ export function multiplicativeReplacement(mat, delta = 1e-6) {
     const numNonZeros = row.length - numZeros;
     const adjustment = (delta * numZeros) / numNonZeros;
 
-    return row.map(x => x === 0 ? delta : x - adjustment);
+    return row.map((x) => x === 0 ? delta : x - adjustment);
   });
 
   return _restoreShape(closure(replaced), was1d);
@@ -132,7 +132,7 @@ export function power(mat, pow) {
   const { mat: mat2d, was1d } = _ensureMatrix(mat);
   _checkPositive(mat2d, 'mat');
 
-  const powered = mat2d.map(row => row.map(x => Math.pow(x, pow)));
+  const powered = mat2d.map((row) => row.map((x) => Math.pow(x, pow)));
 
   return _restoreShape(closure(powered), was1d);
 }
@@ -149,10 +149,10 @@ export function center(mat) {
   // Compute geometric mean across all rows
   const allValues = mat2d.flat();
   const overallGmean = Math.exp(
-    allValues.reduce((sum, x) => sum + Math.log(x), 0) / allValues.length
+    allValues.reduce((sum, x) => sum + Math.log(x), 0) / allValues.length,
   );
 
-  const centered = mat2d.map(row => row.map(x => x / overallGmean));
+  const centered = mat2d.map((row) => row.map((x) => x / overallGmean));
 
   return _restoreShape(closure(centered), was1d);
 }
@@ -180,9 +180,9 @@ export function clr(mat, handleZeros = false, delta = 1e-6) {
     _checkPositive(processed, 'mat');
   }
 
-  const transformed = processed.map(row => {
+  const transformed = processed.map((row) => {
     const gmean = Math.exp(row.reduce((sum, x) => sum + Math.log(x), 0) / row.length);
-    return row.map(x => Math.log(x / gmean));
+    return row.map((x) => Math.log(x / gmean));
   });
 
   return _restoreShape(transformed, was1d);
@@ -196,7 +196,7 @@ export function clr(mat, handleZeros = false, delta = 1e-6) {
 export function clrInv(mat) {
   const { mat: mat2d, was1d } = _ensureMatrix(mat);
 
-  const transformed = mat2d.map(row => row.map(x => Math.exp(x)));
+  const transformed = mat2d.map((row) => row.map((x) => Math.exp(x)));
 
   return _restoreShape(closure(transformed), was1d);
 }
@@ -228,7 +228,7 @@ export function alr(mat, denomIdx = null, handleZeros = false, delta = 1e-6) {
     throw new Error(`denomIdx ${denom} is out of bounds for dimension ${D}`);
   }
 
-  const transformed = processed.map(row => {
+  const transformed = processed.map((row) => {
     const result = [];
     for (let i = 0; i < D; i++) {
       if (i !== denom) {
@@ -254,7 +254,7 @@ export function alrInv(mat, denomIdx = null) {
   const D = Dm1 + 1;
   const denom = denomIdx === null ? D - 1 : denomIdx;
 
-  const transformed = mat2d.map(row => {
+  const transformed = mat2d.map((row) => {
     const result = new Array(D);
     let j = 0;
     for (let i = 0; i < D; i++) {
@@ -283,15 +283,15 @@ export function sbpBasis(partition) {
 
   for (let i = 0; i < numParts; i++) {
     const row = partition[i];
-    const nPlus = row.filter(x => x === 1).length;
-    const nMinus = row.filter(x => x === -1).length;
+    const nPlus = row.filter((x) => x === 1).length;
+    const nMinus = row.filter((x) => x === -1).length;
 
     if (nPlus === 0 || nMinus === 0) {
       throw new Error(`Partition row ${i} must have both +1 and -1 values`);
     }
 
     const coefficient = Math.sqrt((nPlus * nMinus) / (nPlus + nMinus));
-    const basisRow = row.map(x => {
+    const basisRow = row.map((x) => {
       if (x === 1) return coefficient / nPlus;
       if (x === -1) return -coefficient / nMinus;
       return 0;
@@ -334,8 +334,8 @@ export function ilr(mat, basis = null, handleZeros = false, delta = 1e-6) {
   const clrMat2d = _ensureMatrix(clrMat).mat;
 
   // Multiply CLR-transformed data by basis transpose
-  const transformed = clrMat2d.map(row => {
-    return psi.map(basisRow => {
+  const transformed = clrMat2d.map((row) => {
+    return psi.map((basisRow) => {
       return row.reduce((sum, val, idx) => sum + val * basisRow[idx], 0);
     });
   });
@@ -361,7 +361,7 @@ export function ilrInv(mat, basis = null) {
   }
 
   // Multiply ILR coordinates by basis (mat2d @ psi)
-  const clrMat = mat2d.map(row => {
+  const clrMat = mat2d.map((row) => {
     const result = new Array(D).fill(0);
     for (let j = 0; j < D; j++) {
       for (let i = 0; i < Dm1; i++) {
@@ -425,5 +425,5 @@ export default {
   ilr,
   ilrInv,
   sbpBasis,
-  inner
+  inner,
 };

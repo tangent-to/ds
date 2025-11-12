@@ -1,15 +1,12 @@
-# Gemfile for local Jekyll testing
 source "https://rubygems.org"
 
 gem "jekyll", "~> 4.3"
-gem "jekyll-theme-cayman"
+gem "just-the-docs", "0.8.2"
 
-# Jekyll plugins
 group :jekyll_plugins do
-  gem "jekyll-relative-links"
-  gem "jekyll-optional-front-matter"
-  gem "jekyll-readme-index"
-  gem "jekyll-titles-from-headings"
+  gem "jekyll-seo-tag"
+  gem "jekyll-github-metadata"
+  gem "jekyll-include-cache"
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem

@@ -1,11 +1,20 @@
-import { describe, it, expect } from 'vitest';
-import { normalize, toMatrix, toVector, toColumns, getColumns, filter, select } from '../src/core/table.js';
+import { describe, expect, it } from 'vitest';
+import {
+  filter,
+  getColumns,
+  normalize,
+  OneHotEncoder,
+  select,
+  toColumns,
+  toMatrix,
+  toVector,
+} from '../src/core/table.js';
 
 describe('table', () => {
   const sampleData = [
     { x: 1, y: 2, group: 'A' },
     { x: 2, y: 4, group: 'B' },
-    { x: 3, y: 6, group: 'A' }
+    { x: 3, y: 6, group: 'A' },
   ];
 
   describe('normalize', () => {
@@ -67,7 +76,7 @@ describe('table', () => {
 
   describe('filter', () => {
     it('should filter rows', () => {
-      const filtered = filter(sampleData, row => row.group === 'A');
+      const filtered = filter(sampleData, (row) => row.group === 'A');
       expect(filtered.length).toBe(2);
       expect(filtered[0].x).toBe(1);
     });
@@ -78,6 +87,28 @@ describe('table', () => {
       const selected = select(sampleData, ['x', 'group']);
       expect(Object.keys(selected[0])).toEqual(['x', 'group']);
       expect(selected[0].x).toBe(1);
+    });
+  });
+
+  describe('OneHotEncoder (declarative API)', () => {
+    it('should support dropFirst option', () => {
+      const encoder = new OneHotEncoder();
+      const data = [
+        { species: 'Adelie' },
+        { species: 'Chinstrap' },
+        { species: 'Gentoo' },
+      ];
+
+      const encoded = encoder.fitTransform({
+        data,
+        columns: ['species'],
+        dropFirst: true,
+      });
+
+      expect(encoded[0]).not.toHaveProperty('species_Adelie');
+      expect(encoded[1].species_Chinstrap).toBe(1);
+      expect(encoded[2].species_Gentoo).toBe(1);
+      expect(encoder.getFeatureNames()).toEqual(['species_Chinstrap', 'species_Gentoo']);
     });
   });
 });

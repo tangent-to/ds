@@ -3,8 +3,8 @@
  * Agglomerative clustering with various linkage methods
  */
 
-import { mean } from "../core/math.js";
-import { prepareX } from "../core/table.js";
+import { mean } from '../core/math.js';
+import { prepareX } from '../core/table.js';
 
 /**
  * Compute Euclidean distance between two points
@@ -97,9 +97,9 @@ function wardDistance(cluster1, cluster2, data) {
  * @returns {number} Distance between clusters
  */
 function clusterDistance(cluster1, cluster2, distances, linkage, data) {
-  if (linkage === "ward") {
+  if (linkage === 'ward') {
     if (!data) {
-      throw new Error("Ward linkage requires access to the original data matrix.");
+      throw new Error('Ward linkage requires access to the original data matrix.');
     }
     return wardDistance(cluster1, cluster2, data);
   }
@@ -112,11 +112,11 @@ function clusterDistance(cluster1, cluster2, distances, linkage, data) {
     }
   }
 
-  if (linkage === "single") {
+  if (linkage === 'single') {
     return Math.min(...dists);
-  } else if (linkage === "complete") {
+  } else if (linkage === 'complete') {
     return Math.max(...dists);
-  } else if (linkage === "average") {
+  } else if (linkage === 'average') {
     return mean(dists);
   }
 
@@ -129,22 +129,20 @@ function clusterDistance(cluster1, cluster2, distances, linkage, data) {
  * @param {Object} options - {linkage: 'single'|'complete'|'average'|'ward'}
  * @returns {Object} {dendrogram, distances}
  */
-export function fit(X, { linkage = "average" } = {}) {
+export function fit(X, { linkage = 'average' } = {}) {
   let data;
 
   if (
-    X && typeof X === "object" && !Array.isArray(X) && (X.data || X.columns)
+    X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)
   ) {
     const opts = X;
     const data_in = opts.data;
     const columns = opts.columns;
-    const omit_missing = opts.omit_missing !== undefined
-      ? opts.omit_missing
-      : true;
+    const omit_missing = opts.omit_missing !== undefined ? opts.omit_missing : true;
 
     if (!data_in) {
       throw new Error(
-        "Declarative call requires a `data` property (array-of-objects or Arquero-like table)",
+        'Declarative call requires a `data` property (array-of-objects or Arquero-like table)',
       );
     }
 
@@ -152,18 +150,23 @@ export function fit(X, { linkage = "average" } = {}) {
     data = prepared.X;
 
     linkage = opts.linkage !== undefined ? opts.linkage : linkage;
+  } else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+    // Array of objects (table-like data) - use prepareX
+    const prepared = prepareX({ columns: null, data: X, omit_missing: true });
+    data = prepared.X;
   } else if (Array.isArray(X)) {
+    // Array of arrays (numeric matrix)
     data = X.map((row) => Array.isArray(row) ? row : [row]);
   } else {
     throw new Error(
-      "X must be an array of rows or an options object containing `data`/`columns`",
+      'X must be an array of rows or an options object containing `data`/`columns`',
     );
   }
 
   const n = data.length;
 
   if (n < 2) {
-    throw new Error("Need at least 2 samples for clustering");
+    throw new Error('Need at least 2 samples for clustering');
   }
 
   const distances = computeDistanceMatrix(data);
@@ -273,7 +276,7 @@ export function cutHeight(model, height) {
   const { dendrogram, n } = model;
 
   if (height < 0) {
-    throw new Error("height must be non-negative");
+    throw new Error('height must be non-negative');
   }
 
   const clusterMap = new Map();
@@ -322,5 +325,5 @@ export function cutHeight(model, height) {
 export default {
   fit,
   cut,
-  cutHeight
+  cutHeight,
 };

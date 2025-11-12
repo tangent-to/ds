@@ -46,8 +46,7 @@ if (!mode || !dataPath) {
   process.exit(1);
 }
 
-const resolvePackagePath = (relativePath) =>
-  path.resolve(__dirname, '..', 'tangent-ds', relativePath);
+const resolvePackagePath = (relativePath) => path.resolve(__dirname, '..', relativePath);
 
 async function run() {
   const raw = await fs.readFile(dataPath, 'utf8');
@@ -65,7 +64,7 @@ async function run() {
       eigenvalues: model.eigenvalues,
       varianceExplained: model.varianceExplained,
       cumulativeVariance: cumulative,
-      scores: model.scores.slice(0, 5) // include a handful for spot checking
+      scores: model.scores.slice(0, 5), // include a handful for spot checking
     };
     console.log(JSON.stringify(response));
     return;
@@ -95,24 +94,32 @@ async function run() {
       xScores: toMatrix(model.xScores, 'cca'),
       yScores: toMatrix(model.yScores, 'cca'),
       columnsX: model.columnsX,
-      columnsY: model.columnsY
+      columnsY: model.columnsY,
     };
     console.log(JSON.stringify(response));
     return;
   }
 
   if (mode === 'lm') {
-    const stats = await import(resolvePackagePath('src/stats/index.js'));
-    const LmEstimator = stats.lm;
+    const { GLM } = await import(resolvePackagePath('src/stats/estimators/GLM.js'));
     const { X, y, options = {} } = payload;
-    const estimator = new LmEstimator(options);
+    const estimator = new GLM({ family: 'gaussian', ...options });
     estimator.fit(X, y);
-    const summary = estimator.summary();
+    const predictions = estimator.predict(X);
+    const residuals = y.map((yi, i) => yi - predictions[i]);
+    const ssRes = residuals.reduce((sum, r) => sum + r * r, 0);
+    const meanY = y.reduce((sum, val) => sum + val, 0) / y.length;
+    const ssTot = y.reduce((sum, val) => sum + (val - meanY) ** 2, 0);
+    const rSquared = ssTot === 0 ? 1 : 1 - ssRes / ssTot;
+    const p = estimator.coefficients.length;
+    const n = y.length;
+    const adjRSquared = (n - p) <= 0 ? rSquared : 1 - (1 - rSquared) * ((n - 1) / (n - p));
+    const residualStandardError = n - p > 0 ? Math.sqrt(ssRes / (n - p)) : 0;
     const response = {
-      coefficients: Array.from(estimator.coef),
-      rSquared: summary.rSquared,
-      adjRSquared: summary.adjRSquared,
-      residualStandardError: summary.residualStandardError
+      coefficients: Array.from(estimator.coefficients),
+      rSquared,
+      adjRSquared,
+      residualStandardError,
     };
     console.log(JSON.stringify(response));
     return;
@@ -126,7 +133,7 @@ async function run() {
     const response = {
       centroids: estimator.centroids,
       inertia: estimator.inertia,
-      labels: estimator.labels
+      labels: estimator.labels,
     };
     console.log(JSON.stringify(response));
     return;
@@ -144,22 +151,21 @@ async function run() {
       scores: model.scores.slice(0, 5),
       classes: model.classes,
       classMeanScores: model.classMeanScores,
-      classStdScores: model.classStdScores
+      classStdScores: model.classStdScores,
     };
     console.log(JSON.stringify(response));
     return;
   }
 
   if (mode === 'logit') {
-    const stats = await import(resolvePackagePath('src/stats/index.js'));
-    const LogitEstimator = stats.logit;
+    const { GLM } = await import(resolvePackagePath('src/stats/estimators/GLM.js'));
     const { X, y, options = {} } = payload;
-    const estimator = new LogitEstimator(options);
+    const estimator = new GLM({ family: 'binomial', link: 'logit', ...options });
     estimator.fit(X, y);
     const response = {
-      coefficients: estimator.coefficients,
+      coefficients: Array.from(estimator.coefficients),
       summary: estimator.summary(),
-      probs: estimator.predictProba(X)
+      probs: estimator.predict(X, { type: 'response' }),
     };
     console.log(JSON.stringify(response));
     return;
@@ -175,7 +181,7 @@ async function run() {
       coefficients: Array.from(summary.coefficients),
       degree: summary.degree,
       rSquared: summary.rSquared,
-      fitted: summary.fitted.slice(0, 10)
+      fitted: summary.fitted.slice(0, 10),
     };
     console.log(JSON.stringify(response));
     return;
@@ -189,7 +195,7 @@ async function run() {
     const preds = estimator.predict(X);
     const response = {
       predictions: preds.slice(0, 20),
-      summary: estimator.summary()
+      summary: estimator.summary(),
     };
     console.log(JSON.stringify(response));
     return;
@@ -204,7 +210,7 @@ async function run() {
     const proba = estimator.predictProba(payload.Xtest || X.slice(0, 10));
     const response = {
       predictions: preds,
-      probabilities: proba
+      probabilities: proba,
     };
     console.log(JSON.stringify(response));
     return;

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { GridSearchCV, RandomSearchCV, distributions } from '../src/ml/tuning.js';
+import { describe, expect, it } from 'vitest';
+import { distributions, GridSearchCV, RandomSearchCV } from '../src/ml/tuning.js';
 import { GLM } from '../src/stats/index.js';
 import * as metrics from '../src/ml/metrics.js';
 
@@ -13,8 +13,16 @@ function fitLinearModel(X, y, options = {}) {
 describe('Hyperparameter Tuning', () => {
   // Simple dataset
   const X = [
-    [1], [2], [3], [4], [5],
-    [6], [7], [8], [9], [10]
+    [1],
+    [2],
+    [3],
+    [4],
+    [5],
+    [6],
+    [7],
+    [8],
+    [9],
+    [10],
   ];
   const y = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
 
@@ -32,12 +40,12 @@ describe('Hyperparameter Tuning', () => {
 
       const paramGrid = {
         param1: [1, 2, 3],
-        param2: [0.1, 0.2]
+        param2: [0.1, 0.2],
       };
 
       const result = GridSearchCV(fitFn, scoreFn, X, y, paramGrid, {
         k: 3,
-        verbose: false
+        verbose: false,
       });
 
       expect(result.bestParams).toBeDefined();
@@ -62,12 +70,12 @@ describe('Hyperparameter Tuning', () => {
       };
 
       const paramGrid = {
-        dummyParam: [1, 2]
+        dummyParam: [1, 2],
       };
 
       const result = GridSearchCV(fitFn, scoreFn, X, y, paramGrid, {
         k: 2,
-        verbose: false
+        verbose: false,
       });
 
       // Should try all combinations
@@ -86,16 +94,16 @@ describe('Hyperparameter Tuning', () => {
 
       const paramGrid = {
         a: [1, 2],
-        b: [3, 4]
+        b: [3, 4],
       };
 
       const result = GridSearchCV(fitFn, scoreFn, X, y, paramGrid, {
         k: 2,
-        verbose: false
+        verbose: false,
       });
 
       expect(result.results).toHaveLength(4);
-      result.results.forEach(r => {
+      result.results.forEach((r) => {
         expect(r).toHaveProperty('params');
         expect(r).toHaveProperty('meanScore');
         expect(r).toHaveProperty('stdScore');
@@ -116,19 +124,43 @@ describe('Hyperparameter Tuning', () => {
       };
 
       const paramGrid = {
-        bad: [false, true]
+        bad: [false, true],
       };
 
       const result = GridSearchCV(fitFn, scoreFn, X, y, paramGrid, {
         k: 2,
-        verbose: false
+        verbose: false,
       });
 
       // Should have results for both, but one with error
       expect(result.results).toHaveLength(2);
-      const errorResult = result.results.find(r => r.params.bad === true);
+      const errorResult = result.results.find((r) => r.params.bad === true);
       expect(errorResult.error).toBeDefined();
       expect(errorResult.meanScore).toBe(-Infinity);
+    });
+
+    it('should work with declarative table descriptors', () => {
+      const data = [
+        { feature: 1, target: 1 },
+        { feature: 2, target: 2 },
+        { feature: 3, target: 3 },
+        { feature: 4, target: 4 },
+      ];
+
+      const fitFn = (Xtrain, ytrain, params) => fitLinearModel(Xtrain, ytrain, params);
+      const scoreFn = (model, Xtest, ytest) => metrics.r2(ytest, model.predict(Xtest));
+
+      const result = GridSearchCV(
+        fitFn,
+        scoreFn,
+        { data, X: ['feature'], y: 'target' },
+        null,
+        { dummy: [1, 2] },
+        { k: 2, verbose: false },
+      );
+
+      expect(result.bestModel).toBeDefined();
+      expect(result.results.length).toBe(2);
     });
   });
 
@@ -144,13 +176,13 @@ describe('Hyperparameter Tuning', () => {
 
       const paramDistributions = {
         param1: [1, 2, 3, 4, 5],
-        param2: [0.1, 0.2, 0.3]
+        param2: [0.1, 0.2, 0.3],
       };
 
       const result = RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, {
         nIter: 5,
         k: 2,
-        verbose: false
+        verbose: false,
       });
 
       expect(result.results).toHaveLength(5);
@@ -169,18 +201,18 @@ describe('Hyperparameter Tuning', () => {
 
       const paramDistributions = {
         param1: distributions.uniform(0, 1),
-        param2: distributions.choice([1, 2, 3])
+        param2: distributions.choice([1, 2, 3]),
       };
 
       const result = RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, {
         nIter: 3,
         k: 2,
-        verbose: false
+        verbose: false,
       });
 
       expect(result.results).toHaveLength(3);
       // Check that uniform parameters are between 0 and 1
-      result.results.forEach(r => {
+      result.results.forEach((r) => {
         expect(r.params.param1).toBeGreaterThanOrEqual(0);
         expect(r.params.param1).toBeLessThanOrEqual(1);
         expect([1, 2, 3]).toContain(r.params.param2);
@@ -197,16 +229,44 @@ describe('Hyperparameter Tuning', () => {
       };
 
       const paramDistributions = {
-        param: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        param: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       };
 
       const result = RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, {
         nIter: 4,
         k: 2,
-        verbose: false
+        verbose: false,
       });
 
       expect(result.results).toHaveLength(4);
+    });
+
+    it('should accept declarative table descriptors as input', () => {
+      const data = [
+        { feature: 1, target: 1 },
+        { feature: 2, target: 2 },
+        { feature: 3, target: 3 },
+        { feature: 4, target: 4 },
+      ];
+
+      const fitFn = (Xtrain, ytrain, params) => fitLinearModel(Xtrain, ytrain, params);
+      const scoreFn = (model, Xtest, ytest) => metrics.r2(ytest, model.predict(Xtest));
+
+      const paramDistributions = {
+        dummy: [1, 2, 3],
+      };
+
+      const result = RandomSearchCV(
+        fitFn,
+        scoreFn,
+        { data, X: ['feature'], y: 'target' },
+        null,
+        paramDistributions,
+        { nIter: 2, k: 2, verbose: false },
+      );
+
+      expect(result.results).toHaveLength(2);
+      expect(result.bestModel).toBeDefined();
     });
   });
 
@@ -244,7 +304,7 @@ describe('Hyperparameter Tuning', () => {
     it('should work end-to-end with real model', () => {
       // Larger dataset
       const XLarge = Array.from({ length: 50 }, (_, i) => [i + 1]);
-      const yLarge = XLarge.map(x => 2 * x[0] + 1 + (Math.random() - 0.5));
+      const yLarge = XLarge.map((x) => 2 * x[0] + 1 + (Math.random() - 0.5));
 
       const fitFn = (Xtrain, ytrain, params) => {
         // params doesn't affect linear model, but we test the flow
@@ -257,12 +317,12 @@ describe('Hyperparameter Tuning', () => {
 
       const paramGrid = {
         dummy1: [1, 2],
-        dummy2: [3, 4]
+        dummy2: [3, 4],
       };
 
       const result = GridSearchCV(fitFn, scoreFn, XLarge, yLarge, paramGrid, {
         k: 5,
-        verbose: false
+        verbose: false,
       });
 
       expect(result.bestScore).toBeGreaterThan(0.95); // Should fit very well

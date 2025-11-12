@@ -6,28 +6,142 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { pca, lda, rda } from '../tangent-ds/src/mva/index.js';
-import { prepareX } from '../tangent-ds/src/core/table.js';
+import { lda, pca, rda } from '../src/mva/index.js';
+import { prepareX } from '../src/core/table.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const rLibPath = path.join(__dirname, '.r-lib');
+if (!fs.existsSync(rLibPath)) {
+  fs.mkdirSync(rLibPath, { recursive: true });
+}
+const rEnv = {
+  ...process.env,
+  R_LIBS_USER: rLibPath,
+};
+
 const dataset = [
-  { species: 'Adelie', island: 'Torgersen', bill_length_mm: 39.1, bill_depth_mm: 18.7, flipper_length_mm: 181, body_mass_g: 3750 },
-  { species: 'Adelie', island: 'Torgersen', bill_length_mm: 39.5, bill_depth_mm: 17.4, flipper_length_mm: 186, body_mass_g: 3800 },
-  { species: 'Adelie', island: 'Dream', bill_length_mm: 40.3, bill_depth_mm: 18.0, flipper_length_mm: 195, body_mass_g: 3250 },
-  { species: 'Adelie', island: 'Dream', bill_length_mm: 36.7, bill_depth_mm: 19.3, flipper_length_mm: 193, body_mass_g: 3450 },
-  { species: 'Adelie', island: 'Biscoe', bill_length_mm: 38.9, bill_depth_mm: 17.8, flipper_length_mm: 181, body_mass_g: 3625 },
-  { species: 'Chinstrap', island: 'Dream', bill_length_mm: 46.5, bill_depth_mm: 17.9, flipper_length_mm: 195, body_mass_g: 3500 },
-  { species: 'Chinstrap', island: 'Dream', bill_length_mm: 50.0, bill_depth_mm: 19.5, flipper_length_mm: 196, body_mass_g: 3900 },
-  { species: 'Chinstrap', island: 'Dream', bill_length_mm: 51.3, bill_depth_mm: 18.2, flipper_length_mm: 193, body_mass_g: 3775 },
-  { species: 'Chinstrap', island: 'Dream', bill_length_mm: 45.4, bill_depth_mm: 17.0, flipper_length_mm: 190, body_mass_g: 3250 },
-  { species: 'Chinstrap', island: 'Dream', bill_length_mm: 52.7, bill_depth_mm: 19.8, flipper_length_mm: 197, body_mass_g: 3725 },
-  { species: 'Gentoo', island: 'Biscoe', bill_length_mm: 46.1, bill_depth_mm: 13.2, flipper_length_mm: 211, body_mass_g: 4500 },
-  { species: 'Gentoo', island: 'Biscoe', bill_length_mm: 50.0, bill_depth_mm: 16.3, flipper_length_mm: 230, body_mass_g: 5700 },
-  { species: 'Gentoo', island: 'Biscoe', bill_length_mm: 48.7, bill_depth_mm: 14.1, flipper_length_mm: 210, body_mass_g: 4450 },
-  { species: 'Gentoo', island: 'Biscoe', bill_length_mm: 45.2, bill_depth_mm: 14.8, flipper_length_mm: 215, body_mass_g: 5000 },
-  { species: 'Gentoo', island: 'Biscoe', bill_length_mm: 49.5, bill_depth_mm: 15.6, flipper_length_mm: 222, body_mass_g: 5250 },
+  {
+    species: 'Adelie',
+    island: 'Torgersen',
+    bill_length_mm: 39.1,
+    bill_depth_mm: 18.7,
+    flipper_length_mm: 181,
+    body_mass_g: 3750,
+  },
+  {
+    species: 'Adelie',
+    island: 'Torgersen',
+    bill_length_mm: 39.5,
+    bill_depth_mm: 17.4,
+    flipper_length_mm: 186,
+    body_mass_g: 3800,
+  },
+  {
+    species: 'Adelie',
+    island: 'Dream',
+    bill_length_mm: 40.3,
+    bill_depth_mm: 18.0,
+    flipper_length_mm: 195,
+    body_mass_g: 3250,
+  },
+  {
+    species: 'Adelie',
+    island: 'Dream',
+    bill_length_mm: 36.7,
+    bill_depth_mm: 19.3,
+    flipper_length_mm: 193,
+    body_mass_g: 3450,
+  },
+  {
+    species: 'Adelie',
+    island: 'Biscoe',
+    bill_length_mm: 38.9,
+    bill_depth_mm: 17.8,
+    flipper_length_mm: 181,
+    body_mass_g: 3625,
+  },
+  {
+    species: 'Chinstrap',
+    island: 'Dream',
+    bill_length_mm: 46.5,
+    bill_depth_mm: 17.9,
+    flipper_length_mm: 195,
+    body_mass_g: 3500,
+  },
+  {
+    species: 'Chinstrap',
+    island: 'Dream',
+    bill_length_mm: 50.0,
+    bill_depth_mm: 19.5,
+    flipper_length_mm: 196,
+    body_mass_g: 3900,
+  },
+  {
+    species: 'Chinstrap',
+    island: 'Dream',
+    bill_length_mm: 51.3,
+    bill_depth_mm: 18.2,
+    flipper_length_mm: 193,
+    body_mass_g: 3775,
+  },
+  {
+    species: 'Chinstrap',
+    island: 'Dream',
+    bill_length_mm: 45.4,
+    bill_depth_mm: 17.0,
+    flipper_length_mm: 190,
+    body_mass_g: 3250,
+  },
+  {
+    species: 'Chinstrap',
+    island: 'Dream',
+    bill_length_mm: 52.7,
+    bill_depth_mm: 19.8,
+    flipper_length_mm: 197,
+    body_mass_g: 3725,
+  },
+  {
+    species: 'Gentoo',
+    island: 'Biscoe',
+    bill_length_mm: 46.1,
+    bill_depth_mm: 13.2,
+    flipper_length_mm: 211,
+    body_mass_g: 4500,
+  },
+  {
+    species: 'Gentoo',
+    island: 'Biscoe',
+    bill_length_mm: 50.0,
+    bill_depth_mm: 16.3,
+    flipper_length_mm: 230,
+    body_mass_g: 5700,
+  },
+  {
+    species: 'Gentoo',
+    island: 'Biscoe',
+    bill_length_mm: 48.7,
+    bill_depth_mm: 14.1,
+    flipper_length_mm: 210,
+    body_mass_g: 4450,
+  },
+  {
+    species: 'Gentoo',
+    island: 'Biscoe',
+    bill_length_mm: 45.2,
+    bill_depth_mm: 14.8,
+    flipper_length_mm: 215,
+    body_mass_g: 5000,
+  },
+  {
+    species: 'Gentoo',
+    island: 'Biscoe',
+    bill_length_mm: 49.5,
+    bill_depth_mm: 15.6,
+    flipper_length_mm: 222,
+    body_mass_g: 5250,
+  },
 ];
 
 const numericColumns = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g'];
@@ -54,6 +168,7 @@ fs.writeFileSync(inputPath, JSON.stringify(payload), 'utf8');
 const rScriptPath = path.join(__dirname, 'penguins_reference.R');
 const rRun = spawnSync('Rscript', [rScriptPath, inputPath, outputPath], {
   stdio: 'inherit',
+  env: rEnv,
 });
 if (rRun.status !== 0) {
   throw new Error(`Rscript exited with status ${rRun.status}`);
@@ -274,7 +389,11 @@ function reorderMatrixColumns(matrix, desiredColumns) {
       return row[colIndex.get(name)];
     })
   );
-  return { data, rows: matrix.rows ? matrix.rows.slice() : undefined, columns: desiredColumns.slice() };
+  return {
+    data,
+    rows: matrix.rows ? matrix.rows.slice() : undefined,
+    columns: desiredColumns.slice(),
+  };
 }
 
 function comparePCA() {
@@ -306,21 +425,21 @@ function comparePCA() {
       `PCA scores (scaling ${sc})`,
       flattenMatrix(rScores.data),
       flattenMatrix(nodeScoresAligned),
-      tolerance
+      tolerance,
     );
 
     assertClose(
       `PCA loadings (scaling ${sc})`,
       flattenMatrix(rLoadings.data),
       flattenMatrix(nodeLoadingsAligned),
-      tolerance
+      tolerance,
     );
 
     assertClose(
       'PCA eigenvalues',
       rData.pca.eigenvalues,
       model.eigenvalues.map(Number),
-      tolerance
+      tolerance,
     );
   }
 }
@@ -348,7 +467,7 @@ function compareLDA() {
     const scoreColumns = rScores.columns;
     const nodeScoreMatrixRaw = buildScoreMatrix(
       model.scores.map(({ class: _class, ...rest }) => rest),
-      scoreColumns
+      scoreColumns,
     );
 
     const nodeScoresAligned = alignColumns(rScores, nodeScoreMatrixRaw);
@@ -357,7 +476,7 @@ function compareLDA() {
       `LDA scores (scaling ${sc})`,
       flattenMatrix(rScores.data),
       flattenMatrix(mappedScores),
-      tolerance
+      tolerance,
     );
 
     const nodeLoadings = buildLoadingMatrix(model.loadings, rLoadings.columns, rLoadings.rows);
@@ -367,7 +486,7 @@ function compareLDA() {
       `LDA loadings (scaling ${sc})`,
       flattenMatrix(rLoadings.data),
       flattenMatrix(mappedLoadings),
-      tolerance
+      tolerance,
     );
 
     const refEigen = rData.lda.eigenvalues;
@@ -380,7 +499,7 @@ function compareLDA() {
       'LDA eigenvalues',
       refEigenNorm,
       nodeEigenNorm,
-      tolerance
+      tolerance,
     );
   }
 }
@@ -419,15 +538,13 @@ function compareRDA() {
     const rSpeciesScores = toMatrixFromR(rEntry.species);
 
     const nodeScores = {
-      data: model.canonicalScores.map((row) =>
-        rSiteScores.columns.map((col) => Number(row[col]))
-      ),
+      data: model.canonicalScores.map((row) => rSiteScores.columns.map((col) => Number(row[col]))),
       columns: rSiteScores.columns,
     };
     const nodeLoadings = buildLoadingMatrix(
       model.canonicalLoadings,
       rSpeciesScores.columns,
-      rSpeciesScores.rows
+      rSpeciesScores.rows,
     );
     const alignedLoadings = alignColumns(rSpeciesScores, nodeLoadings);
     const mappedLoadings = alignByLinearTransform(alignedLoadings, rSpeciesScores.data);
@@ -435,14 +552,14 @@ function compareRDA() {
       `RDA species scores (scaling ${sc})`,
       flattenMatrix(rSpeciesScores.data),
       flattenMatrix(mappedLoadings),
-      tolerance
+      tolerance,
     );
 
     assertClose(
       'RDA eigenvalues',
       rData.rda.eigenvalues,
       model.eigenvalues.map(Number),
-      tolerance
+      tolerance,
     );
   }
 }

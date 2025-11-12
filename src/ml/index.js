@@ -15,7 +15,8 @@ import * as interpret from './interpret.js';
 import * as loss from './loss.js';
 import * as train from './train.js';
 import * as tuning from './tuning.js';
-import { Pipeline, GridSearchCV } from './pipeline.js';
+import { GridSearchCV, Pipeline } from './pipeline.js';
+import { Recipe, recipe } from './recipe.js';
 
 // Class-based estimators (scikit-like)
 import { KMeans } from './estimators/KMeans.js';
@@ -23,61 +24,52 @@ import { HCA } from './estimators/HCA.js';
 import { KNNClassifier, KNNRegressor } from './estimators/KNN.js';
 import { DecisionTreeClassifier, DecisionTreeRegressor } from './estimators/DecisionTree.js';
 import { RandomForestClassifier, RandomForestRegressor } from './estimators/RandomForest.js';
-import { GAMRegressor, GAMClassifier } from './estimators/GAM.js';
+import { GAMClassifier, GAMRegressor } from './estimators/GAM.js';
 import { PolynomialRegressor } from './estimators/PolynomialRegressor.js';
 import { MLPRegressor } from './estimators/MLPRegressor.js';
 
 export {
-  // K-means clustering (functional and class-based)
-  kmeans,
-  KMeans,
-  hca,
-  HCA,
-  KNNClassifier,
-  KNNRegressor,
   DecisionTreeClassifier,
   DecisionTreeRegressor,
-  RandomForestClassifier,
-  RandomForestRegressor,
-  GAMRegressor,
   GAMClassifier,
-  PolynomialRegressor,
-  MLPRegressor,
-
-  // Polynomial regression
-  polynomial,
-
-  // Silhouette analysis utilities
-  silhouette,
-
-  // Multilayer Perceptron
-  mlp,
-
-  // Validation utilities
-  validation,
-
-  // Preprocessing
-  preprocessing,
-
-  // Metrics
-  metrics,
-
-  // Utilities
-  utils,
-
+  GAMRegressor,
+  GridSearchCV,
+  HCA,
+  hca,
   // Model interpretation
   interpret,
-
+  KMeans,
+  // K-means clustering (functional and class-based)
+  kmeans,
+  KNNClassifier,
+  KNNRegressor,
   // Loss functions
   loss,
-
-  // Training utilities
-  train,
-
-  // Hyperparameter tuning
-  tuning,
-
+  // Metrics
+  metrics,
+  // Multilayer Perceptron
+  mlp,
+  MLPRegressor,
   // Pipeline
   Pipeline,
-  GridSearchCV
+  // Polynomial regression
+  polynomial,
+  PolynomialRegressor,
+  // Preprocessing
+  preprocessing,
+  RandomForestClassifier,
+  RandomForestRegressor,
+  Recipe,
+  // Recipe pattern for inspectable preprocessing
+  recipe,
+  // Silhouette analysis utilities
+  silhouette,
+  // Training utilities
+  train,
+  // Hyperparameter tuning
+  tuning,
+  // Utilities
+  utils,
+  // Validation utilities
+  validation,
 };

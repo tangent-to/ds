@@ -27,7 +27,7 @@ bundle exec jekyll serve
 
 The site will be available at `http://localhost:4000/tangent-ds/`
 
-## File Structure
+## File structure
 
 ```
 docs/
@@ -43,7 +43,7 @@ docs/
 └── README_DOCS.md       # This file
 ```
 
-## Regenerating Documentation
+## Regenerating documentation
 
 Documentation is automatically generated from source code JSDoc comments:
 
@@ -82,6 +82,6 @@ Available GitHub Pages themes:
 - `jekyll-theme-tactile`
 - `minima`
 
-## Live Site
+## Live site
 
 The documentation is published at: https://tangent-to.github.io/tangent-ds/

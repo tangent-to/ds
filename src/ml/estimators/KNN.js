@@ -6,7 +6,7 @@
  */
 
 import { Classifier, Regressor } from '../../core/estimators/estimator.js';
-import { prepareXY, prepareX } from '../../core/table.js';
+import { LabelEncoder, prepareX, prepareXY } from '../../core/table.js';
 import { mean } from '../../core/math.js';
 
 function euclideanDistance(a, b) {
@@ -29,12 +29,14 @@ function buildDataset(X, y, opts = {}) {
       X: X.X || X.columns,
       y: X.y,
       data: X.data,
-      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true
+      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
+      encoders: X.encoders,
     });
     return {
       X: prepared.X,
       y: prepared.y,
-      columns: prepared.columnsX
+      columns: prepared.columnsX,
+      encoders: prepared.encoders,
     };
   }
 
@@ -42,7 +44,7 @@ function buildDataset(X, y, opts = {}) {
     throw new Error('KNN fit expects arrays for X and y (or a table object).');
   }
 
-  return { X, y, columns: null };
+  return { X, y, columns: null, encoders: null };
 }
 
 function preparePredictInput(X, storedColumns, opts = {}) {
@@ -55,7 +57,7 @@ function preparePredictInput(X, storedColumns, opts = {}) {
     const prepared = prepareX({
       columns: X.X || X.columns || storedColumns,
       data: X.data,
-      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true
+      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
     });
     return prepared.X;
   }
@@ -87,12 +89,12 @@ class KNNBase {
 
   _fitBase(X, y) {
     const prepared = buildDataset(X, y);
-    this.X = prepared.X.map((row) =>
-      Array.isArray(row) ? row.map(Number) : [Number(row)]
-    );
+    this.X = prepared.X.map((row) => Array.isArray(row) ? row.map(Number) : [Number(row)]);
     this.y = prepared.y;
     this.columns = prepared.columns;
     this.fitted = true;
+    this.encoders = prepared.encoders || null;
+    return prepared;
   }
 
   _preparePredict(X) {
@@ -106,7 +108,7 @@ class KNNBase {
     if (this.weight === 'distance') {
       return neighbors.map(({ dist, label }) => ({
         label,
-        weight: dist === 0 ? 1e9 : 1 / dist
+        weight: dist === 0 ? 1e9 : 1 / dist,
       }));
     }
     return neighbors.map(({ label }) => ({ label, weight: 1 }));
@@ -117,15 +119,22 @@ export class KNNClassifier extends Classifier {
   constructor(opts = {}) {
     super(opts);
     this.knn = new KNNBase(opts);
+    this.labelEncoder = null;
   }
 
   fit(X, y = null) {
-    this.knn._fitBase(X, y);
+    const prepared = this.knn._fitBase(X, y);
+    if (prepared && prepared.encoders && prepared.encoders.y instanceof LabelEncoder) {
+      this.labelEncoder = prepared.encoders.y;
+    } else {
+      this.labelEncoder = null;
+    }
     return this;
   }
 
-  predict(X) {
-    const data = this.knn._preparePredict(X);
+  predict(X, { decode = !!this.labelEncoder } = {}) {
+    const prepared = this.knn._preparePredict(X);
+    const data = prepared.X || prepared;
     const predictions = [];
     const { X: trainX, y: trainY } = this.knn;
 
@@ -146,11 +155,16 @@ export class KNNClassifier extends Classifier {
       }
       predictions.push(bestLabel);
     }
+    if (decode && this.labelEncoder) {
+      return this.labelEncoder.inverseTransform(predictions);
+    }
+
     return predictions;
   }
 
-  predictProba(X) {
-    const data = this.knn._preparePredict(X);
+  predictProba(X, { decode = !!this.labelEncoder } = {}) {
+    const prepared = this.knn._preparePredict(X);
+    const data = prepared.X || prepared;
     const result = [];
     const { X: trainX, y: trainY } = this.knn;
     const labels = Array.from(new Set(trainY));
@@ -164,11 +178,20 @@ export class KNNClassifier extends Classifier {
         votes.set(label, (votes.get(label) || 0) + weight);
         total += weight;
       }
-      const proba = {};
-      labels.forEach((label) => {
-        proba[label] = total === 0 ? 0 : (votes.get(label) || 0) / total;
-      });
-      result.push(proba);
+      if (decode && this.labelEncoder) {
+        const decoded = {};
+        labels.forEach((label) => {
+          const name = this.labelEncoder.inverseTransform([label])[0];
+          decoded[name] = total === 0 ? 0 : (votes.get(label) || 0) / total;
+        });
+        result.push(decoded);
+      } else {
+        const proba = {};
+        labels.forEach((label) => {
+          proba[label] = total === 0 ? 0 : (votes.get(label) || 0) / total;
+        });
+        result.push(proba);
+      }
     }
     return result;
   }
@@ -213,5 +236,5 @@ export class KNNRegressor extends Regressor {
 
 export default {
   KNNClassifier,
-  KNNRegressor
+  KNNRegressor,
 };

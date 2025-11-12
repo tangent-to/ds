@@ -3,8 +3,9 @@
  * GridSearchCV and RandomSearchCV for model selection
  */
 
-import { kFold, crossValidate } from './validation.js';
+import { crossValidate, kFold } from './validation.js';
 import { random as seededRandom, setSeed } from './utils.js';
+import { prepareXY } from '../core/table.js';
 
 /**
  * Grid Search Cross-Validation
@@ -20,8 +21,10 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
   const {
     k = 5,
     shuffle = true,
-    verbose = true
+    verbose = true,
   } = options;
+
+  const { dataX, dataY } = normalizeTuningInput(X, y, 'GridSearchCV');
 
   // Generate all parameter combinations
   const paramCombinations = generateParamCombinations(paramGrid);
@@ -45,15 +48,15 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
 
     try {
       // Create folds for cross-validation
-      const folds = kFold(X, y, k, shuffle);
+      const folds = kFold(dataX, dataY, k, shuffle);
 
       // Cross-validate with these parameters
       const cvResult = crossValidate(
         (Xtrain, ytrain) => fitFn(Xtrain, ytrain, params),
         scoreFn,
-        X,
-        y,
-        folds
+        dataX,
+        dataY,
+        folds,
       );
 
       const meanScore = cvResult.meanScore;
@@ -63,7 +66,7 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
         params: { ...params },
         meanScore,
         stdScore,
-        scores: cvResult.scores
+        scores: cvResult.scores,
       });
 
       if (verbose) {
@@ -75,7 +78,7 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
         bestScore = meanScore;
         bestParams = { ...params };
         // Fit model on full dataset with best params
-        bestModel = fitFn(X, y, params);
+        bestModel = fitFn(dataX, dataY, params);
 
         if (verbose) {
           console.log(`  *** New best score! ***`);
@@ -89,7 +92,7 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
         params: { ...params },
         meanScore: -Infinity,
         stdScore: 0,
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -103,7 +106,7 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
     bestParams,
     bestScore,
     bestModel,
-    results
+    results,
   };
 }
 
@@ -123,7 +126,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
     k = 5,
     shuffle = true,
     seed = null,
-    verbose = true
+    verbose = true,
   } = options;
 
   if (seed !== null) {
@@ -133,6 +136,8 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
   if (verbose) {
     console.log(`RandomSearchCV: ${nIter} random parameter combinations to try`);
   }
+
+  const { dataX, dataY } = normalizeTuningInput(X, y, 'RandomSearchCV');
 
   let bestScore = -Infinity;
   let bestParams = null;
@@ -150,15 +155,15 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
 
     try {
       // Create folds for cross-validation
-      const folds = kFold(X, y, k, shuffle);
+      const folds = kFold(dataX, dataY, k, shuffle);
 
       // Cross-validate with these parameters
       const cvResult = crossValidate(
         (Xtrain, ytrain) => fitFn(Xtrain, ytrain, params),
         scoreFn,
-        X,
-        y,
-        folds
+        dataX,
+        dataY,
+        folds,
       );
 
       const meanScore = cvResult.meanScore;
@@ -168,7 +173,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
         params: { ...params },
         meanScore,
         stdScore,
-        scores: cvResult.scores
+        scores: cvResult.scores,
       });
 
       if (verbose) {
@@ -180,7 +185,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
         bestScore = meanScore;
         bestParams = { ...params };
         // Fit model on full dataset with best params
-        bestModel = fitFn(X, y, params);
+        bestModel = fitFn(dataX, dataY, params);
 
         if (verbose) {
           console.log(`  *** New best score! ***`);
@@ -194,7 +199,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
         params: { ...params },
         meanScore: -Infinity,
         stdScore: 0,
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -208,7 +213,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
     bestParams,
     bestScore,
     bestModel,
-    results
+    results,
   };
 }
 
@@ -328,5 +333,40 @@ export const distributions = {
    * @param {Array} options
    * @returns {Object}
    */
-  choice: (options) => ({ type: 'choice', options })
+  choice: (options) => ({ type: 'choice', options }),
 };
+
+function isTableDescriptor(input) {
+  return (
+    input &&
+    typeof input === 'object' &&
+    !Array.isArray(input) &&
+    (input.data || input.rows)
+  );
+}
+
+function normalizeTuningInput(X, y, context) {
+  if (isTableDescriptor(X)) {
+    if (Array.isArray(y)) {
+      throw new Error(`${context}: when X is a table descriptor, omit the separate y array.`);
+    }
+    if (!X.y) {
+      throw new Error(`${context}: table descriptors must include a y column name.`);
+    }
+    const prepared = prepareXY({
+      X: X.X || X.columns,
+      y: X.y,
+      data: X.data || X.rows,
+      naOmit: X.naOmit,
+      omit_missing: X.omit_missing,
+      encode: X.encode,
+    });
+    return { dataX: prepared.X, dataY: prepared.y };
+  }
+
+  if (!Array.isArray(X) || !Array.isArray(y)) {
+    throw new Error(`${context} expects array inputs for X and y`);
+  }
+
+  return { dataX: X, dataY: y };
+}

@@ -1,0 +1,123 @@
+name: Deploy Jekyll site to Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install nbconvert
+        run: |
+          pip install nbconvert jupyter
+
+      - name: Convert notebooks to markdown
+        run: |
+          # Create tutorials directory
+          mkdir -p docs/_tutorials
+
+          # Convert each notebook
+          jupyter nbconvert --to markdown \
+            --output-dir=docs/_tutorials \
+            examples/user-guide/01-ordination.ipynb
+
+          jupyter nbconvert --to markdown \
+            --output-dir=docs/_tutorials \
+            examples/user-guide/02-statistics.ipynb
+
+          jupyter nbconvert --to markdown \
+            --output-dir=docs/_tutorials \
+            examples/user-guide/03-clustering.ipynb
+
+          jupyter nbconvert --to markdown \
+            --output-dir=docs/_tutorials \
+            examples/user-guide/04-ml.ipynb
+
+          # Add front matter to converted files
+          for file in docs/_tutorials/*.md; do
+            filename=$(basename "$file" .md)
+            case "$filename" in
+              "01-ordination")
+                title="Ordination Analysis"
+                order=1
+                ;;
+              "02-statistics")
+                title="Statistical Analysis"
+                order=2
+                ;;
+              "03-clustering")
+                title="Clustering"
+                order=3
+                ;;
+              "04-ml")
+                title="Machine Learning"
+                order=4
+                ;;
+            esac
+
+            # Prepend front matter
+            temp_file=$(mktemp)
+            echo "---" > "$temp_file"
+            echo "layout: default" >> "$temp_file"
+            echo "title: \"$title\"" >> "$temp_file"
+            echo "parent: Tutorials" >> "$temp_file"
+            echo "nav_order: $order" >> "$temp_file"
+            echo "---" >> "$temp_file"
+            echo "" >> "$temp_file"
+            cat "$file" >> "$temp_file"
+            mv "$temp_file" "$file"
+          done
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+          cache-version: 0
+          working-directory: docs
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+
+      - name: Build with Jekyll
+        run: |
+          cd docs
+          bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        env:
+          JEKYLL_ENV: production
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

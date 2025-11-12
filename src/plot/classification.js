@@ -15,7 +15,7 @@ import { attachShow } from './show.js';
 export function plotROC(yTrue, yProb, {
   width = 500,
   height = 500,
-  showDiagonal = true
+  showDiagonal = true,
 } = {}) {
   // Compute ROC curve points
   const { fpr, tpr, thresholds, auc } = computeROC(yTrue, yProb);
@@ -23,7 +23,7 @@ export function plotROC(yTrue, yProb, {
   const data = fpr.map((fp, i) => ({
     fpr: fp,
     tpr: tpr[i],
-    threshold: thresholds[i]
+    threshold: thresholds[i],
   }));
 
   const config = {
@@ -32,11 +32,11 @@ export function plotROC(yTrue, yProb, {
     height,
     data: {
       curve: data,
-      auc
+      auc,
     },
     axes: {
       x: { label: 'False Positive Rate', domain: [0, 1], grid: true },
-      y: { label: 'True Positive Rate', domain: [0, 1], grid: true }
+      y: { label: 'True Positive Rate', domain: [0, 1], grid: true },
     },
     marks: [
       {
@@ -45,17 +45,17 @@ export function plotROC(yTrue, yProb, {
         x: 'fpr',
         y: 'tpr',
         stroke: 'steelblue',
-        strokeWidth: 2.5
-      }
+        strokeWidth: 2.5,
+      },
     ],
-    title: `ROC Curve (AUC = ${auc.toFixed(3)})`
+    title: `ROC Curve (AUC = ${auc.toFixed(3)})`,
   };
 
   // Add diagonal reference line
   if (showDiagonal) {
     config.data.diagonal = [
       { x: 0, y: 0 },
-      { x: 1, y: 1 }
+      { x: 1, y: 1 },
     ];
     config.marks.push({
       type: 'line',
@@ -64,7 +64,7 @@ export function plotROC(yTrue, yProb, {
       y: 'y',
       stroke: 'gray',
       strokeDasharray: '4,4',
-      strokeWidth: 1
+      strokeWidth: 1,
     });
   }
 
@@ -81,7 +81,7 @@ function computeROC(yTrue, yProb) {
     .sort((a, b) => b.prob - a.prob);
 
   const n = yTrue.length;
-  const nPos = yTrue.filter(y => y === 1).length;
+  const nPos = yTrue.filter((y) => y === 1).length;
   const nNeg = n - nPos;
 
   const fpr = [0];
@@ -125,7 +125,7 @@ function computeROC(yTrue, yProb) {
 export function plotPrecisionRecall(yTrue, yProb, {
   width = 500,
   height = 500,
-  showBaseline = true
+  showBaseline = true,
 } = {}) {
   // Compute precision-recall curve
   const { precision, recall, thresholds, avgPrecision } = computePrecisionRecall(yTrue, yProb);
@@ -133,7 +133,7 @@ export function plotPrecisionRecall(yTrue, yProb, {
   const data = recall.map((rec, i) => ({
     recall: rec,
     precision: precision[i],
-    threshold: thresholds[i]
+    threshold: thresholds[i],
   }));
 
   const config = {
@@ -142,11 +142,11 @@ export function plotPrecisionRecall(yTrue, yProb, {
     height,
     data: {
       curve: data,
-      avgPrecision
+      avgPrecision,
     },
     axes: {
       x: { label: 'Recall', domain: [0, 1], grid: true },
-      y: { label: 'Precision', domain: [0, 1], grid: true }
+      y: { label: 'Precision', domain: [0, 1], grid: true },
     },
     marks: [
       {
@@ -155,21 +155,21 @@ export function plotPrecisionRecall(yTrue, yProb, {
         x: 'recall',
         y: 'precision',
         stroke: 'steelblue',
-        strokeWidth: 2.5
-      }
+        strokeWidth: 2.5,
+      },
     ],
-    title: `Precision-Recall (AP = ${avgPrecision.toFixed(3)})`
+    title: `Precision-Recall (AP = ${avgPrecision.toFixed(3)})`,
   };
 
   // Add baseline
   if (showBaseline) {
-    const baseline = yTrue.filter(y => y === 1).length / yTrue.length;
+    const baseline = yTrue.filter((y) => y === 1).length / yTrue.length;
     config.marks.push({
       type: 'ruleY',
       y: baseline,
       stroke: 'gray',
       strokeDasharray: '4,4',
-      strokeWidth: 1
+      strokeWidth: 1,
     });
   }
 
@@ -192,7 +192,7 @@ function computePrecisionRecall(yTrue, yProb) {
 
   let tp = 0;
   let fp = 0;
-  const totalPos = yTrue.filter(y => y === 1).length;
+  const totalPos = yTrue.filter((y) => y === 1).length;
 
   for (let i = 0; i < n; i++) {
     if (sorted[i].y === 1) {
@@ -231,7 +231,7 @@ export function plotConfusionMatrix(yTrue, yPred, {
   width = 500,
   height = 500,
   normalize = false,
-  labels = null
+  labels = null,
 } = {}) {
   // Compute confusion matrix
   const { matrix, classes } = computeConfusionMatrix(yTrue, yPred);
@@ -239,14 +239,14 @@ export function plotConfusionMatrix(yTrue, yPred, {
   // Normalize if requested
   let displayMatrix = matrix;
   if (normalize) {
-    displayMatrix = matrix.map(row => {
+    displayMatrix = matrix.map((row) => {
       const sum = row.reduce((a, b) => a + b, 0);
-      return row.map(val => sum > 0 ? val / sum : 0);
+      return row.map((val) => sum > 0 ? val / sum : 0);
     });
   }
 
   // Prepare class labels
-  const classLabels = labels || classes.map(c => String(c));
+  const classLabels = labels || classes.map((c) => String(c));
 
   // Flatten matrix into data points
   const data = [];
@@ -257,7 +257,7 @@ export function plotConfusionMatrix(yTrue, yPred, {
         predicted: classLabels[j],
         count: displayMatrix[i][j],
         trueIdx: i,
-        predIdx: j
+        predIdx: j,
       });
     }
   }
@@ -269,11 +269,11 @@ export function plotConfusionMatrix(yTrue, yPred, {
     data: {
       cells: data,
       classes: classLabels,
-      normalized: normalize
+      normalized: normalize,
     },
     axes: {
       x: { label: 'Predicted Label' },
-      y: { label: 'True Label' }
+      y: { label: 'True Label' },
     },
     marks: [
       {
@@ -284,21 +284,21 @@ export function plotConfusionMatrix(yTrue, yPred, {
         fill: 'count',
         fillScale: {
           scheme: 'Blues',
-          domain: [0, normalize ? 1 : Math.max(...data.map(d => d.count))]
+          domain: [0, normalize ? 1 : Math.max(...data.map((d) => d.count))],
         },
-        inset: 0.5
+        inset: 0.5,
       },
       {
         type: 'text',
         data: 'cells',
         x: 'predicted',
         y: 'true',
-        text: d => normalize ? d.count.toFixed(2) : String(Math.round(d.count)),
-        fill: d => d.count > (normalize ? 0.5 : Math.max(...data.map(d => d.count)) / 2) ? 'white' : 'black',
-        fontSize: 12
-      }
+        text: (d) => normalize ? d.count.toFixed(2) : String(Math.round(d.count)),
+        fill: 'white',
+        fontSize: 12,
+      },
     ],
-    title: normalize ? 'Normalized Confusion Matrix' : 'Confusion Matrix'
+    title: normalize ? 'Normalized Confusion Matrix' : 'Confusion Matrix',
   };
 
   return attachShow(config);
@@ -337,14 +337,14 @@ function computeConfusionMatrix(yTrue, yPred) {
 export function plotCalibration(yTrue, yProb, {
   width = 500,
   height = 500,
-  nBins = 10
+  nBins = 10,
 } = {}) {
   // Compute calibration curve
   const { probMean, fracPositive } = computeCalibration(yTrue, yProb, nBins);
 
   const data = probMean.map((prob, i) => ({
     predicted: prob,
-    observed: fracPositive[i]
+    observed: fracPositive[i],
   }));
 
   const config = {
@@ -355,12 +355,12 @@ export function plotCalibration(yTrue, yProb, {
       curve: data,
       perfect: [
         { x: 0, y: 0 },
-        { x: 1, y: 1 }
-      ]
+        { x: 1, y: 1 },
+      ],
     },
     axes: {
       x: { label: 'Mean Predicted Probability', domain: [0, 1], grid: true },
-      y: { label: 'Fraction of Positives', domain: [0, 1], grid: true }
+      y: { label: 'Fraction of Positives', domain: [0, 1], grid: true },
     },
     marks: [
       {
@@ -370,7 +370,7 @@ export function plotCalibration(yTrue, yProb, {
         y: 'y',
         stroke: 'gray',
         strokeDasharray: '4,4',
-        strokeWidth: 1
+        strokeWidth: 1,
       },
       {
         type: 'line',
@@ -378,7 +378,7 @@ export function plotCalibration(yTrue, yProb, {
         x: 'predicted',
         y: 'observed',
         stroke: 'steelblue',
-        strokeWidth: 2.5
+        strokeWidth: 2.5,
       },
       {
         type: 'dot',
@@ -386,10 +386,10 @@ export function plotCalibration(yTrue, yProb, {
         x: 'predicted',
         y: 'observed',
         fill: 'steelblue',
-        r: 5
-      }
+        r: 5,
+      },
     ],
-    title: 'Calibration Curve'
+    title: 'Calibration Curve',
   };
 
   return attachShow(config);
@@ -416,7 +416,7 @@ function computeCalibration(yTrue, yProb, nBins) {
     if (bin.length === 0) continue;
 
     const meanProb = bin.reduce((sum, item) => sum + item.prob, 0) / bin.length;
-    const nPositive = bin.filter(item => item.y === 1).length;
+    const nPositive = bin.filter((item) => item.y === 1).length;
     const frac = nPositive / bin.length;
 
     probMean.push(meanProb);

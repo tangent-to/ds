@@ -2,7 +2,7 @@
  * Tests for Generalized Linear Models (GLM and GLMM)
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { GLM } from '../src/stats/estimators/GLM.js';
 
 describe('GLM - Gaussian Family', () => {
@@ -27,7 +27,7 @@ describe('GLM - Gaussian Family', () => {
 
     const predictions = model.predict([[6], [7]]);
     expect(predictions).toHaveLength(2);
-    expect(predictions.every(p => typeof p === 'number' && isFinite(p))).toBe(true);
+    expect(predictions.every((p) => typeof p === 'number' && isFinite(p))).toBe(true);
   });
 
   it('should work with multiple predictors', () => {
@@ -36,7 +36,7 @@ describe('GLM - Gaussian Family', () => {
       [2, 3],
       [3, 4],
       [4, 5],
-      [5, 6]
+      [5, 6],
     ];
     const y = [3, 5, 7, 9, 11];
 
@@ -88,6 +88,33 @@ describe('GLM - Gaussian Family', () => {
     const predictions2 = restored.predict(X);
     expect(predictions1).toEqual(predictions2);
   });
+
+  it('should align summary columns to the longest label', () => {
+    const longName = 'Beak Length (mm)';
+    const data = [
+      { [longName]: 10, mass: 100 },
+      { [longName]: 11, mass: 120 },
+      { [longName]: 12, mass: 150 },
+      { [longName]: 14, mass: 200 },
+    ];
+
+    const model = new GLM({ family: 'gaussian', link: 'identity' });
+    model.fit({
+      X: longName,
+      y: 'mass',
+      data,
+    });
+
+    const summary = model.summary();
+    const headerLine = summary.split('\n').find((line) =>
+      line.includes('Estimate') && line.includes('Std.Error')
+    );
+    const expectedPadding = ''.padEnd(longName.length + 2);
+    expect(headerLine.startsWith(expectedPadding)).toBe(true);
+
+    const longLine = summary.split('\n').find((line) => line.startsWith(longName));
+    expect(longLine.slice(longName.length, longName.length + 2)).toBe('  ');
+  });
 });
 
 describe('GLM - Binomial Family', () => {
@@ -111,7 +138,7 @@ describe('GLM - Binomial Family', () => {
     model.fit(X, y);
 
     const predictions = model.predict(X);
-    expect(predictions.every(p => p >= 0 && p <= 1)).toBe(true);
+    expect(predictions.every((p) => p >= 0 && p <= 1)).toBe(true);
   });
 
   it('should compute accuracy score', () => {
@@ -160,7 +187,7 @@ describe('GLM - Poisson Family', () => {
     model.fit(X, y);
 
     const predictions = model.predict(X);
-    expect(predictions.every(p => p > 0)).toBe(true);
+    expect(predictions.every((p) => p > 0)).toBe(true);
   });
 
   it('should handle count data correctly', () => {
@@ -171,7 +198,7 @@ describe('GLM - Poisson Family', () => {
     model.fit(X, y);
 
     const predictions = model.predict([[9], [10]]);
-    expect(predictions.every(p => p > 0 && isFinite(p))).toBe(true);
+    expect(predictions.every((p) => p > 0 && isFinite(p))).toBe(true);
   });
 });
 
@@ -196,7 +223,7 @@ describe('GLM - Gamma Family', () => {
     model.fit(X, y);
 
     const predictions = model.predict(X);
-    expect(predictions.every(p => p > 0)).toBe(true);
+    expect(predictions.every((p) => p > 0)).toBe(true);
   });
 
   it('should work with log link', () => {
@@ -232,7 +259,7 @@ describe('GLM - Inverse Gaussian Family', () => {
     model.fit(X, y);
 
     const predictions = model.predict(X);
-    expect(predictions.every(p => p > 0)).toBe(true);
+    expect(predictions.every((p) => p > 0)).toBe(true);
   });
 });
 
@@ -257,7 +284,7 @@ describe('GLM - Negative Binomial Family', () => {
     model.fit(X, y);
 
     const predictions = model.predict(X);
-    expect(predictions.every(p => p > 0)).toBe(true);
+    expect(predictions.every((p) => p > 0)).toBe(true);
   });
 });
 
@@ -284,7 +311,7 @@ describe('GLM - Summary Output', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      randomEffects: { intercept: groups }
+      randomEffects: { intercept: groups },
     });
     model.fit(X, y);
 
@@ -293,7 +320,7 @@ describe('GLM - Summary Output', () => {
     expect(summary).toContain('Fixed Effects:');
     expect(summary).toContain('Random Effects:');
     expect(summary).toContain('p-values for fixed effects in mixed models');
-    expect(summary).not.toContain('p-value'); // Should not have p-value column
+    expect(summary).not.toMatch(/\bp-value\b/); // Should not have p-value column header
   });
 });
 
@@ -304,7 +331,7 @@ describe('GLM - Table-style API', () => {
       { x1: 2, x2: 3, y: 5 },
       { x1: 3, x2: 4, y: 7 },
       { x1: 4, x2: 5, y: 9 },
-      { x1: 5, x2: 6, y: 11 }
+      { x1: 5, x2: 6, y: 11 },
     ];
 
     const model = new GLM({ family: 'gaussian' });
@@ -323,7 +350,7 @@ describe('GLM - Table-style API', () => {
       { x: 2, y: 4 },
       { x: 3, y: null },
       { x: 4, y: 8 },
-      { x: 5, y: 10 }
+      { x: 5, y: 10 },
     ];
 
     const model = new GLM({ family: 'gaussian' });
@@ -363,7 +390,7 @@ describe('GLM - Advanced Features', () => {
 
     const model = new GLM({
       family: 'gaussian',
-      regularization: { alpha: 0.1, l1_ratio: 0 } // Ridge regression
+      regularization: { alpha: 0.1, l1_ratio: 0 }, // Ridge regression
     });
     model.fit(X, y);
 
@@ -444,6 +471,6 @@ describe('GLM - Edge Cases', () => {
 
     expect(model.fitted).toBe(true);
     const predictions = model.predict(X);
-    expect(predictions.every(p => p >= 0)).toBe(true);
+    expect(predictions.every((p) => p >= 0)).toBe(true);
   });
 });

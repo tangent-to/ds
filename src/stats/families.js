@@ -1,3 +1,5 @@
+import { gamma as gammaFunc } from 'simple-statistics';
+
 /**
  * GLM Family Definitions
  *
@@ -7,6 +9,17 @@
  * - deviance function (goodness of fit)
  * - initialization and valid ranges
  */
+
+const EPS = 1e-12;
+const LOG_TWO_PI = Math.log(2 * Math.PI);
+
+function logGamma(x) {
+  return Math.log(gammaFunc(x));
+}
+
+function logFactorial(k) {
+  return logGamma(k + 1);
+}
 
 // ============================================================================
 // Link Functions
@@ -35,7 +48,7 @@ export class IdentityLink {
   }
 
   validmu(mu) {
-    return mu.every(m => isFinite(m));
+    return mu.every((m) => isFinite(m));
   }
 }
 
@@ -46,23 +59,23 @@ export class LogLink {
   name = 'log';
 
   linkfun(mu) {
-    return mu.map(m => Math.log(Math.max(m, 1e-10)));
+    return mu.map((m) => Math.log(Math.max(m, 1e-10)));
   }
 
   linkinv(eta) {
-    return eta.map(e => Math.exp(Math.min(e, 700))); // prevent overflow
+    return eta.map((e) => Math.exp(Math.min(e, 700))); // prevent overflow
   }
 
   mu_eta(eta) {
-    return eta.map(e => Math.exp(Math.min(e, 700)));
+    return eta.map((e) => Math.exp(Math.min(e, 700)));
   }
 
   valideta(eta) {
-    return eta.every(e => isFinite(e));
+    return eta.every((e) => isFinite(e));
   }
 
   validmu(mu) {
-    return mu.every(m => m > 0 && isFinite(m));
+    return mu.every((m) => m > 0 && isFinite(m));
   }
 }
 
@@ -73,32 +86,32 @@ export class LogitLink {
   name = 'logit';
 
   linkfun(mu) {
-    return mu.map(m => {
+    return mu.map((m) => {
       const p = Math.max(1e-10, Math.min(1 - 1e-10, m));
       return Math.log(p / (1 - p));
     });
   }
 
   linkinv(eta) {
-    return eta.map(e => {
+    return eta.map((e) => {
       const exp_e = Math.exp(Math.min(e, 700));
       return exp_e / (1 + exp_e);
     });
   }
 
   mu_eta(eta) {
-    return eta.map(e => {
+    return eta.map((e) => {
       const exp_e = Math.exp(Math.min(e, 700));
       return exp_e / Math.pow(1 + exp_e, 2);
     });
   }
 
   valideta(eta) {
-    return eta.every(e => isFinite(e));
+    return eta.every((e) => isFinite(e));
   }
 
   validmu(mu) {
-    return mu.every(m => m > 0 && m < 1 && isFinite(m));
+    return mu.every((m) => m > 0 && m < 1 && isFinite(m));
   }
 }
 
@@ -133,13 +146,13 @@ export class ProbitLink {
     if (Math.abs(q) <= 0.42) {
       const r = q * q;
       return q * (a0 + r * (a1 + r * (a2 + r * a3))) /
-             (1 + r * (b1 + r * (b2 + r * (b3 + r * b4))));
+        (1 + r * (b1 + r * (b2 + r * (b3 + r * b4))));
     } else {
       let r = p;
       if (q > 0) r = 1 - p;
       r = Math.sqrt(-Math.log(r));
       const val = (c0 + r * (c1 + r * (c2 + r * c3))) /
-                  (1 + r * (d1 + r * d2));
+        (1 + r * (d1 + r * d2));
       return q < 0 ? -val : val;
     }
   }
@@ -153,31 +166,32 @@ export class ProbitLink {
     // Standard normal CDF (approximation)
     const t = 1 / (1 + 0.2316419 * Math.abs(x));
     const d = 0.3989423 * Math.exp(-x * x / 2);
-    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    const p = d * t *
+      (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
     return x > 0 ? 1 - p : p;
   }
 
   linkfun(mu) {
-    return mu.map(m => {
+    return mu.map((m) => {
       const p = Math.max(1e-10, Math.min(1 - 1e-10, m));
       return this.qnorm(p);
     });
   }
 
   linkinv(eta) {
-    return eta.map(e => this.pnorm(e));
+    return eta.map((e) => this.pnorm(e));
   }
 
   mu_eta(eta) {
-    return eta.map(e => this.dnorm(e));
+    return eta.map((e) => this.dnorm(e));
   }
 
   valideta(eta) {
-    return eta.every(e => isFinite(e));
+    return eta.every((e) => isFinite(e));
   }
 
   validmu(mu) {
-    return mu.every(m => m > 0 && m < 1 && isFinite(m));
+    return mu.every((m) => m > 0 && m < 1 && isFinite(m));
   }
 }
 
@@ -188,23 +202,23 @@ export class InverseLink {
   name = 'inverse';
 
   linkfun(mu) {
-    return mu.map(m => 1 / Math.max(m, 1e-10));
+    return mu.map((m) => 1 / Math.max(m, 1e-10));
   }
 
   linkinv(eta) {
-    return eta.map(e => 1 / Math.max(Math.abs(e), 1e-10));
+    return eta.map((e) => 1 / Math.max(Math.abs(e), 1e-10));
   }
 
   mu_eta(eta) {
-    return eta.map(e => -1 / Math.max(e * e, 1e-10));
+    return eta.map((e) => -1 / Math.max(e * e, 1e-10));
   }
 
   valideta(eta) {
-    return eta.every(e => e !== 0 && isFinite(e));
+    return eta.every((e) => e !== 0 && isFinite(e));
   }
 
   validmu(mu) {
-    return mu.every(m => m > 0 && isFinite(m));
+    return mu.every((m) => m > 0 && isFinite(m));
   }
 }
 
@@ -215,23 +229,23 @@ export class InverseSquaredLink {
   name = 'inverse_squared';
 
   linkfun(mu) {
-    return mu.map(m => 1 / Math.max(m * m, 1e-10));
+    return mu.map((m) => 1 / Math.max(m * m, 1e-10));
   }
 
   linkinv(eta) {
-    return eta.map(e => 1 / Math.sqrt(Math.max(e, 1e-10)));
+    return eta.map((e) => 1 / Math.sqrt(Math.max(e, 1e-10)));
   }
 
   mu_eta(eta) {
-    return eta.map(e => -0.5 / Math.pow(Math.max(e, 1e-10), 1.5));
+    return eta.map((e) => -0.5 / Math.pow(Math.max(e, 1e-10), 1.5));
   }
 
   valideta(eta) {
-    return eta.every(e => e > 0 && isFinite(e));
+    return eta.every((e) => e > 0 && isFinite(e));
   }
 
   validmu(mu) {
-    return mu.every(m => m > 0 && isFinite(m));
+    return mu.every((m) => m > 0 && isFinite(m));
   }
 }
 
@@ -242,23 +256,23 @@ export class SqrtLink {
   name = 'sqrt';
 
   linkfun(mu) {
-    return mu.map(m => Math.sqrt(Math.max(m, 0)));
+    return mu.map((m) => Math.sqrt(Math.max(m, 0)));
   }
 
   linkinv(eta) {
-    return eta.map(e => e * e);
+    return eta.map((e) => e * e);
   }
 
   mu_eta(eta) {
-    return eta.map(e => 2 * e);
+    return eta.map((e) => 2 * e);
   }
 
   valideta(eta) {
-    return eta.every(e => e >= 0 && isFinite(e));
+    return eta.every((e) => e >= 0 && isFinite(e));
   }
 
   validmu(mu) {
-    return mu.every(m => m >= 0 && isFinite(m));
+    return mu.every((m) => m >= 0 && isFinite(m));
   }
 }
 
@@ -281,11 +295,15 @@ export class Gaussian {
     const links = {
       identity: new IdentityLink(),
       log: new LogLink(),
-      inverse: new InverseLink()
+      inverse: new InverseLink(),
     };
 
     if (!links[linkName]) {
-      throw new Error(`Invalid link '${linkName}' for Gaussian family. Valid links: ${Object.keys(links).join(', ')}`);
+      throw new Error(
+        `Invalid link '${linkName}' for Gaussian family. Valid links: ${
+          Object.keys(links).join(', ')
+        }`,
+      );
     }
 
     return links[linkName];
@@ -315,6 +333,16 @@ export class Gaussian {
   validmu(mu) {
     return this.link.validmu(mu);
   }
+
+  logLikelihood(y, mu, weights = null, phi = 1) {
+    const w = weights || Array(y.length).fill(1);
+    let logLik = 0;
+    for (let i = 0; i < y.length; i++) {
+      const diff = y[i] - mu[i];
+      logLik += -0.5 * w[i] * (Math.log(2 * Math.PI * phi) + (diff * diff) / phi);
+    }
+    return logLik;
+  }
 }
 
 /**
@@ -333,18 +361,22 @@ export class Binomial {
       logit: new LogitLink(),
       probit: new ProbitLink(),
       log: new LogLink(),
-      identity: new IdentityLink()
+      identity: new IdentityLink(),
     };
 
     if (!links[linkName]) {
-      throw new Error(`Invalid link '${linkName}' for Binomial family. Valid links: ${Object.keys(links).join(', ')}`);
+      throw new Error(
+        `Invalid link '${linkName}' for Binomial family. Valid links: ${
+          Object.keys(links).join(', ')
+        }`,
+      );
     }
 
     return links[linkName];
   }
 
   variance(mu) {
-    return mu.map(m => {
+    return mu.map((m) => {
       const p = Math.max(1e-10, Math.min(1 - 1e-10, m));
       return p * (1 - p);
     });
@@ -364,13 +396,24 @@ export class Binomial {
   initialize(y, weights = null) {
     const w = weights || Array(y.length).fill(1);
     // Initialize mu as (y + 0.5) / (n + 1) to avoid 0 and 1
-    const mu = y.map(yi => (yi + 0.5) / 2);
+    const mu = y.map((yi) => (yi + 0.5) / 2);
     const eta = this.link.linkfun(mu);
     return { mu, eta };
   }
 
   validmu(mu) {
     return this.link.validmu(mu);
+  }
+
+  logLikelihood(y, mu, weights = null) {
+    const w = weights || Array(y.length).fill(1);
+    let logLik = 0;
+    for (let i = 0; i < y.length; i++) {
+      const yi = y[i];
+      const mui = Math.min(Math.max(mu[i], EPS), 1 - EPS);
+      logLik += w[i] * (yi * Math.log(mui) + (1 - yi) * Math.log(1 - mui));
+    }
+    return logLik;
   }
 }
 
@@ -389,18 +432,22 @@ export class Poisson {
     const links = {
       log: new LogLink(),
       identity: new IdentityLink(),
-      sqrt: new SqrtLink()
+      sqrt: new SqrtLink(),
     };
 
     if (!links[linkName]) {
-      throw new Error(`Invalid link '${linkName}' for Poisson family. Valid links: ${Object.keys(links).join(', ')}`);
+      throw new Error(
+        `Invalid link '${linkName}' for Poisson family. Valid links: ${
+          Object.keys(links).join(', ')
+        }`,
+      );
     }
 
     return links[linkName];
   }
 
   variance(mu) {
-    return mu.map(m => Math.max(m, 1e-10));
+    return mu.map((m) => Math.max(m, 1e-10));
   }
 
   deviance(y, mu, weights = null) {
@@ -421,13 +468,24 @@ export class Poisson {
   initialize(y, weights = null) {
     const w = weights || Array(y.length).fill(1);
     // Initialize mu as y + 0.1 to avoid log(0)
-    const mu = y.map(yi => Math.max(yi + 0.1, 0.1));
+    const mu = y.map((yi) => Math.max(yi + 0.1, 0.1));
     const eta = this.link.linkfun(mu);
     return { mu, eta };
   }
 
   validmu(mu) {
     return this.link.validmu(mu);
+  }
+
+  logLikelihood(y, mu, weights = null) {
+    const w = weights || Array(y.length).fill(1);
+    let logLik = 0;
+    for (let i = 0; i < y.length; i++) {
+      const yi = Math.max(y[i], 0);
+      const mui = Math.max(mu[i], EPS);
+      logLik += w[i] * (yi * Math.log(mui) - mui - logFactorial(yi));
+    }
+    return logLik;
   }
 }
 
@@ -446,18 +504,22 @@ export class Gamma {
     const links = {
       inverse: new InverseLink(),
       log: new LogLink(),
-      identity: new IdentityLink()
+      identity: new IdentityLink(),
     };
 
     if (!links[linkName]) {
-      throw new Error(`Invalid link '${linkName}' for Gamma family. Valid links: ${Object.keys(links).join(', ')}`);
+      throw new Error(
+        `Invalid link '${linkName}' for Gamma family. Valid links: ${
+          Object.keys(links).join(', ')
+        }`,
+      );
     }
 
     return links[linkName];
   }
 
   variance(mu) {
-    return mu.map(m => {
+    return mu.map((m) => {
       const mui = Math.max(m, 1e-10);
       return mui * mui;
     });
@@ -477,13 +539,27 @@ export class Gamma {
   initialize(y, weights = null) {
     const w = weights || Array(y.length).fill(1);
     // Initialize mu as max(y, 0.1) to ensure positive values
-    const mu = y.map(yi => Math.max(yi, 0.1));
+    const mu = y.map((yi) => Math.max(yi, 0.1));
     const eta = this.link.linkfun(mu);
     return { mu, eta };
   }
 
   validmu(mu) {
     return this.link.validmu(mu);
+  }
+
+  logLikelihood(y, mu, weights = null, phi = 1) {
+    const w = weights || Array(y.length).fill(1);
+    const shape = 1 / Math.max(phi, EPS);
+    let logLik = 0;
+    for (let i = 0; i < y.length; i++) {
+      const yi = Math.max(y[i], EPS);
+      const mui = Math.max(mu[i], EPS);
+      const scale = mui * phi;
+      logLik += w[i] *
+        ((shape - 1) * Math.log(yi) - yi / scale - shape * Math.log(scale) - logGamma(shape));
+    }
+    return logLik;
   }
 }
 
@@ -503,18 +579,22 @@ export class InverseGaussian {
       inverse_squared: new InverseSquaredLink(),
       inverse: new InverseLink(),
       log: new LogLink(),
-      identity: new IdentityLink()
+      identity: new IdentityLink(),
     };
 
     if (!links[linkName]) {
-      throw new Error(`Invalid link '${linkName}' for InverseGaussian family. Valid links: ${Object.keys(links).join(', ')}`);
+      throw new Error(
+        `Invalid link '${linkName}' for InverseGaussian family. Valid links: ${
+          Object.keys(links).join(', ')
+        }`,
+      );
     }
 
     return links[linkName];
   }
 
   variance(mu) {
-    return mu.map(m => {
+    return mu.map((m) => {
       const mui = Math.max(m, 1e-10);
       return mui * mui * mui;
     });
@@ -534,13 +614,27 @@ export class InverseGaussian {
 
   initialize(y, weights = null) {
     const w = weights || Array(y.length).fill(1);
-    const mu = y.map(yi => Math.max(yi, 0.1));
+    const mu = y.map((yi) => Math.max(yi, 0.1));
     const eta = this.link.linkfun(mu);
     return { mu, eta };
   }
 
   validmu(mu) {
     return this.link.validmu(mu);
+  }
+
+  logLikelihood(y, mu, weights = null, phi = 1) {
+    const w = weights || Array(y.length).fill(1);
+    const lambda = 1 / Math.max(phi, EPS);
+    let logLik = 0;
+    for (let i = 0; i < y.length; i++) {
+      const yi = Math.max(y[i], EPS);
+      const mui = Math.max(mu[i], EPS);
+      const term = (lambda * Math.pow(yi - mui, 2)) / (2 * mui * mui * yi);
+      logLik += w[i] *
+        (0.5 * (Math.log(lambda) - LOG_TWO_PI - 3 * Math.log(yi)) - term);
+    }
+    return logLik;
   }
 }
 
@@ -560,18 +654,22 @@ export class NegativeBinomial {
     const links = {
       log: new LogLink(),
       identity: new IdentityLink(),
-      sqrt: new SqrtLink()
+      sqrt: new SqrtLink(),
     };
 
     if (!links[linkName]) {
-      throw new Error(`Invalid link '${linkName}' for NegativeBinomial family. Valid links: ${Object.keys(links).join(', ')}`);
+      throw new Error(
+        `Invalid link '${linkName}' for NegativeBinomial family. Valid links: ${
+          Object.keys(links).join(', ')
+        }`,
+      );
     }
 
     return links[linkName];
   }
 
   variance(mu) {
-    return mu.map(m => {
+    return mu.map((m) => {
       const mui = Math.max(m, 1e-10);
       return mui + (mui * mui) / this.theta;
     });
@@ -586,7 +684,8 @@ export class NegativeBinomial {
       const theta = this.theta;
 
       if (yi > 0) {
-        dev += 2 * w[i] * (yi * Math.log(yi / mui) - (yi + theta) * Math.log((yi + theta) / (mui + theta)));
+        dev += 2 * w[i] *
+          (yi * Math.log(yi / mui) - (yi + theta) * Math.log((yi + theta) / (mui + theta)));
       } else {
         dev += 2 * w[i] * theta * Math.log(theta / (mui + theta));
       }
@@ -596,7 +695,7 @@ export class NegativeBinomial {
 
   initialize(y, weights = null) {
     const w = weights || Array(y.length).fill(1);
-    const mu = y.map(yi => Math.max(yi + 0.1, 0.1));
+    const mu = y.map((yi) => Math.max(yi + 0.1, 0.1));
     const eta = this.link.linkfun(mu);
     return { mu, eta };
   }
@@ -618,9 +717,18 @@ export function createFamily(config) {
     config = { family: config };
   }
 
-  const { family, link, theta } = config;
+  const familyName = config.family || 'gaussian';
+  let { link, theta } = config;
+  const normalizedFamily = familyName.toLowerCase();
 
-  switch (family.toLowerCase()) {
+  if (
+    link === undefined || link === null ||
+    (typeof link === 'string' && link.toLowerCase() === 'canonical')
+  ) {
+    link = getCanonicalLink(normalizedFamily);
+  }
+
+  switch (normalizedFamily) {
     case 'gaussian':
     case 'normal':
       return new Gaussian(link);
@@ -638,7 +746,9 @@ export function createFamily(config) {
     case 'nb':
       return new NegativeBinomial(link, theta);
     default:
-      throw new Error(`Unknown family: ${family}. Valid families: gaussian, binomial, poisson, gamma, inverse_gaussian, negative_binomial`);
+      throw new Error(
+        `Unknown family: ${family}. Valid families: gaussian, binomial, poisson, gamma, inverse_gaussian, negative_binomial`,
+      );
   }
 }
 
@@ -652,7 +762,7 @@ export function getCanonicalLink(family) {
     poisson: 'log',
     gamma: 'inverse',
     inverse_gaussian: 'inverse_squared',
-    negative_binomial: 'log'
+    negative_binomial: 'log',
   };
 
   return canonical[family.toLowerCase()] || 'identity';

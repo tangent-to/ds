@@ -5,25 +5,35 @@ Observable Plot configuration generators for data analysis
 
 ## Exports
 
-- `plotPCA` (named)
-- `plotScree` (named)
-- `plotLDA` (named)
+### Ordination plots
+
+- `ordiplot` (named) - Unified ordination plot for PCA, LDA, and RDA with full parameter control including loadingFactor and predictorFactor
+- `plotScree` (named) - Scree plot for variance explained
+
+### Clustering plots
+
 - `plotHCA` (named)
 - `dendrogramLayout` (named)
-- `plotRDA` (named)
-- `ordiplot` (named)
+- `plotSilhouette` (named)
+
+### Classification metrics
+
 - `plotROC` (named)
 - `plotPrecisionRecall` (named)
 - `plotConfusionMatrix` (named)
 - `plotCalibration` (named)
+
+### Model interpretation
+
 - `plotFeatureImportance` (named)
 - `plotPartialDependence` (named)
 - `plotCorrelationMatrix` (named)
 - `plotResiduals` (named)
 - `plotQQ` (named)
 - `plotLearningCurve` (named)
-- `createD3DendrogramRenderer` (named)
-- `plotSilhouette` (named)
+
+### GLM diagnostics
+
 - `residualPlot` (named)
 - `scaleLocationPlot` (named)
 - `qqPlot` (named)
@@ -31,3 +41,7 @@ Observable Plot configuration generators for data analysis
 - `diagnosticDashboard` (named)
 - `effectPlot` (named)
 - `partialResidualPlot` (named)
+
+### Renderers
+
+- `createD3DendrogramRenderer` (named)
