@@ -6,9 +6,18 @@ import { normal, uniform, gamma, beta } from './distribution.js';
 import {
   oneSampleTTest as oneSampleTTestFn,
   twoSampleTTest as twoSampleTTestFn,
+  pairedTTest as pairedTTestFn,
   chiSquareTest as chiSquareTestFn,
   oneWayAnova as oneWayAnovaFn,
-  tukeyHSD as tukeyHSDFn
+  tukeyHSD as tukeyHSDFn,
+  mannWhitneyU as mannWhitneyUFn,
+  kruskalWallis as kruskalWallisFn,
+  cohensD,
+  etaSquared,
+  omegaSquared,
+  bonferroni,
+  holmBonferroni,
+  fdr
 } from './tests.js';
 
 import { GLM } from './estimators/GLM.js';
@@ -38,13 +47,21 @@ const chiSquareTest = ChiSquareTest;
 const oneWayAnova = OneWayAnova;
 const tukeyHSD = TukeyHSD;
 
+// Alias functional tests for camelCase export
+const pairedTTest = pairedTTestFn;
+const mannWhitneyU = mannWhitneyUFn;
+const kruskalWallis = kruskalWallisFn;
+
 // Preserve functional helpers grouped under a namespace for direct usage
 const hypothesis = {
   oneSampleTTest: oneSampleTTestFn,
   twoSampleTTest: twoSampleTTestFn,
+  pairedTTest: pairedTTestFn,
   chiSquareTest: chiSquareTestFn,
   oneWayAnova: oneWayAnovaFn,
-  tukeyHSD: tukeyHSDFn
+  tukeyHSD: tukeyHSDFn,
+  mannWhitneyU: mannWhitneyUFn,
+  kruskalWallis: kruskalWallisFn
 };
 
 export {
@@ -80,5 +97,20 @@ export {
   twoSampleTTest,
   chiSquareTest,
   oneWayAnova,
-  tukeyHSD
+  tukeyHSD,
+
+  // Additional statistical tests (functional only)
+  pairedTTest,
+  mannWhitneyU,
+  kruskalWallis,
+
+  // Effect sizes
+  cohensD,
+  etaSquared,
+  omegaSquared,
+
+  // Multiple testing corrections
+  bonferroni,
+  holmBonferroni,
+  fdr
 };

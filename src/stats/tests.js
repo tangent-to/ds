@@ -1,5 +1,5 @@
 /**
- * Statistical hypothesis tests
+ * Statistical hypothesis tests, effect sizes, and multiple testing corrections
  */
 
 import { mean, variance } from '../core/math.js';
@@ -44,13 +44,43 @@ export function oneSampleTTest(sample, { mu = 0, alternative = 'two-sided' } = {
   if (n < 2) {
     throw new Error('Sample must have at least 2 observations');
   }
-  
+
   const sampleMean = mean(sample);
   const sampleVar = variance(sample, true);
+
+  // Handle zero variance case
+  if (sampleVar === 0) {
+    // If variance is 0, all values are identical
+    // If mean equals mu, cannot reject null (p = 1)
+    // If mean differs from mu, strongly reject null (p ≈ 0)
+    const diff = sampleMean - mu;
+    if (Math.abs(diff) < 1e-10) {
+      return {
+        statistic: 0,
+        pValue: 1.0,
+        df: n - 1,
+        mean: sampleMean,
+        se: 0,
+        alternative
+      };
+    } else {
+      // All values are identical but different from mu
+      // This is strong evidence against H0
+      return {
+        statistic: diff > 0 ? Infinity : -Infinity,
+        pValue: 0.0,
+        df: n - 1,
+        mean: sampleMean,
+        se: 0,
+        alternative
+      };
+    }
+  }
+
   const se = Math.sqrt(sampleVar / n);
   const statistic = (sampleMean - mu) / se;
   const df = n - 1;
-  
+
   let pValue;
   if (alternative === 'two-sided') {
     pValue = 2 * (1 - tCDF(Math.abs(statistic), df));
@@ -59,7 +89,7 @@ export function oneSampleTTest(sample, { mu = 0, alternative = 'two-sided' } = {
   } else {
     pValue = 1 - tCDF(statistic, df);
   }
-  
+
   return {
     statistic,
     pValue,
@@ -157,15 +187,73 @@ export function chiSquareTest(observed, expected) {
  */
 function chiSquareCDF(x, k) {
   if (x <= 0) return 0;
-  
-  // For large k, use normal approximation
+
+  // Special cases for small df (exact formulas)
+  if (k === 1) {
+    // df=1: CDF = erf(sqrt(x/2))
+    const z = Math.sqrt(x);
+    return 2 * normal.cdf(z, { mean: 0, sd: 1 }) - 1;
+  }
+
+  if (k === 2) {
+    // df=2: CDF = 1 - exp(-x/2)
+    return 1 - Math.exp(-x / 2);
+  }
+
+  // For large k, use Wilson-Hilferty normal approximation
   if (k > 30) {
     const z = (Math.sqrt(2 * x) - Math.sqrt(2 * k - 1));
     return normal.cdf(z, { mean: 0, sd: 1 });
   }
-  
-  // Simple gamma approximation: chi-square(k) = gamma(k/2, 2)
-  return incompleteBeta(x / (x + k), k / 2, k / 2);
+
+  // For intermediate df, use incomplete gamma approximation
+  // This is still an approximation but better than incomplete beta
+  const a = k / 2;
+  const z = x / 2;
+
+  // Series expansion for lower incomplete gamma
+  let sum = 1;
+  let term = 1;
+  for (let i = 1; i < 100; i++) {
+    term *= z / (a + i - 1);
+    sum += term;
+    if (Math.abs(term) < 1e-10) break;
+  }
+
+  return 1 - Math.exp(-z) * Math.pow(z, a) * sum / gamma_func(a);
+}
+
+/**
+ * Gamma function approximation using Lanczos approximation
+ */
+function gamma_func(z) {
+  if (z < 0.5) {
+    // Reflection formula for z < 0.5
+    return Math.PI / (Math.sin(Math.PI * z) * gamma_func(1 - z));
+  }
+
+  // Lanczos coefficients for g=7
+  const g = 7;
+  const coef = [
+    0.99999999999980993,
+    676.5203681218851,
+    -1259.1392167224028,
+    771.32342877765313,
+    -176.61502916214059,
+    12.507343278686905,
+    -0.13857109526572012,
+    9.9843695780195716e-6,
+    1.5056327351493116e-7
+  ];
+
+  z -= 1;
+  let x = coef[0];
+  for (let i = 1; i < g + 2; i++) {
+    x += coef[i] / (z + i);
+  }
+
+  const t = z + g + 0.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
 }
 
 // ============= ANOVA =============
@@ -364,4 +452,364 @@ function approximateQCritical(alpha, k, df) {
 
   // Scale for studentized range (approximately sqrt(2) times t for pairwise)
   return tCrit * Math.sqrt(2);
+}
+
+// ============= Paired t-test =============
+
+/**
+ * Paired t-test for dependent samples
+ * @param {Array<number>} sample1 - First sample (before)
+ * @param {Array<number>} sample2 - Second sample (after)
+ * @param {Object} options - {mu: hypothesized mean difference (default 0), alternative: 'two-sided'|'less'|'greater'}
+ * @returns {Object} {statistic, pValue, df, meanDiff, se}
+ */
+export function pairedTTest(sample1, sample2, { mu = 0, alternative = 'two-sided' } = {}) {
+  if (sample1.length !== sample2.length) {
+    throw new Error('Paired samples must have equal length');
+  }
+
+  const n = sample1.length;
+  if (n < 2) {
+    throw new Error('Paired samples must have at least 2 observations');
+  }
+
+  // Compute differences
+  const differences = sample1.map((val, i) => val - sample2[i]);
+
+  // Perform one-sample t-test on differences
+  return oneSampleTTest(differences, { mu, alternative });
+}
+
+// ============= Non-parametric tests =============
+
+/**
+ * Mann-Whitney U test (Wilcoxon rank-sum test)
+ * Non-parametric alternative to two-sample t-test
+ * @param {Array<number>} sample1 - First sample
+ * @param {Array<number>} sample2 - Second sample
+ * @param {Object} options - {alternative: 'two-sided'|'less'|'greater'}
+ * @returns {Object} {statistic (U), pValue, alternative}
+ */
+export function mannWhitneyU(sample1, sample2, { alternative = 'two-sided' } = {}) {
+  const n1 = sample1.length;
+  const n2 = sample2.length;
+
+  if (n1 < 1 || n2 < 1) {
+    throw new Error('Both samples must have at least 1 observation');
+  }
+
+  // Combine samples with group labels
+  const combined = [
+    ...sample1.map(val => ({ value: val, group: 1 })),
+    ...sample2.map(val => ({ value: val, group: 2 }))
+  ];
+
+  // Sort by value
+  combined.sort((a, b) => a.value - b.value);
+
+  // Assign ranks (handle ties by averaging)
+  const ranks = [];
+  let i = 0;
+  while (i < combined.length) {
+    let j = i;
+    // Find all tied values
+    while (j < combined.length && combined[j].value === combined[i].value) {
+      j++;
+    }
+    // Average rank for ties
+    const avgRank = (i + 1 + j) / 2;
+    for (let k = i; k < j; k++) {
+      ranks.push(avgRank);
+    }
+    i = j;
+  }
+
+  // Sum ranks for group 1
+  let R1 = 0;
+  for (let k = 0; k < combined.length; k++) {
+    if (combined[k].group === 1) {
+      R1 += ranks[k];
+    }
+  }
+
+  // Calculate U statistic
+  const U1 = R1 - (n1 * (n1 + 1)) / 2;
+  const U2 = n1 * n2 - U1;
+  const U = Math.min(U1, U2);
+
+  // Normal approximation for p-value
+  const meanU = (n1 * n2) / 2;
+  const stdU = Math.sqrt((n1 * n2 * (n1 + n2 + 1)) / 12);
+
+  // Use U1 for directional tests
+  const z = (U1 - meanU) / stdU;
+
+  let pValue;
+  if (alternative === 'two-sided') {
+    pValue = 2 * (1 - normal.cdf(Math.abs(z), { mean: 0, sd: 1 }));
+  } else if (alternative === 'less') {
+    pValue = normal.cdf(z, { mean: 0, sd: 1 });
+  } else {
+    pValue = 1 - normal.cdf(z, { mean: 0, sd: 1 });
+  }
+
+  return {
+    statistic: U,
+    pValue,
+    alternative,
+    U1,
+    U2
+  };
+}
+
+/**
+ * Kruskal-Wallis H test
+ * Non-parametric alternative to one-way ANOVA
+ * @param {Array<Array<number>>} groups - Array of group samples
+ * @returns {Object} {statistic (H), pValue, df}
+ */
+export function kruskalWallis(groups) {
+  if (groups.length < 2) {
+    throw new Error('Need at least 2 groups');
+  }
+
+  const k = groups.length;
+  const groupSizes = groups.map(g => g.length);
+  const n = groupSizes.reduce((a, b) => a + b, 0);
+
+  // Combine all samples with group labels
+  const combined = [];
+  for (let i = 0; i < k; i++) {
+    for (const val of groups[i]) {
+      combined.push({ value: val, group: i });
+    }
+  }
+
+  // Sort by value
+  combined.sort((a, b) => a.value - b.value);
+
+  // Assign ranks (handle ties by averaging)
+  const ranks = new Array(combined.length);
+  let i = 0;
+  while (i < combined.length) {
+    let j = i;
+    // Find all tied values
+    while (j < combined.length && combined[j].value === combined[i].value) {
+      j++;
+    }
+    // Average rank for ties
+    const avgRank = (i + 1 + j) / 2;
+    for (let k = i; k < j; k++) {
+      ranks[k] = avgRank;
+    }
+    i = j;
+  }
+
+  // Calculate sum of ranks for each group
+  const rankSums = new Array(k).fill(0);
+  for (let i = 0; i < combined.length; i++) {
+    rankSums[combined[i].group] += ranks[i];
+  }
+
+  // Calculate H statistic
+  let H = 0;
+  for (let i = 0; i < k; i++) {
+    H += (rankSums[i] ** 2) / groupSizes[i];
+  }
+  H = (12 / (n * (n + 1))) * H - 3 * (n + 1);
+
+  // Degrees of freedom
+  const df = k - 1;
+
+  // p-value using chi-square approximation
+  const pValue = 1 - chiSquareCDF(H, df);
+
+  return {
+    statistic: H,
+    pValue,
+    df
+  };
+}
+
+// ============= Effect Sizes =============
+
+/**
+ * Cohen's d effect size for two samples
+ * Standardized mean difference
+ * @param {Array<number>} sample1 - First sample
+ * @param {Array<number>} sample2 - Second sample
+ * @param {Object} options - {pooled: use pooled SD (default true)}
+ * @returns {number} Cohen's d
+ */
+export function cohensD(sample1, sample2, { pooled = true } = {}) {
+  const mean1 = mean(sample1);
+  const mean2 = mean(sample2);
+  const n1 = sample1.length;
+  const n2 = sample2.length;
+
+  let sd;
+  if (pooled) {
+    // Pooled standard deviation
+    const var1 = variance(sample1, true);
+    const var2 = variance(sample2, true);
+    sd = Math.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2));
+  } else {
+    // Use SD of first sample (or average)
+    sd = Math.sqrt(variance(sample1, true));
+  }
+
+  return (mean1 - mean2) / sd;
+}
+
+/**
+ * Eta-squared effect size for ANOVA
+ * Proportion of total variance explained by group differences
+ * @param {Object} anovaResult - Result from oneWayAnova
+ * @returns {number} Eta-squared
+ */
+export function etaSquared(anovaResult) {
+  const { dfBetween, dfWithin, MSbetween, MSwithin } = anovaResult;
+  const SSbetween = MSbetween * dfBetween;
+  const SSwithin = MSwithin * dfWithin;
+  const SStotal = SSbetween + SSwithin;
+
+  // Handle case where there's no variance
+  if (SStotal === 0) return 0;
+
+  return SSbetween / SStotal;
+}
+
+/**
+ * Omega-squared effect size for ANOVA
+ * Less biased estimate than eta-squared
+ * @param {Object} anovaResult - Result from oneWayAnova
+ * @returns {number} Omega-squared
+ */
+export function omegaSquared(anovaResult) {
+  const { dfBetween, dfWithin, MSbetween, MSwithin } = anovaResult;
+  const SSbetween = MSbetween * dfBetween;
+  const SSwithin = MSwithin * dfWithin;
+  const SStotal = SSbetween + SSwithin;
+  const n = dfBetween + dfWithin + 1;
+
+  return (SSbetween - dfBetween * MSwithin) / (SStotal + MSwithin);
+}
+
+// ============= Multiple Testing Corrections =============
+
+/**
+ * Bonferroni correction for multiple testing
+ * @param {Array<number>} pValues - Array of p-values
+ * @param {number} alpha - Family-wise error rate (default 0.05)
+ * @returns {Object} {adjustedPValues, rejected, adjustedAlpha}
+ */
+export function bonferroni(pValues, alpha = 0.05) {
+  const m = pValues.length;
+  const adjustedAlpha = alpha / m;
+  const adjustedPValues = pValues.map(p => Math.min(p * m, 1));
+  const rejected = adjustedPValues.map(p => p <= alpha);
+
+  return {
+    adjustedPValues,
+    rejected,
+    adjustedAlpha
+  };
+}
+
+/**
+ * Holm-Bonferroni correction for multiple testing
+ * Sequentially rejective Bonferroni procedure (more powerful)
+ * @param {Array<number>} pValues - Array of p-values
+ * @param {number} alpha - Family-wise error rate (default 0.05)
+ * @returns {Object} {adjustedPValues, rejected}
+ */
+export function holmBonferroni(pValues, alpha = 0.05) {
+  const m = pValues.length;
+
+  // Create array with indices
+  const indexed = pValues.map((p, i) => ({ p, index: i }));
+
+  // Sort by p-value
+  indexed.sort((a, b) => a.p - b.p);
+
+  // Apply Holm-Bonferroni
+  const adjustedPValues = new Array(m);
+  const rejected = new Array(m);
+
+  for (let i = 0; i < m; i++) {
+    const adjustedP = Math.min(indexed[i].p * (m - i), 1);
+    // Ensure monotonicity
+    if (i > 0) {
+      adjustedPValues[indexed[i].index] = Math.max(adjustedP, adjustedPValues[indexed[i - 1].index]);
+    } else {
+      adjustedPValues[indexed[i].index] = adjustedP;
+    }
+  }
+
+  // Determine rejections
+  for (let i = 0; i < m; i++) {
+    rejected[indexed[i].index] = indexed[i].p <= alpha / (m - i);
+  }
+
+  return {
+    adjustedPValues,
+    rejected
+  };
+}
+
+/**
+ * Benjamini-Hochberg FDR correction
+ * Controls false discovery rate
+ * @param {Array<number>} pValues - Array of p-values
+ * @param {number} alpha - False discovery rate (default 0.05)
+ * @returns {Object} {adjustedPValues, rejected, criticalValues}
+ */
+export function fdr(pValues, alpha = 0.05) {
+  const m = pValues.length;
+
+  // Create array with indices
+  const indexed = pValues.map((p, i) => ({ p, index: i }));
+
+  // Sort by p-value
+  indexed.sort((a, b) => a.p - b.p);
+
+  // Apply Benjamini-Hochberg
+  const adjustedPValues = new Array(m);
+  const rejected = new Array(m).fill(false);
+  const criticalValues = new Array(m);
+
+  // Calculate adjusted p-values (from largest to smallest)
+  for (let i = m - 1; i >= 0; i--) {
+    const rank = i + 1;
+    const adjustedP = Math.min((indexed[i].p * m) / rank, 1);
+
+    // Ensure monotonicity
+    if (i < m - 1) {
+      adjustedPValues[indexed[i].index] = Math.min(adjustedP, adjustedPValues[indexed[i + 1].index]);
+    } else {
+      adjustedPValues[indexed[i].index] = adjustedP;
+    }
+
+    criticalValues[indexed[i].index] = (rank / m) * alpha;
+  }
+
+  // Find largest i where p(i) <= (i/m) * alpha
+  let maxRejected = -1;
+  for (let i = m - 1; i >= 0; i--) {
+    if (indexed[i].p <= ((i + 1) / m) * alpha) {
+      maxRejected = i;
+      break;
+    }
+  }
+
+  // Reject all hypotheses up to maxRejected
+  for (let i = 0; i <= maxRejected; i++) {
+    rejected[indexed[i].index] = true;
+  }
+
+  return {
+    adjustedPValues,
+    rejected,
+    criticalValues
+  };
 }
