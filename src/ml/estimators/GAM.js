@@ -8,47 +8,59 @@
  * - Statistical inference (EDF, p-values, confidence intervals)
  */
 
-import { Regressor, Classifier } from '../../core/estimators/estimator.js';
-import { prepareXY, prepareX } from '../../core/table.js';
+import { Classifier, Regressor } from '../../core/estimators/estimator.js';
+import { prepareX, prepareXY } from '../../core/table.js';
 import { fitGLM, predictGLM } from '../../stats/glm.js';
 import { Matrix } from 'ml-matrix';
 import {
-  computeKnots,
   bsplineBasis,
+  buildSmoothMatrix,
+  computeKnots,
   cubicRegressionSplineBasis,
-  truncatedPowerBasis,
   penaltyMatrix,
-  buildSmoothMatrix
+  truncatedPowerBasis,
 } from '../splines.js';
 import {
-  fitPenalizedRegression,
-  optimizeSmoothness,
+  computeConfidenceIntervals,
   computeSmoothEDF,
   computeSmoothPValues,
-  computeConfidenceIntervals,
-  createGAMSummary
+  createGAMSummary,
+  fitPenalizedRegression,
+  optimizeSmoothness,
 } from '../gam_utils.js';
 
 // Minimal lm/logit namespaces for compatibility
 const lm = {
   fit: (X, y, opts) => fitGLM(X, y, { ...opts, family: 'gaussian' }),
   predict: (coefficients, X, opts) => {
-    const model = { coefficients, family: 'gaussian', link: 'identity', intercept: opts?.intercept !== false, p: coefficients.length };
+    const model = {
+      coefficients,
+      family: 'gaussian',
+      link: 'identity',
+      intercept: opts?.intercept !== false,
+      p: coefficients.length,
+    };
     return predictGLM(model, X, opts);
   },
   summary: (model) => ({
     coefficients: model.coefficients,
     rSquared: model.pseudoR2 || model.rSquared,
-    adjRSquared: model.adjRSquared
-  })
+    adjRSquared: model.adjRSquared,
+  }),
 };
 
 const logit = {
   fit: (X, y, opts) => fitGLM(X, y, { ...opts, family: 'binomial', link: 'logit' }),
   predict: (coefficients, X, opts) => {
-    const model = { coefficients, family: 'binomial', link: 'logit', intercept: opts?.intercept !== false, p: coefficients.length };
+    const model = {
+      coefficients,
+      family: 'binomial',
+      link: 'logit',
+      intercept: opts?.intercept !== false,
+      p: coefficients.length,
+    };
     return predictGLM(model, X, opts);
-  }
+  },
 };
 
 function toNumericMatrix(X) {
@@ -66,18 +78,18 @@ function prepareDataset(X, y) {
       X: X.X || X.columns,
       y: X.y,
       data: X.data,
-      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true
+      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
     });
     return {
       X: toNumericMatrix(prepared.X),
       y: Array.isArray(prepared.y) ? prepared.y.slice() : Array.from(prepared.y),
-      columns: prepared.columnsX
+      columns: prepared.columnsX,
     };
   }
   return {
     X: toNumericMatrix(X),
     y: Array.isArray(y) ? y.slice() : Array.from(y),
-    columns: null
+    columns: null,
   };
 }
 
@@ -91,57 +103,24 @@ function preparePredictInput(X, columns) {
     const prepared = prepareX({
       columns: X.X || X.columns || columns,
       data: X.data,
-      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true
+      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
     });
     return toNumericMatrix(prepared.X);
   }
   return toNumericMatrix(X);
 }
 
-function computeKnots(values, nSplines) {
-  const sorted = Array.from(values).sort((a, b) => a - b);
-  const knots = [];
-  for (let i = 1; i < nSplines; i++) {
-    const idx = Math.floor((i / (nSplines + 1)) * (sorted.length - 1));
-    knots.push(sorted[idx]);
-  }
-  return knots;
-}
-
-function splineBasis(value, knots) {
-  const basis = [value];
-  for (const knot of knots) {
-    const diff = value - knot;
-    basis.push(diff > 0 ? diff * diff * diff : 0);
-  }
-  return basis;
-}
-
-function buildDesignMatrix(X, featureConfigs, includeIntercept = true) {
-  const design = [];
-  for (const row of X) {
-    const features = [];
-    if (includeIntercept) features.push(1);
-    for (let j = 0; j < row.length; j++) {
-      const basis = splineBasis(row[j], featureConfigs[j]);
-      features.push(...basis);
-    }
-    design.push(features);
-  }
-  return design;
-}
-
 class GAMBase {
   constructor({
     nSplines = 4,
-    basis = 'tp',  // 'bs', 'cr', 'tp' (B-spline, cubic regression, truncated power) - default 'tp' for backward compat
-    smoothMethod = null,  // 'GCV', 'REML', or null for no penalty (default: null for backward compat)
-    lambda = null,  // Fixed smoothing parameter (null = no penalty if smoothMethod is null)
-    penaltyOrder = 2,  // Order of difference penalty (1, 2, or 3)
-    knotPlacement = 'quantile',  // 'quantile' or 'uniform'
+    basis = 'tp', // 'bs', 'cr', 'tp' (B-spline, cubic regression, truncated power) - default 'tp' for backward compat
+    smoothMethod = null, // 'GCV', 'REML', or null for no penalty (default: null for backward compat)
+    lambda = null, // Fixed smoothing parameter (null = no penalty if smoothMethod is null)
+    penaltyOrder = 2, // Order of difference penalty (1, 2, or 3)
+    knotPlacement = 'quantile', // 'quantile' or 'uniform'
     task = 'regression',
     maxIter = 100,
-    tol = 1e-6
+    tol = 1e-6,
   } = {}) {
     // Legacy compatibility
     if (typeof nSplines === 'number' && nSplines < 10) {
@@ -165,14 +144,14 @@ class GAMBase {
     this.classMap = null;
 
     // Statistical inference
-    this.edf = null;  // Total effective degrees of freedom
-    this.smoothEDFs = null;  // EDF per smooth term
-    this.smoothPValues = null;  // P-values per smooth term
-    this.covMatrix = null;  // Covariance matrix of coefficients
-    this.hatMatrix = null;  // Hat matrix
-    this.rss = null;  // Residual sum of squares
-    this.r2 = null;  // R-squared
-    this.n = null;  // Training sample size
+    this.edf = null; // Total effective degrees of freedom
+    this.smoothEDFs = null; // EDF per smooth term
+    this.smoothPValues = null; // P-values per smooth term
+    this.covMatrix = null; // Covariance matrix of coefficients
+    this.hatMatrix = null; // Hat matrix
+    this.rss = null; // Residual sum of squares
+    this.r2 = null; // R-squared
+    this.n = null; // Training sample size
   }
 
   _buildSmoothConfigs(X) {
@@ -188,12 +167,12 @@ class GAMBase {
       configs.push({
         name: `s(x${j})`,
         knots: knots,
-        type: this.basis,  // Use 'type' to match buildSmoothMatrix
-        basis: this.basis,  // Keep for backwards compatibility
+        type: this.basis, // Use 'type' to match buildSmoothMatrix
+        basis: this.basis, // Keep for backwards compatibility
         degree: 3,
         penaltyOrder: this.penaltyOrder,
         variable: j,
-        nBasis: this._getNBasis(knots)
+        nBasis: this._getNBasis(knots),
       });
     }
 
@@ -203,13 +182,13 @@ class GAMBase {
   _getNBasis(knots) {
     // Number of basis functions depends on basis type
     if (this.basis === 'bs') {
-      return knots.length + 4;  // B-spline with degree 3
+      return knots.length + 4; // B-spline with degree 3
     } else if (this.basis === 'cr') {
-      return knots.length + 4;  // Cubic regression spline
+      return knots.length + 4; // Cubic regression spline
     } else if (this.basis === 'tp') {
-      return knots.length + 1;  // Truncated power basis
+      return knots.length + 1; // Truncated power basis
     }
-    return knots.length + 4;  // Default
+    return knots.length + 4; // Default
   }
 
   _designMatrix(X) {
@@ -232,7 +211,7 @@ export class GAMRegressor extends Regressor {
     const designMatrix = new Matrix(design);
     const n = designMatrix.rows;
     const p = designMatrix.columns;
-    this.gam.n = n;  // Store training sample size
+    this.gam.n = n; // Store training sample size
 
     // Build penalty matrix for all smooths
     const S = this._buildPenaltyMatrix();
@@ -245,11 +224,11 @@ export class GAMRegressor extends Regressor {
         method: this.gam.smoothMethod,
         lambdaMin: 1e-8,
         lambdaMax: 1e4,
-        nSteps: 20
+        nSteps: 20,
       });
       lambda = optResult.lambda;
     } else if (lambda === null) {
-      lambda = 0;  // No penalty
+      lambda = 0; // No penalty
     }
 
     // Fit penalized regression
@@ -284,7 +263,7 @@ export class GAMRegressor extends Regressor {
       residualDf,
       this.gam.rss,
       this.gam.covMatrix,
-      this.gam.smoothConfigs
+      this.gam.smoothConfigs,
     );
 
     this.fitted = true;
@@ -293,14 +272,14 @@ export class GAMRegressor extends Regressor {
 
   _buildPenaltyMatrix() {
     // Build block-diagonal penalty matrix for all smooth terms
-    let totalBasis = 1;  // Intercept
+    let totalBasis = 1; // Intercept
     for (const config of this.gam.smoothConfigs) {
       totalBasis += config.nBasis;
     }
 
     const S = Matrix.zeros(totalBasis, totalBasis);
 
-    let offset = 1;  // Skip intercept (no penalty on intercept)
+    let offset = 1; // Skip intercept (no penalty on intercept)
     for (const config of this.gam.smoothConfigs) {
       const nBasis = config.nBasis;
       const Si = penaltyMatrix(nBasis, this.gam.penaltyOrder);
@@ -359,7 +338,7 @@ export class GAMRegressor extends Regressor {
       fitted,
       se,
       lower: intervals.lower,
-      upper: intervals.upper
+      upper: intervals.upper,
     };
   }
 
@@ -378,7 +357,7 @@ export class GAMRegressor extends Regressor {
       p: this.gam.coef.length,
       r2: this.gam.r2,
       smoothConfigs: this.gam.smoothConfigs,
-      covMatrix: this.gam.covMatrix
+      covMatrix: this.gam.covMatrix,
     });
   }
 }
@@ -397,7 +376,7 @@ export class GAMClassifier extends Classifier {
     }
     this.gam.classMap = {
       [classes[0]]: 0,
-      [classes[1]]: 1
+      [classes[1]]: 1,
     };
     this.gam.classes = classes;
     const numericY = prepared.y.map((label) => this.gam.classMap[label]);
@@ -426,7 +405,7 @@ export class GAMClassifier extends Classifier {
       intercept: false,
       maxIter: this.gam.maxIter,
       tol: this.gam.tol,
-      regularization: avgPenalty > 0 ? { alpha: avgPenalty, l1_ratio: 0 } : null
+      regularization: avgPenalty > 0 ? { alpha: avgPenalty, l1_ratio: 0 } : null,
     });
     this.gam.coef = logitResult.coefficients;
     this.gam.model = logitResult;
@@ -436,14 +415,14 @@ export class GAMClassifier extends Classifier {
 
   _buildPenaltyMatrix() {
     // Build block-diagonal penalty matrix for all smooth terms
-    let totalBasis = 1;  // Intercept
+    let totalBasis = 1; // Intercept
     for (const config of this.gam.smoothConfigs) {
       totalBasis += config.nBasis;
     }
 
     const S = Matrix.zeros(totalBasis, totalBasis);
 
-    let offset = 1;  // Skip intercept (no penalty on intercept)
+    let offset = 1; // Skip intercept (no penalty on intercept)
     for (const config of this.gam.smoothConfigs) {
       const nBasis = config.nBasis;
       const Si = penaltyMatrix(nBasis, this.gam.penaltyOrder);
@@ -494,5 +473,5 @@ export class GAMClassifier extends Classifier {
 
 export default {
   GAMRegressor,
-  GAMClassifier
+  GAMClassifier,
 };
