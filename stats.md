@@ -4,6 +4,7 @@ Stats module exports
 
 ## Exports
 
+- `pairedTTest` (const)
 - `// Distributions
   normal` (named)
 - `uniform` (named)
@@ -27,7 +28,28 @@ Stats module exports
 - `TwoSampleTTest` (named)
 - `ChiSquareTest` (named)
 - `OneWayAnova` (named)
+- `TukeyHSD` (named)
 - `oneSampleTTest` (named)
 - `twoSampleTTest` (named)
 - `chiSquareTest` (named)
 - `oneWayAnova` (named)
+- `tukeyHSD` (named)
+- `// Additional statistical tests (functional only)
+  pairedTTest` (named)
+- `mannWhitneyU` (named)
+- `kruskalWallis` (named)
+- `// Effect sizes
+  cohensD` (named)
+- `etaSquared` (named)
+- `omegaSquared` (named)
+- `// Multiple testing corrections
+  bonferroni` (named)
+- `holmBonferroni` (named)
+- `fdr` (named)
+- `// Assumption testing
+  leveneTest` (named)
+- `// Correlation tests
+  pearsonCorrelation` (named)
+- `spearmanCorrelation` (named)
+- `// Contingency tables
+  fisherExactTest` (named)

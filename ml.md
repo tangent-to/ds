@@ -4,6 +4,9 @@ Machine Learning module exports
 
 ## Exports
 
+- `// Clustering algorithms
+  DBSCAN` (named)
+- `dbscan` (named)
 - `DecisionTreeClassifier` (named)
 - `DecisionTreeRegressor` (named)
 - `GAMClassifier` (named)
@@ -11,6 +14,20 @@ Machine Learning module exports
 - `GridSearchCV` (named)
 - `HCA` (named)
 - `hca` (named)
+- `// Imputation (missing data)
+  SimpleImputer` (named)
+- `KNNImputer` (named)
+- `IterativeImputer` (named)
+- `simpleImpute` (named)
+- `knnImpute` (named)
+- `iterativeImpute` (named)
+- `// Outlier detection
+  IsolationForest` (named)
+- `LocalOutlierFactor` (named)
+- `MahalanobisDistance` (named)
+- `isolationForest` (named)
+- `localOutlierFactor` (named)
+- `mahalanobisDistance` (named)
 - `// Model interpretation
   interpret` (named)
 - `KMeans` (named)
@@ -22,6 +39,10 @@ Machine Learning module exports
   loss` (named)
 - `// Metrics
   metrics` (named)
+- `// Distance metrics
+  distances` (named)
+- `// Impurity criteria
+  criteria` (named)
 - `// Multilayer Perceptron
   mlp` (named)
 - `MLPRegressor` (named)
