@@ -11,6 +11,8 @@ import * as mlp from './mlp.js';
 import * as validation from './validation.js';
 import * as preprocessing from './preprocessing.js';
 import * as metrics from './metrics.js';
+import * as distances from './distances.js';
+import * as criteria from './criteria.js';
 import * as utils from './utils.js';
 import * as interpret from './interpret.js';
 import * as loss from './loss.js';
@@ -72,6 +74,10 @@ export {
   loss,
   // Metrics
   metrics,
+  // Distance metrics
+  distances,
+  // Impurity criteria
+  criteria,
   // Multilayer Perceptron
   mlp,
   MLPRegressor,
