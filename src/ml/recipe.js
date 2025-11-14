@@ -42,9 +42,12 @@
 import * as table from '../core/table.js';
 import { trainTestSplit as splitData } from './validation.js';
 import { MinMaxScaler, StandardScaler } from './preprocessing.js';
+import { SimpleImputer, KNNImputer, IterativeImputer } from './impute.js';
+import { IsolationForest, LocalOutlierFactor, MahalanobisDistance } from './outliers.js';
 import * as pca from '../mva/pca.js';
 import * as lda from '../mva/lda.js';
 import * as rda from '../mva/rda.js';
+import { mean, std } from '../core/math.js';
 
 /**
  * Create a preprocessing recipe
@@ -79,13 +82,47 @@ export function recipe({ data, X, y }) {
  * 4. Inspected at every step to understand transformations
  *
  * Supported preprocessing operations:
+ *
+ * Data Cleaning:
  * - parseNumeric(): Convert string columns to numbers
  * - clean(): Remove rows with invalid categorical values
+ *
+ * Missing Value Imputation:
+ * - imputeMean(): Impute with mean values
+ * - imputeMedian(): Impute with median values
+ * - imputeMode(): Impute with mode (most frequent)
+ * - imputeKNN(): Impute using K-Nearest Neighbors
+ * - imputeIterative(): Impute using iterative MICE algorithm
+ *
+ * Outlier Handling:
+ * - removeOutliers(): Remove outliers using isolation forest, LOF, or Mahalanobis distance
+ * - clipOutliers(): Clip outliers using IQR method
+ *
+ * Encoding:
  * - oneHot(): One-hot encode categorical columns
+ *
+ * Scaling:
  * - scale(): Scale numeric columns (standard or minmax)
- * - pca(): Principal Component Analysis for dimensionality reduction
- * - lda(): Linear Discriminant Analysis for supervised dimensionality reduction
- * - rda(): Redundancy Analysis for constrained ordination
+ *
+ * Feature Engineering:
+ * - createInteractions(): Create pairwise interaction features
+ * - createPolynomial(): Create polynomial features
+ * - binContinuous(): Bin continuous variables into discrete categories
+ *
+ * Dimensionality Reduction:
+ * - pca(): Principal Component Analysis
+ * - lda(): Linear Discriminant Analysis (supervised)
+ * - rda(): Redundancy Analysis (constrained ordination)
+ *
+ * Sampling:
+ * - upsample(): Oversample minority class for imbalanced data
+ * - downsample(): Undersample majority class for imbalanced data
+ *
+ * Feature Selection:
+ * - selectByVariance(): Remove low-variance features
+ * - selectByCorrelation(): Remove highly correlated features
+ *
+ * Data Splitting:
  * - split(): Split into train/test sets
  *
  * @example
@@ -571,6 +608,883 @@ export class Recipe {
   }
 
   /**
+   * Impute missing values with mean
+   * @param {Array<string>} columns - Columns to impute
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.imputeMean(['age', 'income']);
+   */
+  imputeMean(columns) {
+    this.steps.push({
+      name: 'imputeMean',
+      type: 'impute',
+      columns,
+      transformer: null,
+      fn: (data, transformer) => {
+        if (!transformer) {
+          // Fit imputer
+          const imputer = new SimpleImputer({ strategy: 'mean' });
+          imputer.fit({ data, columns });
+          return {
+            data: imputer.transform({ data, columns }).data,
+            transformer: imputer,
+          };
+        } else {
+          // Transform using fitted imputer
+          return {
+            data: transformer.transform({ data, columns }).data,
+            transformer,
+          };
+        }
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Impute missing values with median
+   * @param {Array<string>} columns - Columns to impute
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.imputeMedian(['age', 'price']);
+   */
+  imputeMedian(columns) {
+    this.steps.push({
+      name: 'imputeMedian',
+      type: 'impute',
+      columns,
+      transformer: null,
+      fn: (data, transformer) => {
+        if (!transformer) {
+          // Fit imputer
+          const imputer = new SimpleImputer({ strategy: 'median' });
+          imputer.fit({ data, columns });
+          return {
+            data: imputer.transform({ data, columns }).data,
+            transformer: imputer,
+          };
+        } else {
+          // Transform using fitted imputer
+          return {
+            data: transformer.transform({ data, columns }).data,
+            transformer,
+          };
+        }
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Impute missing values with mode (most frequent value)
+   * @param {Array<string>} columns - Columns to impute
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.imputeMode(['category', 'status']);
+   */
+  imputeMode(columns) {
+    this.steps.push({
+      name: 'imputeMode',
+      type: 'impute',
+      columns,
+      transformer: null,
+      fn: (data, transformer) => {
+        if (!transformer) {
+          // Fit imputer
+          const imputer = new SimpleImputer({ strategy: 'most_frequent' });
+          imputer.fit({ data, columns });
+          return {
+            data: imputer.transform({ data, columns }).data,
+            transformer: imputer,
+          };
+        } else {
+          // Transform using fitted imputer
+          return {
+            data: transformer.transform({ data, columns }).data,
+            transformer,
+          };
+        }
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Impute missing values using KNN
+   * @param {Array<string>} columns - Columns to impute
+   * @param {Object} options - KNN imputer options
+   * @param {number} options.k - Number of neighbors (default 5)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.imputeKNN(['age', 'income'], { k: 3 });
+   */
+  imputeKNN(columns, { k = 5 } = {}) {
+    this.steps.push({
+      name: 'imputeKNN',
+      type: 'impute',
+      columns,
+      k,
+      transformer: null,
+      fn: (data, transformer) => {
+        if (!transformer) {
+          // Fit imputer
+          const imputer = new KNNImputer({ k });
+          imputer.fit({ data, columns });
+          return {
+            data: imputer.transform({ data, columns }).data,
+            transformer: imputer,
+          };
+        } else {
+          // Transform using fitted imputer
+          return {
+            data: transformer.transform({ data, columns }).data,
+            transformer,
+          };
+        }
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Impute missing values using iterative imputation (MICE)
+   * @param {Array<string>} columns - Columns to impute
+   * @param {Object} options - Iterative imputer options
+   * @param {number} options.maxIter - Maximum iterations (default 10)
+   * @param {number} options.tol - Convergence tolerance (default 0.001)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.imputeIterative(['age', 'income'], { maxIter: 20 });
+   */
+  imputeIterative(columns, { maxIter = 10, tol = 0.001 } = {}) {
+    this.steps.push({
+      name: 'imputeIterative',
+      type: 'impute',
+      columns,
+      maxIter,
+      tol,
+      transformer: null,
+      fn: (data, transformer) => {
+        if (!transformer) {
+          // Fit imputer
+          const imputer = new IterativeImputer({ maxIter, tol });
+          imputer.fit({ data, columns });
+          return {
+            data: imputer.transform({ data, columns }).data,
+            transformer: imputer,
+          };
+        } else {
+          // Transform using fitted imputer
+          return {
+            data: transformer.transform({ data, columns }).data,
+            transformer,
+          };
+        }
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Remove outliers from the dataset
+   * @param {Array<string>} columns - Columns to check for outliers
+   * @param {Object} options - Outlier detection options
+   * @param {string} options.method - Detection method: 'isolation_forest', 'lof', or 'mahalanobis'
+   * @param {number} options.contamination - Expected proportion of outliers (default 0.1)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.removeOutliers(['price', 'quantity'], { method: 'isolation_forest', contamination: 0.05 });
+   */
+  removeOutliers(columns, { method = 'isolation_forest', contamination = 0.1 } = {}) {
+    this.steps.push({
+      name: 'removeOutliers',
+      type: 'filter',
+      columns,
+      method,
+      contamination,
+      fn: (data) => {
+        let detector;
+        if (method === 'isolation_forest') {
+          detector = new IsolationForest({ contamination });
+        } else if (method === 'lof') {
+          detector = new LocalOutlierFactor({ contamination });
+        } else if (method === 'mahalanobis') {
+          detector = new MahalanobisDistance({ contamination });
+        } else {
+          throw new Error(`Unknown outlier detection method: ${method}`);
+        }
+
+        detector.fit({ data, columns });
+        const predictions = detector.predict({ data, columns });
+
+        // Keep only inliers (prediction === 1)
+        const rows = table.normalize(data);
+        return rows.filter((_, i) => predictions[i] === 1);
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Clip outliers using IQR method
+   * @param {Array<string>} columns - Columns to clip
+   * @param {Object} options - Clipping options
+   * @param {number} options.multiplier - IQR multiplier (default 1.5)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.clipOutliers(['price', 'age'], { multiplier: 1.5 });
+   */
+  clipOutliers(columns, { multiplier = 1.5 } = {}) {
+    this.steps.push({
+      name: 'clipOutliers',
+      type: 'transform',
+      columns,
+      multiplier,
+      transformer: null,
+      fn: (data, transformer) => {
+        const rows = table.normalize(data);
+
+        if (!transformer) {
+          // Fit: calculate bounds for each column
+          const bounds = {};
+          for (const col of columns) {
+            const values = rows
+              .map((row) => row[col])
+              .filter((v) => v !== null && v !== undefined && !isNaN(v))
+              .map(Number)
+              .sort((a, b) => a - b);
+
+            if (values.length === 0) {
+              bounds[col] = { lower: -Infinity, upper: Infinity };
+              continue;
+            }
+
+            const q1Index = Math.floor(values.length * 0.25);
+            const q3Index = Math.floor(values.length * 0.75);
+            const q1 = values[q1Index];
+            const q3 = values[q3Index];
+            const iqr = q3 - q1;
+
+            bounds[col] = {
+              lower: q1 - multiplier * iqr,
+              upper: q3 + multiplier * iqr,
+            };
+          }
+
+          // Transform: clip values
+          const clipped = rows.map((row) => {
+            const newRow = { ...row };
+            for (const col of columns) {
+              const val = row[col];
+              if (val !== null && val !== undefined && !isNaN(val)) {
+                const numVal = Number(val);
+                const { lower, upper } = bounds[col];
+                newRow[col] = Math.max(lower, Math.min(upper, numVal));
+              }
+            }
+            return newRow;
+          });
+
+          return {
+            data: clipped,
+            transformer: bounds,
+          };
+        } else {
+          // Transform using fitted bounds
+          const clipped = rows.map((row) => {
+            const newRow = { ...row };
+            for (const col of columns) {
+              const val = row[col];
+              if (val !== null && val !== undefined && !isNaN(val)) {
+                const numVal = Number(val);
+                const { lower, upper } = transformer[col];
+                newRow[col] = Math.max(lower, Math.min(upper, numVal));
+              }
+            }
+            return newRow;
+          });
+
+          return {
+            data: clipped,
+            transformer,
+          };
+        }
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Create pairwise interaction features
+   * @param {Array<string>} columns - Columns to create interactions from
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.createInteractions(['feature1', 'feature2', 'feature3']);
+   * // Creates: feature1_x_feature2, feature1_x_feature3, feature2_x_feature3
+   */
+  createInteractions(columns) {
+    this.steps.push({
+      name: 'createInteractions',
+      type: 'transform',
+      columns,
+      fn: (data) => {
+        const rows = table.normalize(data);
+        const newColumns = [];
+
+        return rows.map((row) => {
+          const newRow = { ...row };
+
+          for (let i = 0; i < columns.length; i++) {
+            for (let j = i + 1; j < columns.length; j++) {
+              const col1 = columns[i];
+              const col2 = columns[j];
+              const interactionCol = `${col1}_x_${col2}`;
+
+              const val1 = row[col1];
+              const val2 = row[col2];
+
+              if (val1 !== null && val1 !== undefined && val2 !== null && val2 !== undefined) {
+                newRow[interactionCol] = Number(val1) * Number(val2);
+                if (i === 0 && j === 1) {
+                  newColumns.push(interactionCol);
+                }
+              } else {
+                newRow[interactionCol] = null;
+              }
+            }
+          }
+
+          return newRow;
+        });
+      },
+    });
+
+    // Update feature list with new interaction columns
+    const newColumns = [];
+    for (let i = 0; i < columns.length; i++) {
+      for (let j = i + 1; j < columns.length; j++) {
+        newColumns.push(`${columns[i]}_x_${columns[j]}`);
+      }
+    }
+    this.X = this.X.concat(newColumns);
+
+    return this;
+  }
+
+  /**
+   * Create polynomial features
+   * @param {Array<string>} columns - Columns to create polynomials from
+   * @param {Object} options - Polynomial options
+   * @param {number} options.degree - Polynomial degree (default 2)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.createPolynomial(['age', 'income'], { degree: 2 });
+   * // Creates: age^2, income^2
+   */
+  createPolynomial(columns, { degree = 2 } = {}) {
+    this.steps.push({
+      name: 'createPolynomial',
+      type: 'transform',
+      columns,
+      degree,
+      fn: (data) => {
+        const rows = table.normalize(data);
+
+        return rows.map((row) => {
+          const newRow = { ...row };
+
+          for (const col of columns) {
+            const val = row[col];
+            if (val !== null && val !== undefined && !isNaN(val)) {
+              const numVal = Number(val);
+              for (let d = 2; d <= degree; d++) {
+                newRow[`${col}^${d}`] = Math.pow(numVal, d);
+              }
+            } else {
+              for (let d = 2; d <= degree; d++) {
+                newRow[`${col}^${d}`] = null;
+              }
+            }
+          }
+
+          return newRow;
+        });
+      },
+    });
+
+    // Update feature list with polynomial columns
+    const newColumns = [];
+    for (const col of columns) {
+      for (let d = 2; d <= degree; d++) {
+        newColumns.push(`${col}^${d}`);
+      }
+    }
+    this.X = this.X.concat(newColumns);
+
+    return this;
+  }
+
+  /**
+   * Bin continuous variables into discrete categories
+   * @param {string} column - Column to bin
+   * @param {Object} options - Binning options
+   * @param {number} options.bins - Number of bins (default 5)
+   * @param {Array<string>} options.labels - Custom bin labels
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.binContinuous('age', { bins: 5, labels: ['child', 'teen', 'adult', 'middle', 'senior'] });
+   */
+  binContinuous(column, { bins = 5, labels = null } = {}) {
+    this.steps.push({
+      name: 'binContinuous',
+      type: 'transform',
+      column,
+      bins,
+      labels,
+      transformer: null,
+      fn: (data, transformer) => {
+        const rows = table.normalize(data);
+
+        if (!transformer) {
+          // Fit: calculate bin edges
+          const values = rows
+            .map((row) => row[column])
+            .filter((v) => v !== null && v !== undefined && !isNaN(v))
+            .map(Number)
+            .sort((a, b) => a - b);
+
+          if (values.length === 0) {
+            return {
+              data: rows,
+              transformer: { edges: [], labels: [] },
+            };
+          }
+
+          const min = values[0];
+          const max = values[values.length - 1];
+          const step = (max - min) / bins;
+
+          const edges = [];
+          for (let i = 0; i <= bins; i++) {
+            edges.push(min + i * step);
+          }
+
+          const binLabels = labels || Array.from({ length: bins }, (_, i) => `bin_${i + 1}`);
+
+          // Transform: assign bins
+          const binned = rows.map((row) => {
+            const newRow = { ...row };
+            const val = row[column];
+
+            if (val === null || val === undefined || isNaN(val)) {
+              newRow[column] = null;
+            } else {
+              const numVal = Number(val);
+              let binIndex = 0;
+
+              for (let i = 0; i < edges.length - 1; i++) {
+                if (numVal >= edges[i] && (numVal < edges[i + 1] || i === edges.length - 2)) {
+                  binIndex = i;
+                  break;
+                }
+              }
+
+              newRow[column] = binLabels[binIndex];
+            }
+
+            return newRow;
+          });
+
+          return {
+            data: binned,
+            transformer: { edges, labels: binLabels },
+          };
+        } else {
+          // Transform using fitted edges
+          const { edges, labels: binLabels } = transformer;
+
+          const binned = rows.map((row) => {
+            const newRow = { ...row };
+            const val = row[column];
+
+            if (val === null || val === undefined || isNaN(val)) {
+              newRow[column] = null;
+            } else {
+              const numVal = Number(val);
+              let binIndex = 0;
+
+              for (let i = 0; i < edges.length - 1; i++) {
+                if (numVal >= edges[i] && (numVal < edges[i + 1] || i === edges.length - 2)) {
+                  binIndex = i;
+                  break;
+                }
+              }
+
+              newRow[column] = binLabels[binIndex];
+            }
+
+            return newRow;
+          });
+
+          return {
+            data: binned,
+            transformer,
+          };
+        }
+      },
+    });
+
+    return this;
+  }
+
+  /**
+   * Upsample minority class for imbalanced classification
+   * @param {Object} options - Upsampling options
+   * @param {number} options.targetRatio - Target ratio of minority to majority (default 1.0 for balanced)
+   * @param {number} options.seed - Random seed
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.upsample({ targetRatio: 1.0, seed: 42 });
+   */
+  upsample({ targetRatio = 1.0, seed = null } = {}) {
+    if (!this.y) {
+      throw new Error('Upsampling requires a target variable (y). Specify y in recipe().');
+    }
+
+    this.steps.push({
+      name: 'upsample',
+      type: 'transform',
+      targetRatio,
+      seed,
+      fn: (data) => {
+        const rows = table.normalize(data);
+        const rng = seed !== null ? () => {
+          const x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+        } : Math.random;
+
+        // Count class frequencies
+        const classCounts = new Map();
+        rows.forEach((row) => {
+          const label = row[this.y];
+          classCounts.set(label, (classCounts.get(label) || 0) + 1);
+        });
+
+        // Find majority and minority classes
+        const counts = Array.from(classCounts.entries());
+        counts.sort((a, b) => b[1] - a[1]);
+        const majorityCount = counts[0][1];
+
+        // Upsample each minority class
+        const upsampled = [...rows];
+
+        for (const [label, count] of counts) {
+          if (count < majorityCount) {
+            const targetCount = Math.floor(majorityCount * targetRatio);
+            const classRows = rows.filter((row) => row[this.y] === label);
+            const samplesToAdd = targetCount - count;
+
+            for (let i = 0; i < samplesToAdd; i++) {
+              const randomRow = classRows[Math.floor(rng() * classRows.length)];
+              upsampled.push({ ...randomRow });
+            }
+          }
+        }
+
+        return upsampled;
+      },
+    });
+
+    return this;
+  }
+
+  /**
+   * Downsample majority class for imbalanced classification
+   * @param {Object} options - Downsampling options
+   * @param {string} options.strategy - 'balance' (equal classes) or 'ratio' (custom ratio)
+   * @param {number} options.targetRatio - Target ratio of majority to minority (for 'ratio' strategy)
+   * @param {number} options.seed - Random seed
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.downsample({ strategy: 'balance', seed: 42 });
+   */
+  downsample({ strategy = 'balance', targetRatio = 1.0, seed = null } = {}) {
+    if (!this.y) {
+      throw new Error('Downsampling requires a target variable (y). Specify y in recipe().');
+    }
+
+    this.steps.push({
+      name: 'downsample',
+      type: 'transform',
+      strategy,
+      targetRatio,
+      seed,
+      fn: (data) => {
+        const rows = table.normalize(data);
+        const rng = seed !== null ? () => {
+          const x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+        } : Math.random;
+
+        // Count class frequencies
+        const classCounts = new Map();
+        const classSamples = new Map();
+        rows.forEach((row) => {
+          const label = row[this.y];
+          classCounts.set(label, (classCounts.get(label) || 0) + 1);
+          if (!classSamples.has(label)) {
+            classSamples.set(label, []);
+          }
+          classSamples.get(label).push(row);
+        });
+
+        // Find majority and minority classes
+        const counts = Array.from(classCounts.entries());
+        counts.sort((a, b) => a[1] - b[1]);
+        const minorityCount = counts[0][1];
+
+        // Downsample majority classes
+        const downsampled = [];
+
+        for (const [label, count] of classCounts.entries()) {
+          const samples = classSamples.get(label);
+
+          if (strategy === 'balance') {
+            if (count > minorityCount) {
+              // Randomly sample minorityCount samples
+              const shuffled = [...samples].sort(() => rng() - 0.5);
+              downsampled.push(...shuffled.slice(0, minorityCount));
+            } else {
+              downsampled.push(...samples);
+            }
+          } else if (strategy === 'ratio') {
+            const targetCount = Math.floor(minorityCount * targetRatio);
+            if (count > targetCount) {
+              const shuffled = [...samples].sort(() => rng() - 0.5);
+              downsampled.push(...shuffled.slice(0, targetCount));
+            } else {
+              downsampled.push(...samples);
+            }
+          }
+        }
+
+        return downsampled;
+      },
+    });
+
+    return this;
+  }
+
+  /**
+   * Remove low-variance features
+   * @param {Object} options - Feature selection options
+   * @param {number} options.threshold - Variance threshold (default 0.0)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.selectByVariance({ threshold: 0.01 });
+   */
+  selectByVariance({ threshold = 0.0 } = {}) {
+    this.steps.push({
+      name: 'selectByVariance',
+      type: 'transform',
+      threshold,
+      transformer: null,
+      fn: (data, transformer) => {
+        const rows = table.normalize(data);
+
+        if (!transformer) {
+          // Fit: calculate variance for each numeric column
+          const variances = {};
+          const columnsToKeep = [];
+
+          for (const col of this.X) {
+            const values = rows
+              .map((row) => row[col])
+              .filter((v) => v !== null && v !== undefined && !isNaN(v))
+              .map(Number);
+
+            if (values.length === 0) {
+              columnsToKeep.push(col);
+              continue;
+            }
+
+            const meanVal = values.reduce((a, b) => a + b, 0) / values.length;
+            const variance = values.reduce((sum, v) => sum + Math.pow(v - meanVal, 2), 0) / values.length;
+
+            variances[col] = variance;
+
+            if (variance > threshold) {
+              columnsToKeep.push(col);
+            }
+          }
+
+          // Transform: keep only high-variance columns
+          const filtered = rows.map((row) => {
+            const newRow = {};
+            for (const col of columnsToKeep) {
+              newRow[col] = row[col];
+            }
+            if (this.y) {
+              newRow[this.y] = row[this.y];
+            }
+            return newRow;
+          });
+
+          return {
+            data: filtered,
+            transformer: { columnsToKeep, variances },
+          };
+        } else {
+          // Transform: keep only selected columns
+          const { columnsToKeep } = transformer;
+          const filtered = rows.map((row) => {
+            const newRow = {};
+            for (const col of columnsToKeep) {
+              newRow[col] = row[col];
+            }
+            if (this.y) {
+              newRow[this.y] = row[this.y];
+            }
+            return newRow;
+          });
+
+          return {
+            data: filtered,
+            transformer,
+          };
+        }
+      },
+    });
+
+    return this;
+  }
+
+  /**
+   * Remove highly correlated features
+   * @param {Object} options - Feature selection options
+   * @param {number} options.threshold - Correlation threshold (default 0.95)
+   * @returns {Recipe} this
+   *
+   * @example
+   * recipe.selectByCorrelation({ threshold: 0.9 });
+   */
+  selectByCorrelation({ threshold = 0.95 } = {}) {
+    this.steps.push({
+      name: 'selectByCorrelation',
+      type: 'transform',
+      threshold,
+      transformer: null,
+      fn: (data, transformer) => {
+        const rows = table.normalize(data);
+
+        if (!transformer) {
+          // Fit: calculate correlations and select columns to keep
+          const numericCols = this.X.filter((col) => {
+            const values = rows.map((row) => row[col]);
+            return values.some((v) => typeof v === 'number');
+          });
+
+          // Calculate correlation matrix
+          const correlations = {};
+          for (let i = 0; i < numericCols.length; i++) {
+            for (let j = i + 1; j < numericCols.length; j++) {
+              const col1 = numericCols[i];
+              const col2 = numericCols[j];
+
+              const values1 = rows.map((row) => Number(row[col1])).filter((v) => !isNaN(v));
+              const values2 = rows.map((row) => Number(row[col2])).filter((v) => !isNaN(v));
+
+              if (values1.length === 0 || values2.length === 0) continue;
+
+              const mean1 = values1.reduce((a, b) => a + b, 0) / values1.length;
+              const mean2 = values2.reduce((a, b) => a + b, 0) / values2.length;
+              const std1 = Math.sqrt(
+                values1.reduce((sum, v) => sum + Math.pow(v - mean1, 2), 0) / values1.length,
+              );
+              const std2 = Math.sqrt(
+                values2.reduce((sum, v) => sum + Math.pow(v - mean2, 2), 0) / values2.length,
+              );
+
+              if (std1 === 0 || std2 === 0) continue;
+
+              let covariance = 0;
+              for (let k = 0; k < Math.min(values1.length, values2.length); k++) {
+                covariance += (values1[k] - mean1) * (values2[k] - mean2);
+              }
+              covariance /= Math.min(values1.length, values2.length);
+
+              const correlation = covariance / (std1 * std2);
+              correlations[`${col1}_${col2}`] = Math.abs(correlation);
+            }
+          }
+
+          // Remove columns with high correlation
+          const columnsToRemove = new Set();
+          for (const [pair, corr] of Object.entries(correlations)) {
+            if (corr > threshold) {
+              const [col1, col2] = pair.split('_');
+              // Remove col2 (arbitrary choice)
+              columnsToRemove.add(col2);
+            }
+          }
+
+          const columnsToKeep = this.X.filter((col) => !columnsToRemove.has(col));
+
+          // Transform: keep only selected columns
+          const filtered = rows.map((row) => {
+            const newRow = {};
+            for (const col of columnsToKeep) {
+              newRow[col] = row[col];
+            }
+            if (this.y) {
+              newRow[this.y] = row[this.y];
+            }
+            return newRow;
+          });
+
+          return {
+            data: filtered,
+            transformer: { columnsToKeep, correlations },
+          };
+        } else {
+          // Transform: keep only selected columns
+          const { columnsToKeep } = transformer;
+          const filtered = rows.map((row) => {
+            const newRow = {};
+            for (const col of columnsToKeep) {
+              newRow[col] = row[col];
+            }
+            if (this.y) {
+              newRow[this.y] = row[this.y];
+            }
+            return newRow;
+          });
+
+          return {
+            data: filtered,
+            transformer,
+          };
+        }
+      },
+    });
+
+    return this;
+  }
+
+  /**
    * Split data into train/test sets
    * @param {Object} options - Split options
    * @param {number} options.ratio - Training ratio (default 0.7)
@@ -595,7 +1509,15 @@ export class Recipe {
 
     // Apply preprocessing steps
     for (const step of this.steps) {
-      if (step.type === 'encode' || step.type === 'scale' || step.type === 'dimreduction') {
+      // Check if this step type creates transformers
+      const createsTransformer =
+        step.type === 'encode' ||
+        step.type === 'scale' ||
+        step.type === 'dimreduction' ||
+        step.type === 'impute' ||
+        (step.type === 'transform' && step.transformer !== undefined);
+
+      if (createsTransformer) {
         // These steps create transformers
         const result = step.fn(currentData, null);
         currentData = result.data;
@@ -607,6 +1529,7 @@ export class Recipe {
           transformer: result.transformer,
         });
 
+        // Handle column updates for oneHot encoding
         if (step.name === 'oneHot' && result.transformer instanceof Map) {
           const colsToRemove = new Set(Array.isArray(step.columns) ? step.columns : [step.columns]);
           const encodedColumns = [];
@@ -620,8 +1543,13 @@ export class Recipe {
             .filter((col) => !colsToRemove.has(col))
             .concat(encodedColumns);
         }
+
+        // Handle column updates for feature selection
+        if ((step.name === 'selectByVariance' || step.name === 'selectByCorrelation') && result.transformer) {
+          this.X = result.transformer.columnsToKeep;
+        }
       } else {
-        // Simple transformation
+        // Simple transformation without transformer
         currentData = step.fn(currentData);
         stepOutputs.push({
           name: step.name,
@@ -692,7 +1620,15 @@ export class Recipe {
 
     // Apply preprocessing steps using fitted transformers
     for (const step of this.steps) {
-      if (step.type === 'encode' || step.type === 'scale' || step.type === 'dimreduction') {
+      // Check if this step type uses transformers
+      const usesTransformer =
+        step.type === 'encode' ||
+        step.type === 'scale' ||
+        step.type === 'dimreduction' ||
+        step.type === 'impute' ||
+        (step.type === 'transform' && step.transformer !== undefined);
+
+      if (usesTransformer) {
         // Use fitted transformer
         const result = step.fn(currentData, step.transformer);
         currentData = result.data;
@@ -701,7 +1637,7 @@ export class Recipe {
           output: currentData,
         });
       } else {
-        // Simple transformation
+        // Simple transformation without transformer
         currentData = step.fn(currentData);
         stepOutputs.push({
           name: step.name,
