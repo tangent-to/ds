@@ -6,8 +6,22 @@ import { normal, uniform, gamma, beta } from './distribution.js';
 import {
   oneSampleTTest as oneSampleTTestFn,
   twoSampleTTest as twoSampleTTestFn,
+  pairedTTest as pairedTTestFn,
   chiSquareTest as chiSquareTestFn,
-  oneWayAnova as oneWayAnovaFn
+  oneWayAnova as oneWayAnovaFn,
+  tukeyHSD as tukeyHSDFn,
+  mannWhitneyU as mannWhitneyUFn,
+  kruskalWallis as kruskalWallisFn,
+  cohensD,
+  etaSquared,
+  omegaSquared,
+  bonferroni,
+  holmBonferroni,
+  fdr,
+  leveneTest,
+  pearsonCorrelation,
+  spearmanCorrelation,
+  fisherExactTest
 } from './tests.js';
 
 import { GLM } from './estimators/GLM.js';
@@ -15,7 +29,8 @@ import {
   OneSampleTTest,
   TwoSampleTTest,
   ChiSquareTest,
-  OneWayAnova
+  OneWayAnova,
+  TukeyHSD
 } from './estimators/tests.js';
 
 import {
@@ -34,13 +49,23 @@ const oneSampleTTest = OneSampleTTest;
 const twoSampleTTest = TwoSampleTTest;
 const chiSquareTest = ChiSquareTest;
 const oneWayAnova = OneWayAnova;
+const tukeyHSD = TukeyHSD;
+
+// Alias functional tests for camelCase export
+const pairedTTest = pairedTTestFn;
+const mannWhitneyU = mannWhitneyUFn;
+const kruskalWallis = kruskalWallisFn;
 
 // Preserve functional helpers grouped under a namespace for direct usage
 const hypothesis = {
   oneSampleTTest: oneSampleTTestFn,
   twoSampleTTest: twoSampleTTestFn,
+  pairedTTest: pairedTTestFn,
   chiSquareTest: chiSquareTestFn,
-  oneWayAnova: oneWayAnovaFn
+  oneWayAnova: oneWayAnovaFn,
+  tukeyHSD: tukeyHSDFn,
+  mannWhitneyU: mannWhitneyUFn,
+  kruskalWallis: kruskalWallisFn
 };
 
 export {
@@ -71,8 +96,35 @@ export {
   TwoSampleTTest,
   ChiSquareTest,
   OneWayAnova,
+  TukeyHSD,
   oneSampleTTest,
   twoSampleTTest,
   chiSquareTest,
-  oneWayAnova
+  oneWayAnova,
+  tukeyHSD,
+
+  // Additional statistical tests (functional only)
+  pairedTTest,
+  mannWhitneyU,
+  kruskalWallis,
+
+  // Effect sizes
+  cohensD,
+  etaSquared,
+  omegaSquared,
+
+  // Multiple testing corrections
+  bonferroni,
+  holmBonferroni,
+  fdr,
+
+  // Assumption testing
+  leveneTest,
+
+  // Correlation tests
+  pearsonCorrelation,
+  spearmanCorrelation,
+
+  // Contingency tables
+  fisherExactTest
 };
