@@ -21,6 +21,9 @@ import { Recipe, recipe } from './recipe.js';
 // Imputation (missing data handling)
 import { SimpleImputer, KNNImputer, simpleImpute, knnImpute } from './impute.js';
 
+// Outlier detection
+import { IsolationForest, LocalOutlierFactor, isolationForest, localOutlierFactor } from './outliers.js';
+
 // Class-based estimators (scikit-like)
 import { KMeans } from './estimators/KMeans.js';
 import { HCA } from './estimators/HCA.js';
@@ -44,6 +47,11 @@ export {
   KNNImputer,
   simpleImpute,
   knnImpute,
+  // Outlier detection
+  IsolationForest,
+  LocalOutlierFactor,
+  isolationForest,
+  localOutlierFactor,
   // Model interpretation
   interpret,
   KMeans,
