@@ -380,14 +380,21 @@ export function createGAMSummary(model) {
     n,
     p,
     r2,
-    smoothConfigs
+    smoothConfigs,
+    smoothMethod
   } = model;
 
   const residualDf = n - edf;
   const sigma2 = rss / residualDf;
 
+  // Generate call string based on whether penalty was used
+  const isPenalized = smoothMethod && smoothMethod !== null;
+  const callString = isPenalized
+    ? `GAM fitted with penalized regression splines (${smoothMethod})`
+    : 'GAM fitted with regression splines';
+
   return {
-    call: 'GAM fitted with penalized regression splines',
+    call: callString,
     coefficients: {
       intercept: coefficients[0],
       se: Math.sqrt(sigma2 * model.covMatrix.get(0, 0)),

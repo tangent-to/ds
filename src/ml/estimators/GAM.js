@@ -359,6 +359,7 @@ export class GAMRegressor extends Regressor {
       r2: this.gam.r2,
       smoothConfigs: this.gam.smoothConfigs,
       covMatrix: this.gam.covMatrix,
+      smoothMethod: this.gam.smoothMethod,
     });
   }
 }
