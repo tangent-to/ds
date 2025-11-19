@@ -394,10 +394,13 @@ export class GAMClassifier extends Classifier {
 
     // If encoders provided and y column has an encoder, decode the classes
     // This handles the case where prepareDataset already encoded categorical y
-    if (encoders && yColumnName && encoders[yColumnName]) {
-      const yEncoder = encoders[yColumnName];
-      classes = classes.map((encoded) => yEncoder.decode(encoded));
-      preparedY = preparedY.map((encoded) => yEncoder.decode(encoded));
+    // Try both the column name and the generic "y" key (Recipe stores it as "y")
+    if (encoders) {
+      const yEncoder = encoders[yColumnName] || encoders.y;
+      if (yEncoder) {
+        classes = classes.map((encoded) => yEncoder.decode(encoded));
+        preparedY = preparedY.map((encoded) => yEncoder.decode(encoded));
+      }
     }
 
     // Create class mapping
