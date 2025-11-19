@@ -310,7 +310,7 @@ export class GAMRegressor extends Regressor {
    * Get confidence intervals for predictions
    * @param {Array} X - Input data
    * @param {number} level - Confidence level (default: 0.95)
-   * @returns {Object} { fitted, lower, upper, se }
+   * @returns {Array<Object>} Array of { fitted, se, lower, upper } for each observation
    */
   predictWithInterval(X, level = 0.95) {
     if (!this.fitted) throw new Error('GAMRegressor: estimator not fitted.');
@@ -334,12 +334,13 @@ export class GAMRegressor extends Regressor {
     // Confidence intervals
     const intervals = computeConfidenceIntervals(fitted, se, level);
 
-    return {
-      fitted,
-      se,
-      lower: intervals.lower,
-      upper: intervals.upper,
-    };
+    // Return row-oriented format (more JavaScript-idiomatic)
+    return fitted.map((f, i) => ({
+      fitted: f,
+      se: se[i],
+      lower: intervals.lower[i],
+      upper: intervals.upper[i],
+    }));
   }
 
   summary() {
