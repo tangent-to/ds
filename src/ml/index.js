@@ -5,6 +5,7 @@
 import * as kmeans from './kmeans.js';
 import * as dbscan from './dbscan.js';
 import * as hdbscan from './hdbscan.js';
+import * as hdbscan_fast from './hdbscan_fast.js';
 import * as hca from './hca.js';
 import * as polynomial from './polynomial.js';
 import * as silhouette from './silhouette.js';
@@ -21,6 +22,7 @@ import * as train from './train.js';
 import * as tuning from './tuning.js';
 import { GridSearchCV, Pipeline } from './pipeline.js';
 import { Recipe, recipe } from './recipe.js';
+import { BranchPipeline } from '../pipeline/BranchPipeline.js';
 
 // Imputation (missing data handling)
 import { SimpleImputer, KNNImputer, IterativeImputer, simpleImpute, knnImpute, iterativeImpute } from './impute.js';
@@ -32,7 +34,9 @@ import { IsolationForest, LocalOutlierFactor, MahalanobisDistance, isolationFore
 import { KMeans } from './estimators/KMeans.js';
 import { DBSCAN } from './estimators/DBSCAN.js';
 import { HDBSCAN } from './estimators/HDBSCAN.js';
+import { HDBSCANFast } from './estimators/HDBSCANFast.js';
 import { HCA } from './estimators/HCA.js';
+import { ConsensusCluster } from '../clustering/ConsensusCluster.js';
 import { KNNClassifier, KNNRegressor } from './estimators/KNN.js';
 import { DecisionTreeClassifier, DecisionTreeRegressor } from './estimators/DecisionTree.js';
 import { RandomForestClassifier, RandomForestRegressor } from './estimators/RandomForest.js';
@@ -46,6 +50,10 @@ export {
   dbscan,
   HDBSCAN,
   hdbscan,
+  HDBSCANFast,
+  hdbscan_fast,
+  ConsensusCluster,
+  BranchPipeline,
   DecisionTreeClassifier,
   DecisionTreeRegressor,
   GAMClassifier,
