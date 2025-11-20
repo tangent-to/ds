@@ -397,9 +397,10 @@ export class GAMClassifier extends Classifier {
     // Try both the column name and the generic "y" key (Recipe stores it as "y")
     if (encoders) {
       const yEncoder = encoders[yColumnName] || encoders.y;
-      if (yEncoder) {
-        classes = classes.map((encoded) => yEncoder.decode(encoded));
-        preparedY = preparedY.map((encoded) => yEncoder.decode(encoded));
+      if (yEncoder && yEncoder.classes_) {
+        // LabelEncoder has classes_ array for decoding: classes_[index] = label
+        classes = classes.map((encoded) => yEncoder.classes_[encoded]);
+        preparedY = preparedY.map((encoded) => yEncoder.classes_[encoded]);
       }
     }
 
