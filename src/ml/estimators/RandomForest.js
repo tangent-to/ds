@@ -51,18 +51,21 @@ function prepareDataset(X, y) {
       X: X.X || X.columns,
       y: X.y,
       data: X.data,
-      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true
+      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
+      encoders: X.encoders  // Pass encoders for label encoding
     });
     return {
       X: toNumericMatrix(prepared.X),
       y: prepared.y,
-      columns: prepared.columnsX
+      columns: prepared.columnsX,
+      encoders: prepared.encoders  // Return encoders
     };
   }
   return {
     X: toNumericMatrix(X),
     y: Array.isArray(y) ? y.slice() : Array.from(y),
-    columns: null
+    columns: null,
+    encoders: null
   };
 }
 
@@ -226,23 +229,27 @@ class RandomForestBase {
 
   fit(X, y, sampleWeight = null) {
     const prepared = prepareDataset(X, y);
-    this.columns = prepared.columns;
+    this._fitPrepared(prepared.X, prepared.y, prepared.columns, sampleWeight);
+  }
 
-    const featureCount = prepared.X[0].length;
-    const nSamples = prepared.X.length;
+  _fitPrepared(X, y, columns, sampleWeight = null) {
+    this.columns = columns;
+
+    const featureCount = X[0].length;
+    const nSamples = X.length;
     const defaultMaxFeatures = this.task === 'classification'
       ? Math.max(1, Math.floor(Math.sqrt(featureCount)))
       : Math.max(1, Math.floor(featureCount / 3));
     const featureBagSize = this.maxFeatures || defaultMaxFeatures;
-    this.classes = this.task === 'classification' ? Array.from(new Set(prepared.y)) : null;
+    this.classes = this.task === 'classification' ? Array.from(new Set(y)) : null;
 
     // Apply class weights if specified
     const classWeights = this.task === 'classification'
-      ? applyClassWeights(prepared.y, this.classWeight)
+      ? applyClassWeights(y, this.classWeight)
       : null;
 
     // Combine class weights and sample weights
-    const combinedWeights = applySampleWeights(prepared.y, sampleWeight, classWeights);
+    const combinedWeights = applySampleWeights(y, sampleWeight, classWeights);
 
     // Warm start: keep existing trees if enabled
     const startIdx = this.warmStart ? this.trees.length : 0;
@@ -258,8 +265,8 @@ class RandomForestBase {
 
     for (let i = startIdx; i < this.nEstimators; i++) {
       const { XSample, ySample, oobIndices } = weightedBootstrapSample(
-        prepared.X,
-        prepared.y,
+        X,
+        y,
         combinedWeights,
         this.random,
         this.maxSamples
@@ -288,7 +295,7 @@ class RandomForestBase {
 
       // Compute OOB predictions if enabled
       if (this.oobScore && oobIndices.length > 0) {
-        const oobX = oobIndices.map(idx => prepared.X[idx]);
+        const oobX = oobIndices.map(idx => X[idx]);
         const oobPreds = tree.predict(oobX);
         oobIndices.forEach((idx, j) => {
           oobPredictions[idx].push(oobPreds[j]);
@@ -306,7 +313,7 @@ class RandomForestBase {
 
     // Compute OOB score if enabled
     if (this.oobScore) {
-      this._computeOOBScore(oobPredictions, prepared.y);
+      this._computeOOBScore(oobPredictions, y);
     }
 
     this.fitted = true;
@@ -500,13 +507,30 @@ export class RandomForestClassifier extends Classifier {
   }
 
   fit(X, y = null, sampleWeight = null) {
-    this.forest.fit(X, y, sampleWeight);
+    const prepared = prepareDataset(X, y);
+
+    // Use centralized label encoder extraction
+    this._extractLabelEncoder(prepared);
+
+    // Use centralized class extraction to handle encoded labels
+    const { numericY, classes } = this._getClasses(prepared.y, false);
+
+    // Store classes
+    this.forest.classes_ = classes;
+
+    // Fit forest with numeric labels using prepared data
+    this.forest._fitPrepared(prepared.X, numericY, prepared.columns, sampleWeight);
+    // Override classes with decoded names
+    this.forest.classes = classes;
+
     this.fitted = true;
     return this;
   }
 
   predict(X) {
-    return this.forest._predictRaw(X);
+    const predictions = this.forest._predictRaw(X);
+    // Use centralized label decoder
+    return this._decodeLabels(predictions);
   }
 
   predictProba(X) {

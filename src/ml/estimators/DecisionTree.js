@@ -47,19 +47,22 @@ function buildPreparedData(X, y) {
       X: X.X || X.columns,
       y: X.y,
       data: X.data,
-      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true
+      omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
+      encoders: X.encoders  // Pass encoders for label encoding
     });
     return {
       X: toNumericMatrix(prepared.X),
       y: prepared.y,
-      columns: prepared.columnsX
+      columns: prepared.columnsX,
+      encoders: prepared.encoders  // Return encoders
     };
   }
 
   return {
     X: toNumericMatrix(X),
     y: toArray(y),
-    columns: null
+    columns: null,
+    encoders: null
   };
 }
 
@@ -132,10 +135,14 @@ class DecisionTreeBase {
 
   fit(X, y) {
     const prepared = buildPreparedData(X, y);
-    this.columns = prepared.columns;
-    this.nFeatures = prepared.X[0].length;
-    this.trainX = prepared.X;
-    this.trainY = prepared.y;
+    this._fitPrepared(prepared.X, prepared.y, prepared.columns);
+  }
+
+  _fitPrepared(X, y, columns) {
+    this.columns = columns;
+    this.nFeatures = X[0].length;
+    this.trainX = X;
+    this.trainY = y;
 
     // Initialize feature importances
     this._featureImportances = new Array(this.nFeatures).fill(0);
@@ -143,7 +150,7 @@ class DecisionTreeBase {
     this.nNodes = 0;
 
     const features = Array.from({ length: this.nFeatures }, (_, i) => i);
-    this.root = this._buildTree(prepared.X, prepared.y, 0, features, prepared.X.length);
+    this.root = this._buildTree(X, y, 0, features, X.length);
 
     // Normalize feature importances
     const totalImportance = this._featureImportances.reduce((a, b) => a + b, 0);
@@ -506,13 +513,28 @@ export class DecisionTreeClassifier extends Classifier {
   }
 
   fit(X, y = null) {
-    this.tree.fit(X, y);
+    const prepared = buildPreparedData(X, y);
+
+    // Use centralized label encoder extraction
+    this._extractLabelEncoder(prepared);
+
+    // Use centralized class extraction to handle encoded labels
+    const { numericY, classes } = this._getClasses(prepared.y, false);
+
+    // Store classes in tree for reference
+    this.tree.classes_ = classes;
+
+    // Fit tree with numeric labels using prepared data
+    this.tree._fitPrepared(prepared.X, numericY, prepared.columns);
+
     this.fitted = true;
     return this;
   }
 
   predict(X) {
-    return this.tree.predict(X);
+    const predictions = this.tree.predict(X);
+    // Use centralized label decoder
+    return this._decodeLabels(predictions);
   }
 
   predictProba(X) {
