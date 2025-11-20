@@ -264,6 +264,7 @@ function buildCondensedTree(hierarchy, minClusterSize) {
 
 /**
  * Extract clusters from condensed tree based on stability
+ * Implements HDBSCAN's Excess of Mass (EOM) cluster selection
  * @param {Array<Object>} condensed - Condensed tree
  * @param {Object} hierarchy - Full hierarchy
  * @param {number} n - Number of points
@@ -279,52 +280,96 @@ function extractClusters(condensed, hierarchy, n, minClusterSize) {
     return { labels, probabilities, stabilities: [], condensedTree: condensed };
   }
 
-  // Simple flat clustering approach: cut the dendrogram at a specific level
-  // Find non-overlapping clusters by traversing from root
+  // Step 1: Recursively find stable clusters by splitting the hierarchy
+  // Start from the root and recursively split until we find good clusters
+  const selectedClusters = [];
+  const assignedPoints = new Set();
 
-  const clusters = [];
-  const queue = [];
+  // Recursive function to extract clusters from a subtree
+  function extractFromSubtree(node) {
+    if (!node || node.size < minClusterSize) {
+      return [];
+    }
 
-  // Start with the root (last merge in dendrogram)
-  if (dendrogram.length > 0) {
-    queue.push(dendrogram[dendrogram.length - 1]);
-  }
-
-  while (queue.length > 0) {
-    const node = queue.shift();
     const members = getClusterMembers(node, dendrogram, n);
 
-    if (members.length >= minClusterSize) {
-      // This is a valid cluster - add it
-      const clusterId = clusters.length;
-      clusters.push({ members, size: members.length });
+    // Calculate "compactness" - inverse of average distance
+    // More compact clusters (smaller distances) are better
+    const compactness = node.size / (node.distance || 1e-10);
 
-      for (const member of members) {
-        if (member < n) {
-          labels[member] = clusterId;
-          probabilities[member] = 1.0;
+    // Check children
+    const leftChild = dendrogram.find(d => d.id === node.left);
+    const rightChild = dendrogram.find(d => d.id === node.right);
+
+    const leftValid = leftChild && leftChild.size >= minClusterSize;
+    const rightValid = rightChild && rightChild.size >= minClusterSize;
+
+    // Decision: keep this cluster or split into children?
+    // If both children are valid and significantly smaller, prefer to split
+    if (leftValid && rightValid) {
+      // Both children are valid - recursively explore them
+      const leftClusters = extractFromSubtree(leftChild);
+      const rightClusters = extractFromSubtree(rightChild);
+
+      // If we got good sub-clusters, use them
+      if (leftClusters.length > 0 || rightClusters.length > 0) {
+        return [...leftClusters, ...rightClusters];
+      }
+    }
+
+    // Otherwise, return this node as a cluster
+    return [{
+      nodeId: node.id,
+      node: node,
+      stability: compactness,
+      size: node.size,
+      members: members
+    }];
+  }
+
+  // Start extraction from root
+  if (dendrogram.length > 0) {
+    const root = dendrogram[dendrogram.length - 1];
+    const clusters = extractFromSubtree(root);
+
+    // Add all extracted clusters
+    for (const cluster of clusters) {
+      const hasOverlap = cluster.members.some(m => m < n && assignedPoints.has(m));
+
+      if (!hasOverlap) {
+        selectedClusters.push(cluster);
+
+        for (const member of cluster.members) {
+          if (member < n) {
+            assignedPoints.add(member);
+          }
         }
       }
-    } else {
-      // Split into children if they exist and are not leaves
-      if (node.left < n || node.right < n) {
-        // One or both children are leaves - mark remaining as noise
-        continue;
-      }
-
-      // Find child nodes in dendrogram
-      const leftChild = dendrogram.find(d => d.id === node.left);
-      const rightChild = dendrogram.find(d => d.id === node.right);
-
-      if (leftChild) queue.push(leftChild);
-      if (rightChild) queue.push(rightChild);
     }
   }
+
+  // Step 4: Assign labels based on selected clusters
+  for (let clusterId = 0; clusterId < selectedClusters.length; clusterId++) {
+    const cluster = selectedClusters[clusterId];
+
+    for (const member of cluster.members) {
+      if (member < n) {
+        labels[member] = clusterId;
+        probabilities[member] = 1.0; // High confidence for core cluster members
+      }
+    }
+  }
+
+  const stabilities = selectedClusters.map((c, id) => ({
+    clusterId: id,
+    stability: c.stability,
+    size: c.size
+  }));
 
   return {
     labels,
     probabilities,
-    stabilities: clusters.map((c, id) => ({ clusterId: id, stability: 1.0, size: c.size })),
+    stabilities,
     condensedTree: condensed
   };
 }

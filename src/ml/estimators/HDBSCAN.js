@@ -92,7 +92,9 @@ export class HDBSCAN extends Estimator {
     // store model details
     this.model = fitResult;
     this.labels = fitResult.labels;
+    this.labels_ = fitResult.labels; // Alias for sklearn compatibility
     this.probabilities = fitResult.probabilities;
+    this.probabilities_ = fitResult.probabilities; // Alias for sklearn compatibility
     this.nClusters = fitResult.nClusters;
     this.nNoise = fitResult.nNoise;
     this.hierarchy = fitResult.hierarchy;
