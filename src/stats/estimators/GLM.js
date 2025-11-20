@@ -968,19 +968,40 @@ export class GLM extends Estimator {
 
     const labels = this._getCoefLabels();
     const cis = this.confint(alpha);
+
+    // Calculate dynamic column widths based on actual data
     const longestLabel = labels.length ? Math.max(...labels.map((label) => label.length)) : 0;
     const labelPadding = longestLabel + 2;
-    const headerPadding = ''.padEnd(labelPadding);
-    output += `${headerPadding}Estimate  Std.Error  z value    ${confidence}% CI\n`;
 
+    // Format all values first to determine column widths
+    const formattedRows = [];
     for (let i = 0; i < m.coefficients.length; i++) {
-      const label = labels[i].padEnd(labelPadding);
-      const est = m.coefficients[i].toFixed(6).padStart(10);
-      const se = m.standardErrors[i].toFixed(6).padStart(10);
-      const z = (m.coefficients[i] / m.standardErrors[i]).toFixed(3).padStart(8);
-      const ci = `[${cis[i].lower.toFixed(3)}, ${cis[i].upper.toFixed(3)}]`;
+      formattedRows.push({
+        label: labels[i],
+        est: m.coefficients[i].toFixed(6),
+        se: m.standardErrors[i].toFixed(6),
+        z: (m.coefficients[i] / m.standardErrors[i]).toFixed(3),
+        ci: `[${cis[i].lower.toFixed(3)}, ${cis[i].upper.toFixed(3)}]`
+      });
+    }
 
-      output += `${label} ${est} ${se} ${z}  ${ci}\n`;
+    // Calculate column widths
+    const estWidth = Math.max(8, ...formattedRows.map(r => r.est.length));
+    const seWidth = Math.max(9, ...formattedRows.map(r => r.se.length));
+    const zWidth = Math.max(7, ...formattedRows.map(r => r.z.length));
+
+    // Header
+    const headerPadding = ''.padEnd(labelPadding);
+    output += `${headerPadding}${'Estimate'.padStart(estWidth)}  ${'Std.Error'.padStart(seWidth)}  ${'z value'.padStart(zWidth)}    ${confidence}% CI\n`;
+
+    // Data rows
+    for (const row of formattedRows) {
+      const label = row.label.padEnd(labelPadding);
+      const est = row.est.padStart(estWidth);
+      const se = row.se.padStart(seWidth);
+      const z = row.z.padStart(zWidth);
+
+      output += `${label} ${est}  ${se}  ${z}  ${row.ci}\n`;
     }
 
     output += `\n`;
@@ -1075,24 +1096,46 @@ export class GLM extends Estimator {
 
     // Coefficients for each class
     const labels = this._getCoefLabels();
+    const longestLabel = labels.length ? Math.max(...labels.map((label) => label.length)) : 0;
+    const labelPadding = Math.max(15, longestLabel + 2);
+
+    // Pre-compute all formatted values to determine column widths
+    const allFormattedRows = [];
+    for (let k = 0; k < K - 1; k++) {
+      for (let j = 0; j < m.p; j++) {
+        const lower = (m.coefficients[k][j] - z * m.standardErrors[k][j]).toFixed(3);
+        const upper = (m.coefficients[k][j] + z * m.standardErrors[k][j]).toFixed(3);
+        allFormattedRows.push({
+          est: m.coefficients[k][j].toFixed(6),
+          se: m.standardErrors[k][j].toFixed(6),
+          z: (m.coefficients[k][j] / m.standardErrors[k][j]).toFixed(3),
+          ci: `[${lower}, ${upper}]`
+        });
+      }
+    }
+
+    // Calculate column widths
+    const estWidth = Math.max(8, ...allFormattedRows.map(r => r.est.length));
+    const seWidth = Math.max(9, ...allFormattedRows.map(r => r.se.length));
+    const zWidth = Math.max(7, ...allFormattedRows.map(r => r.z.length));
 
     for (let k = 0; k < K - 1; k++) {
       const className = this._targetNames[k];
       output += `${'='.repeat(70)}\n`;
       output += `Class: ${className} (vs reference)\n`;
       output += `${'='.repeat(70)}\n`;
-      output += `                Estimate  Std.Error  z value    ${confidence}% CI\n`;
+
+      const headerPadding = ''.padEnd(labelPadding);
+      output += `${headerPadding}${'Estimate'.padStart(estWidth)}  ${'Std.Error'.padStart(seWidth)}  ${'z value'.padStart(zWidth)}    ${confidence}% CI\n`;
 
       for (let j = 0; j < m.p; j++) {
-        const label = labels[j].padEnd(15);
-        const est = m.coefficients[k][j].toFixed(6).padStart(10);
-        const se = m.standardErrors[k][j].toFixed(6).padStart(10);
-        const zval = (m.coefficients[k][j] / m.standardErrors[k][j]).toFixed(3).padStart(8);
-        const lower = (m.coefficients[k][j] - z * m.standardErrors[k][j]).toFixed(3);
-        const upper = (m.coefficients[k][j] + z * m.standardErrors[k][j]).toFixed(3);
-        const ci = `[${lower}, ${upper}]`;
+        const rowIdx = k * m.p + j;
+        const label = labels[j].padEnd(labelPadding);
+        const est = allFormattedRows[rowIdx].est.padStart(estWidth);
+        const se = allFormattedRows[rowIdx].se.padStart(seWidth);
+        const zval = allFormattedRows[rowIdx].z.padStart(zWidth);
 
-        output += `${label} ${est} ${se} ${zval}  ${ci}\n`;
+        output += `${label} ${est}  ${se}  ${zval}  ${allFormattedRows[rowIdx].ci}\n`;
       }
       output += '\n';
     }
@@ -1187,19 +1230,43 @@ export class GLM extends Estimator {
     output += `Family: ${family}, Link: ${link}\n\n`;
 
     output += `Fixed Effects:\n`;
-    output += `                Estimate  Std.Error  z value    ${confidence}% CI\n`;
 
     const labels = this._getCoefLabels();
     const cis = this.confint(alpha);
 
-    for (let i = 0; i < m.fixedEffects.length; i++) {
-      const label = labels[i].padEnd(15);
-      const est = m.fixedEffects[i].toFixed(6).padStart(10);
-      const se = m.standardErrors[i].toFixed(6).padStart(10);
-      const z = (m.fixedEffects[i] / m.standardErrors[i]).toFixed(3).padStart(8);
-      const ci = `[${cis[i].lower.toFixed(3)}, ${cis[i].upper.toFixed(3)}]`;
+    // Calculate dynamic column widths based on actual data
+    const longestLabel = labels.length ? Math.max(...labels.map((label) => label.length)) : 0;
+    const labelPadding = Math.max(15, longestLabel + 2);
 
-      output += `${label} ${est} ${se} ${z}  ${ci}\n`;
+    // Format all values first to determine column widths
+    const formattedRows = [];
+    for (let i = 0; i < m.fixedEffects.length; i++) {
+      formattedRows.push({
+        label: labels[i],
+        est: m.fixedEffects[i].toFixed(6),
+        se: m.standardErrors[i].toFixed(6),
+        z: (m.fixedEffects[i] / m.standardErrors[i]).toFixed(3),
+        ci: `[${cis[i].lower.toFixed(3)}, ${cis[i].upper.toFixed(3)}]`
+      });
+    }
+
+    // Calculate column widths
+    const estWidth = Math.max(8, ...formattedRows.map(r => r.est.length));
+    const seWidth = Math.max(9, ...formattedRows.map(r => r.se.length));
+    const zWidth = Math.max(7, ...formattedRows.map(r => r.z.length));
+
+    // Header
+    const headerPadding = ''.padEnd(labelPadding);
+    output += `${headerPadding}${'Estimate'.padStart(estWidth)}  ${'Std.Error'.padStart(seWidth)}  ${'z value'.padStart(zWidth)}    ${confidence}% CI\n`;
+
+    // Data rows
+    for (const row of formattedRows) {
+      const label = row.label.padEnd(labelPadding);
+      const est = row.est.padStart(estWidth);
+      const se = row.se.padStart(seWidth);
+      const z = row.z.padStart(zWidth);
+
+      output += `${label} ${est}  ${se}  ${z}  ${row.ci}\n`;
     }
 
     output += `\nRandom Effects:\n`;
