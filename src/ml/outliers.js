@@ -158,18 +158,30 @@ export class IsolationForest {
 
   /**
    * Fit the model
-   * @param {Array<Array<number>>|Object} X - Training data
+   * @param {Array<Array<number>>|Object} X - Training data (2D array, {data, columns}, or array of objects)
    * @returns {IsolationForest} this
    */
   fit(X) {
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
+    // Handle table input: {data, columns}
+    if (X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)) {
       const prepared = prepareX({
         columns: X.columns || X.X,
         data: X.data,
         omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
       });
       this._tableColumns = X.columns || X.X;
+      X = prepared.X;
+    }
+    // Handle array of objects (table rows)
+    else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+      // Extract columns from first row
+      const columns = Object.keys(X[0]);
+      const prepared = prepareX({
+        columns: columns,
+        data: X,
+        omit_missing: true,
+      });
+      this._tableColumns = columns;
       X = prepared.X;
     }
 
@@ -238,7 +250,7 @@ export class IsolationForest {
    * Compute anomaly scores for samples
    * Lower (more negative) scores indicate outliers
    * Scores range approximately from -1 to 0
-   * @param {Array<Array<number>>|Object} X - Data
+   * @param {Array<Array<number>>|Object} X - Data (2D array, {data, columns}, or array of objects)
    * @returns {Array<number>} Anomaly scores (negative values)
    */
   score_samples(X) {
@@ -246,11 +258,21 @@ export class IsolationForest {
       throw new Error('Model must be fitted before scoring');
     }
 
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
+    // Handle table input: {data, columns}
+    if (X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)) {
       const prepared = prepareX({
         columns: X.columns || X.X || this._tableColumns,
         data: X.data,
+        omit_missing: false,
+      });
+      X = prepared.X;
+    }
+    // Handle array of objects (table rows)
+    else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+      const columns = this._tableColumns || Object.keys(X[0]);
+      const prepared = prepareX({
+        columns: columns,
+        data: X,
         omit_missing: false,
       });
       X = prepared.X;
@@ -373,18 +395,29 @@ export class LocalOutlierFactor {
 
   /**
    * Fit the model
-   * @param {Array<Array<number>>|Object} X - Training data
+   * @param {Array<Array<number>>|Object} X - Training data (2D array, {data, columns}, or array of objects)
    * @returns {LocalOutlierFactor} this
    */
   fit(X) {
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
+    // Handle table input: {data, columns}
+    if (X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)) {
       const prepared = prepareX({
         columns: X.columns || X.X,
         data: X.data,
         omit_missing: X.omit_missing !== undefined ? X.omit_missing : true,
       });
       this._tableColumns = X.columns || X.X;
+      X = prepared.X;
+    }
+    // Handle array of objects (table rows)
+    else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+      const columns = Object.keys(X[0]);
+      const prepared = prepareX({
+        columns: columns,
+        data: X,
+        omit_missing: true,
+      });
+      this._tableColumns = columns;
       X = prepared.X;
     }
 
@@ -578,18 +611,29 @@ export class MahalanobisDistance {
 
   /**
    * Fit the detector on training data
-   * @param {Array<Array<number>>|Object} X - Training data
+   * @param {Array<Array<number>>|Object} X - Training data (2D array, {data, columns}, or array of objects)
    * @returns {MahalanobisDistance} this
    */
   fit(X) {
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
+    // Handle table input: {data, columns}
+    if (X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)) {
       const prepared = prepareX({
         columns: X.columns || X.X,
         data: X.data,
         omit_missing: true, // Remove missing values for robust estimation
       });
       this._tableColumns = X.columns || X.X;
+      X = prepared.X;
+    }
+    // Handle array of objects (table rows)
+    else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+      const columns = Object.keys(X[0]);
+      const prepared = prepareX({
+        columns: columns,
+        data: X,
+        omit_missing: true,
+      });
+      this._tableColumns = columns;
       X = prepared.X;
     }
 
@@ -673,7 +717,7 @@ export class MahalanobisDistance {
 
   /**
    * Compute Mahalanobis distances for samples
-   * @param {Array<Array<number>>|Object} X - Data to score
+   * @param {Array<Array<number>>|Object} X - Data to score (2D array, {data, columns}, or array of objects)
    * @returns {Array<number>} Negative Mahalanobis distances (outliers have lower scores)
    */
   score_samples(X) {
@@ -681,11 +725,21 @@ export class MahalanobisDistance {
       throw new Error('Model must be fitted before scoring');
     }
 
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
+    // Handle table input: {data, columns}
+    if (X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.columns)) {
       const prepared = prepareX({
         columns: X.columns || X.X || this._tableColumns,
         data: X.data,
+        omit_missing: true,
+      });
+      X = prepared.X;
+    }
+    // Handle array of objects (table rows)
+    else if (Array.isArray(X) && X.length > 0 && typeof X[0] === 'object' && !Array.isArray(X[0])) {
+      const columns = this._tableColumns || Object.keys(X[0]);
+      const prepared = prepareX({
+        columns: columns,
+        data: X,
         omit_missing: true,
       });
       X = prepared.X;
