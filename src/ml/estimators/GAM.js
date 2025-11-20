@@ -383,7 +383,7 @@ export class GAMClassifier extends Classifier {
 
   fit(X, y = null) {
     const prepared = prepareDataset(X, y);
-    const preparedY = prepared.y;
+    let preparedY = prepared.y;
 
     // Store label encoder if provided (for decoding predictions later)
     this.labelEncoder = null;
@@ -391,18 +391,31 @@ export class GAMClassifier extends Classifier {
       this.labelEncoder = prepared.encoders.y;
     }
 
-    // preparedY is already encoded as numbers (0, 1, 2, ...) by prepareXY if encoder was provided
-    // Get unique classes and map them
-    const numericY = preparedY;
-    const uniqueClasses = Array.from(new Set(numericY)).sort((a, b) => a - b);
-
-    // Store class information
-    // If we have a label encoder, use it to get the class names; otherwise use the numeric values
+    // prepareXY already transforms y using the encoder, so preparedY is numeric [0, 1, 2, ...]
+    // We need to determine which classes are actually present in the training data
+    let numericY;
     let classes;
+
     if (this.labelEncoder) {
-      classes = uniqueClasses.map(idx => this.labelEncoder.classes_[idx]);
+      // preparedY is already encoded as numbers by prepareXY
+      numericY = preparedY;
+      // Get unique classes actually present in training data
+      const uniqueIndices = Array.from(new Set(numericY)).sort((a, b) => a - b);
+      classes = uniqueIndices.map(idx => this.labelEncoder.classes_[idx]);
     } else {
-      classes = uniqueClasses;
+      // No encoder provided - handle string or numeric labels
+      const uniqueLabels = Array.from(new Set(preparedY));
+      if (typeof uniqueLabels[0] === 'string') {
+        // Create our own mapping for string labels
+        classes = uniqueLabels.sort();
+        const classMap = {};
+        classes.forEach((label, idx) => classMap[label] = idx);
+        numericY = preparedY.map(label => classMap[label]);
+      } else {
+        // Already numeric
+        numericY = preparedY;
+        classes = uniqueLabels.sort((a, b) => a - b);
+      }
     }
 
     this.gam.classes = classes;
@@ -426,12 +439,16 @@ export class GAMClassifier extends Classifier {
     }
 
     // Fit multinomial GAM
+    // Note: fitMultinomialGAM determines K from the actual data (max(y) + 1)
+    // which might be less than this.gam.K if some classes don't appear in training data
     const multinomialResult = fitMultinomialGAM(designMatrix, numericY, S, lambda, {
       maxIter: this.gam.maxIter,
       tol: this.gam.tol,
     });
 
     this.gam.coef = multinomialResult.coefficients; // Array of K-1 coefficient vectors
+    // Update K to match the actual fitted model (some classes might not be in training data)
+    this.gam.fittedK = multinomialResult.K;
 
     // Store training data for summary statistics
     this.gam.n = prepared.X.length;
