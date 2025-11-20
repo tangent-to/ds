@@ -4,7 +4,8 @@ import * as hca from '../hca.js';
 
 const DEFAULT_PARAMS = {
   linkage: 'average',
-  omit_missing: true
+  omit_missing: true,
+  k: null  // Optional: number of clusters to cut dendrogram
 };
 
 export class HCA extends Estimator {
@@ -13,6 +14,7 @@ export class HCA extends Estimator {
     super(merged);
     this.params = merged;
     this.model = null;
+    this.labels = null;
   }
 
   fit(X, opts = {}) {
@@ -21,6 +23,7 @@ export class HCA extends Estimator {
     let omitMissing = opts.omit_missing !== undefined
       ? opts.omit_missing
       : this.params.omit_missing;
+    let k = opts.k !== undefined ? opts.k : this.params.k;
 
     if (
       X &&
@@ -37,6 +40,7 @@ export class HCA extends Estimator {
       data = prepared.X;
       linkage = callOpts.linkage;
       omitMissing = callOpts.omit_missing;
+      k = callOpts.k !== undefined ? callOpts.k : k;
     }
 
     if (!Array.isArray(data)) {
@@ -47,7 +51,16 @@ export class HCA extends Estimator {
     this.model = { ...result, omit_missing: omitMissing };
     this.params.linkage = linkage;
     this.params.omit_missing = omitMissing;
+    this.params.k = k;
     this.fitted = true;
+
+    // Auto-cut if k is specified
+    if (k !== null && k !== undefined) {
+      this.labels = this.cut(k);
+    } else {
+      this.labels = null;
+    }
+
     return this;
   }
 
@@ -70,7 +83,7 @@ export class HCA extends Estimator {
       throw new Error('HCA: estimator not fitted.');
     }
     const { linkage, n, dendrogram } = this.model;
-    return {
+    const summary = {
       linkage,
       n,
       merges: dendrogram.length,
@@ -79,6 +92,15 @@ export class HCA extends Estimator {
         0
       )
     };
+
+    // Add cluster info if k was specified
+    if (this.params.k !== null && this.params.k !== undefined && this.labels) {
+      const uniqueLabels = [...new Set(this.labels)];
+      summary.k = this.params.k;
+      summary.nClusters = uniqueLabels.length;
+    }
+
+    return summary;
   }
 
   toJSON() {
@@ -86,7 +108,8 @@ export class HCA extends Estimator {
       __class__: 'HCA',
       params: this.getParams(),
       fitted: !!this.fitted,
-      model: this.model
+      model: this.model,
+      labels: this.labels
     };
   }
 
@@ -95,6 +118,7 @@ export class HCA extends Estimator {
     if (obj.model) {
       inst.model = obj.model;
       inst.fitted = !!obj.fitted;
+      inst.labels = obj.labels || null;
     }
     return inst;
   }
