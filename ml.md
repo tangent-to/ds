@@ -7,6 +7,8 @@ Machine Learning module exports
 - `// Clustering algorithms
   DBSCAN` (named)
 - `dbscan` (named)
+- `ConsensusCluster` (named)
+- `BranchPipeline` (named)
 - `DecisionTreeClassifier` (named)
 - `DecisionTreeRegressor` (named)
 - `GAMClassifier` (named)

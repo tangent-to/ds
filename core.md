@@ -9,5 +9,6 @@ Core module exports
 - `math` (named)
 - `optimize` (named)
 - `persistence` (named)
+- `spatial` (named)
 - `parseFormula` (named)
 - `applyFormula` (named)
