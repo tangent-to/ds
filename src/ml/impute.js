@@ -10,6 +10,7 @@
 import { mean as calculateMean } from "../core/math.js";
 import { normalize, applyColumns } from "../core/table.js";
 import { Matrix, pseudoInverse } from "ml-matrix";
+import { createGowerDistance } from "./distances.js";
 
 /**
  * Helper: Check if value is missing (NaN, null, undefined)
@@ -24,39 +25,61 @@ function isMissing(value) {
 
 /**
  * Helper: Convert {data, columns} format to 2D array, preserving missing values
- * @param {Object} options - {data, columns}
- * @returns {Object} {X: Array<Array<number>>, columns: Array<string>}
+ * Optionally includes categorical columns for mixed-type imputation
+ * @param {Object} options - {data, columns, includeCategorical}
+ * @returns {Object} {X: Array<Array>, columns: Array<string>, types: Array<string>}
  */
-function tableToMatrix({ data, columns }) {
+function tableToMatrix({ data, columns, includeCategorical = false }) {
   const rows = normalize(data);
 
   if (rows.length === 0) {
     throw new Error("Cannot prepare matrix from empty data");
   }
 
-  // If no columns specified, auto-detect numeric columns
+  // If no columns specified, auto-detect columns
   let selectedColumns = columns;
   if (!selectedColumns) {
-    const firstRow = rows[0];
-    selectedColumns = Object.keys(firstRow).filter((key) => {
-      const val = firstRow[key];
-      // Include column if it's numeric or missing (we'll handle missing values during imputation)
-      return typeof val === "number" || isMissing(val);
+    selectedColumns = Object.keys(rows[0]).filter((key) => {
+      // Check across multiple rows to determine type
+      for (const row of rows.slice(0, Math.min(10, rows.length))) {
+        const val = row[key];
+        if (!isMissing(val)) {
+          const isNumeric = typeof val === "number";
+          const isCategorical = typeof val === "string";
+          if (isNumeric) return true; // Always include numeric
+          if (isCategorical && includeCategorical) return true; // Include categorical if flag set
+          return false;
+        }
+      }
+      return false; // Skip if all missing in sample
     });
   } else if (typeof selectedColumns === "string") {
     selectedColumns = [selectedColumns];
   }
 
-  // Convert to 2D array, allowing missing values
-  const X = rows.map((row) =>
-    selectedColumns.map((col) => {
+  // Detect column types
+  const columnTypes = selectedColumns.map((col) => {
+    for (const row of rows) {
       const val = row[col];
-      // Convert missing values to NaN for consistency
-      return isMissing(val) ? NaN : val;
+      if (!isMissing(val)) {
+        return typeof val === "number" ? "numeric" : "categorical";
+      }
+    }
+    return "numeric"; // Default if all missing
+  });
+
+  // Convert to 2D array, preserving types and allowing missing values
+  const X = rows.map((row) =>
+    selectedColumns.map((col, idx) => {
+      const val = row[col];
+      if (isMissing(val)) {
+        return columnTypes[idx] === "numeric" ? NaN : null;
+      }
+      return val; // Keep as-is (number or string)
     }),
   );
 
-  return { X, columns: selectedColumns };
+  return { X, columns: selectedColumns, types: columnTypes };
 }
 
 /**
@@ -461,9 +484,22 @@ export class KNNImputer {
     // Handle table input: either {data, columns} format or array of objects
     if (X && typeof X === "object" && !Array.isArray(X)) {
       if (X.data || X.columns) {
-        const result = tableToMatrix({ data: X.data, columns: X.columns });
+        const result = tableToMatrix({
+          data: X.data,
+          columns: X.columns,
+          includeCategorical: true, // Include categorical columns
+        });
         this._tableColumns = result.columns;
+        this._columnTypes = result.types; // Store column types
         X = result.X;
+
+        // Use Gower distance if categorical columns are present
+        if (result.types.includes("categorical")) {
+          this._useGowerDistance = true;
+          this.metric = createGowerDistance(X, result.types);
+        } else {
+          this._useGowerDistance = false;
+        }
       } else {
         throw new Error(
           "X must be a 2D array, {data, columns} object, or array of objects",
@@ -502,6 +538,7 @@ export class KNNImputer {
         const result = tableToMatrix({
           data: X.data,
           columns: X.columns || this._tableColumns,
+          includeCategorical: true, // Include categorical columns
         });
         selectedColumns = result.columns;
         X = result.X;
@@ -555,19 +592,63 @@ export class KNNImputer {
         }
 
         if (values.length === 0) {
-          // No neighbors have this feature - use 0
-          result[i][j] = 0;
+          // No neighbors have this feature - use 0 for numeric, null for categorical
+          result[i][j] =
+            this._columnTypes && this._columnTypes[j] === "categorical"
+              ? null
+              : 0;
         } else {
-          // Weighted mean
-          if (this.weights === "distance") {
-            const weightSum = weights.reduce((a, b) => a + b, 0);
-            const weightedSum = values.reduce(
-              (sum, val, idx) => sum + val * weights[idx],
-              0,
-            );
-            result[i][j] = weightedSum / weightSum;
+          // Check if this is a categorical column
+          const isCategorical =
+            this._columnTypes && this._columnTypes[j] === "categorical";
+
+          if (isCategorical) {
+            // For categorical: use weighted mode (most frequent value)
+            if (this.weights === "distance") {
+              // Weight votes by distance
+              const voteCounts = new Map();
+              for (let idx = 0; idx < values.length; idx++) {
+                const val = values[idx];
+                voteCounts.set(val, (voteCounts.get(val) || 0) + weights[idx]);
+              }
+              // Find value with highest weighted vote
+              let maxVote = -Infinity;
+              let modeValue = values[0];
+              for (const [val, vote] of voteCounts) {
+                if (vote > maxVote) {
+                  maxVote = vote;
+                  modeValue = val;
+                }
+              }
+              result[i][j] = modeValue;
+            } else {
+              // Unweighted mode
+              const counts = new Map();
+              for (const val of values) {
+                counts.set(val, (counts.get(val) || 0) + 1);
+              }
+              let maxCount = 0;
+              let modeValue = values[0];
+              for (const [val, count] of counts) {
+                if (count > maxCount) {
+                  maxCount = count;
+                  modeValue = val;
+                }
+              }
+              result[i][j] = modeValue;
+            }
           } else {
-            result[i][j] = calculateMean(values);
+            // For numeric: use weighted mean
+            if (this.weights === "distance") {
+              const weightSum = weights.reduce((a, b) => a + b, 0);
+              const weightedSum = values.reduce(
+                (sum, val, idx) => sum + val * weights[idx],
+                0,
+              );
+              result[i][j] = weightedSum / weightSum;
+            } else {
+              result[i][j] = calculateMean(values);
+            }
           }
         }
       }
