@@ -108,16 +108,66 @@ export function confusionMatrix(yTrue, yPred) {
   const labels = [...new Set([...yTrue, ...yPred])].sort();
   const n = labels.length;
   const matrix = Array(n).fill(null).map(() => Array(n).fill(0));
-  
+
   const labelIndex = new Map(labels.map((label, i) => [label, i]));
-  
+
   for (let i = 0; i < yTrue.length; i++) {
     const trueIdx = labelIndex.get(yTrue[i]);
     const predIdx = labelIndex.get(yPred[i]);
     matrix[trueIdx][predIdx]++;
   }
-  
+
   return { matrix, labels };
+}
+
+/**
+ * Format confusion matrix as text
+ * @param {Array} yTrue - True labels
+ * @param {Array} yPred - Predicted labels
+ * @returns {string} Formatted confusion matrix
+ */
+export function confusionMatrixText(yTrue, yPred) {
+  const { matrix, labels } = confusionMatrix(yTrue, yPred);
+
+  // Calculate column widths
+  const labelWidth = Math.max(...labels.map(l => String(l).length), 8);
+  const numWidth = Math.max(...matrix.flat().map(n => String(n).length), 4);
+
+  // Build output lines
+  const lines = [];
+
+  // Header row
+  const header = ' '.repeat(labelWidth + 2) + labels.map(l => String(l).padStart(numWidth + 1)).join('');
+  lines.push('Predicted:');
+  lines.push(header);
+  lines.push('Actual:');
+
+  // Data rows
+  for (let i = 0; i < labels.length; i++) {
+    const rowLabel = String(labels[i]).padEnd(labelWidth);
+    const rowData = matrix[i].map(n => String(n).padStart(numWidth + 1)).join('');
+    lines.push(`  ${rowLabel} ${rowData}`);
+  }
+
+  // Add accuracy
+  const acc = accuracy(yTrue, yPred);
+  const total = yTrue.length;
+  const correct = matrix.reduce((sum, row, i) => sum + row[i], 0);
+
+  lines.push('');
+  lines.push(`Accuracy: ${correct}/${total} = ${(acc * 100).toFixed(2)}%`);
+
+  // Per-class accuracy
+  lines.push('');
+  lines.push('Per-class accuracy:');
+  for (let i = 0; i < labels.length; i++) {
+    const classTotal = matrix[i].reduce((a, b) => a + b, 0);
+    const classCorrect = matrix[i][i];
+    const classAcc = classTotal > 0 ? classCorrect / classTotal : 0;
+    lines.push(`  ${String(labels[i]).padEnd(labelWidth)}: ${classCorrect}/${classTotal} = ${(classAcc * 100).toFixed(2)}%`);
+  }
+
+  return lines.join('\n');
 }
 
 /**

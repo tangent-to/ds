@@ -7,15 +7,79 @@
  * - IterativeImputer: Multivariate imputation (MICE algorithm)
  */
 
-import { mean as calculateMean } from '../core/math.js';
-import { prepareX } from '../core/table.js';
-import { Matrix, pseudoInverse } from 'ml-matrix';
+import { mean as calculateMean } from "../core/math.js";
+import { normalize, applyColumns } from "../core/table.js";
+import { Matrix, pseudoInverse } from "ml-matrix";
+import { createGowerDistance } from "./distances.js";
 
 /**
  * Helper: Check if value is missing (NaN, null, undefined)
  */
 function isMissing(value) {
-  return value === null || value === undefined || (typeof value === 'number' && isNaN(value));
+  return (
+    value === null ||
+    value === undefined ||
+    (typeof value === "number" && isNaN(value))
+  );
+}
+
+/**
+ * Helper: Convert {data, columns} format to 2D array, preserving missing values
+ * Optionally includes categorical columns for mixed-type imputation
+ * @param {Object} options - {data, columns, includeCategorical}
+ * @returns {Object} {X: Array<Array>, columns: Array<string>, types: Array<string>}
+ */
+function tableToMatrix({ data, columns, includeCategorical = false }) {
+  const rows = normalize(data);
+
+  if (rows.length === 0) {
+    throw new Error("Cannot prepare matrix from empty data");
+  }
+
+  // If no columns specified, auto-detect columns
+  let selectedColumns = columns;
+  if (!selectedColumns) {
+    selectedColumns = Object.keys(rows[0]).filter((key) => {
+      // Check across multiple rows to determine type
+      for (const row of rows.slice(0, Math.min(10, rows.length))) {
+        const val = row[key];
+        if (!isMissing(val)) {
+          const isNumeric = typeof val === "number";
+          const isCategorical = typeof val === "string";
+          if (isNumeric) return true; // Always include numeric
+          if (isCategorical && includeCategorical) return true; // Include categorical if flag set
+          return false;
+        }
+      }
+      return false; // Skip if all missing in sample
+    });
+  } else if (typeof selectedColumns === "string") {
+    selectedColumns = [selectedColumns];
+  }
+
+  // Detect column types
+  const columnTypes = selectedColumns.map((col) => {
+    for (const row of rows) {
+      const val = row[col];
+      if (!isMissing(val)) {
+        return typeof val === "number" ? "numeric" : "categorical";
+      }
+    }
+    return "numeric"; // Default if all missing
+  });
+
+  // Convert to 2D array, preserving types and allowing missing values
+  const X = rows.map((row) =>
+    selectedColumns.map((col, idx) => {
+      const val = row[col];
+      if (isMissing(val)) {
+        return columnTypes[idx] === "numeric" ? NaN : null;
+      }
+      return val; // Keep as-is (number or string)
+    }),
+  );
+
+  return { X, columns: selectedColumns, types: columnTypes };
 }
 
 /**
@@ -35,7 +99,7 @@ function getMissingIndices(arr) {
  * Helper: Get non-missing values from array
  */
 function getNonMissing(arr) {
-  return arr.filter(val => !isMissing(val));
+  return arr.filter((val) => !isMissing(val));
 }
 
 /**
@@ -88,14 +152,18 @@ export class SimpleImputer {
    * @param {number|string} options.fill_value - Value to use for 'constant' strategy
    * @param {boolean} options.copy - If true, create copy of X (default: true)
    */
-  constructor({ strategy = 'mean', fill_value = null, copy = true } = {}) {
-    const validStrategies = ['mean', 'median', 'most_frequent', 'constant'];
+  constructor({ strategy = "mean", fill_value = null, copy = true } = {}) {
+    const validStrategies = ["mean", "median", "most_frequent", "constant"];
     if (!validStrategies.includes(strategy)) {
-      throw new Error(`Invalid strategy: ${strategy}. Must be one of ${validStrategies.join(', ')}`);
+      throw new Error(
+        `Invalid strategy: ${strategy}. Must be one of ${validStrategies.join(", ")}`,
+      );
     }
 
-    if (strategy === 'constant' && fill_value === null) {
-      throw new Error('fill_value must be provided when strategy is "constant"');
+    if (strategy === "constant" && fill_value === null) {
+      throw new Error(
+        'fill_value must be provided when strategy is "constant"',
+      );
     }
 
     this.strategy = strategy;
@@ -104,35 +172,92 @@ export class SimpleImputer {
     this.statistics_ = null;
     this.nFeatures_ = null;
     this._tableColumns = null;
+    this._groupModels = null;
+    this._originalData = null;
   }
 
   /**
    * Fit the imputer on training data
-   * @param {Array<Array<number>>|Object} X - Training data or table object
+   * @param {Array<Array<number>>|Object} X - Training data, table object, or {data, columns, group} format
    * @returns {SimpleImputer} this
    */
   fit(X) {
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
-      const prepared = prepareX({
-        columns: X.columns || X.X,
-        data: X.data,
-        omit_missing: false, // Don't drop missing values during prep
-      });
-      this._tableColumns = X.columns || X.X;
-      X = prepared.X;
+    // Handle table input: either {data, columns, group} format or array of objects
+    if (X && typeof X === "object" && !Array.isArray(X)) {
+      // Check if it's {data, columns} format or array of objects
+      if (X.data || X.columns) {
+        const groupBy = X.group;
+        this._originalData = X.data;
+
+        // Group-based imputation
+        if (groupBy) {
+          this._groupModels = new Map();
+          const rows = normalize(X.data);
+          const groups = new Map();
+
+          // Group rows
+          rows.forEach((row, idx) => {
+            const groupKey = row[groupBy];
+            if (!groups.has(groupKey)) {
+              groups.set(groupKey, []);
+            }
+            groups.get(groupKey).push({ row, idx });
+          });
+
+          // Fit a model for each group
+          for (const [groupKey, groupData] of groups) {
+            const groupRows = groupData.map((d) => d.row);
+            const result = tableToMatrix({
+              data: groupRows,
+              columns: X.columns,
+            });
+
+            if (result.X.length > 0) {
+              const model = this._fitSingleModel(result.X);
+              this._groupModels.set(groupKey, {
+                model,
+                indices: groupData.map((d) => d.idx),
+                columns: result.columns,
+              });
+            }
+          }
+
+          this._tableColumns = X.columns;
+          return this;
+        }
+
+        // Non-grouped imputation
+        const result = tableToMatrix({ data: X.data, columns: X.columns });
+        this._tableColumns = result.columns;
+        X = result.X;
+      } else {
+        // Assume it's an array of objects (not wrapped in {data, columns})
+        throw new Error(
+          "X must be a 2D array, {data, columns} object, or array of objects",
+        );
+      }
     }
 
     if (!Array.isArray(X) || !Array.isArray(X[0])) {
-      throw new Error('X must be a 2D array or table object');
+      throw new Error("X must be a 2D array or table object");
     }
 
+    this._fitSingleModel(X);
+    return this;
+  }
+
+  /**
+   * Internal method to fit a single imputation model
+   * @param {Array<Array<number>>} X - 2D array of numeric data
+   * @returns {Object} Model statistics
+   */
+  _fitSingleModel(X) {
     const nSamples = X.length;
     const nFeatures = X[0].length;
     this.nFeatures_ = nFeatures;
 
     // Compute statistics for each feature
-    this.statistics_ = new Array(nFeatures);
+    const statistics = new Array(nFeatures);
 
     for (let j = 0; j < nFeatures; j++) {
       // Extract column j (excluding missing values)
@@ -145,68 +270,128 @@ export class SimpleImputer {
 
       if (column.length === 0) {
         // All values are missing - use 0 for numeric strategies
-        this.statistics_[j] = this.strategy === 'constant' ? this.fill_value : 0;
+        statistics[j] = this.strategy === "constant" ? this.fill_value : 0;
         continue;
       }
 
       // Compute statistic based on strategy
       switch (this.strategy) {
-        case 'mean':
-          this.statistics_[j] = calculateMean(column);
+        case "mean":
+          statistics[j] = calculateMean(column);
           break;
-        case 'median':
-          this.statistics_[j] = calculateMedian(column);
+        case "median":
+          statistics[j] = calculateMedian(column);
           break;
-        case 'most_frequent':
-          this.statistics_[j] = calculateMode(column);
+        case "most_frequent":
+          statistics[j] = calculateMode(column);
           break;
-        case 'constant':
-          this.statistics_[j] = this.fill_value;
+        case "constant":
+          statistics[j] = this.fill_value;
           break;
       }
     }
 
-    return this;
+    this.statistics_ = statistics;
+    return { statistics, nFeatures };
   }
 
   /**
    * Transform data by filling missing values
-   * @param {Array<Array<number>>|Object} X - Data to transform or table object
-   * @returns {Array<Array<number>>} Transformed data
+   * @param {Array<Array<number>>|Object} X - Data to transform, table object, or {data, columns, group} format
+   * @returns {Array<Array<number>>|Array<Object>} Transformed data (array if input was table)
    */
   transform(X) {
-    if (this.statistics_ === null) {
-      throw new Error('Imputer must be fitted before transform');
+    if (this.statistics_ === null && !this._groupModels) {
+      throw new Error("Imputer must be fitted before transform");
     }
 
-    // Handle table input
-    let isTable = false;
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
-      const prepared = prepareX({
-        columns: X.columns || X.X || this._tableColumns,
-        data: X.data,
-        omit_missing: false,
-      });
-      X = prepared.X;
-      isTable = true;
+    // Handle table input with groups
+    if (X && typeof X === "object" && !Array.isArray(X)) {
+      if (X.data || X.columns) {
+        const groupBy = X.group;
+        const rows = normalize(X.data);
+
+        // Group-based imputation
+        if (groupBy && this._groupModels) {
+          const imputedRows = rows.map((row) => ({ ...row }));
+
+          for (const [groupKey, groupInfo] of this._groupModels) {
+            const groupIndices = [];
+            const groupRows = [];
+
+            rows.forEach((row, idx) => {
+              if (row[groupBy] === groupKey) {
+                groupIndices.push(idx);
+                groupRows.push(row);
+              }
+            });
+
+            if (groupRows.length === 0) continue;
+
+            const result = tableToMatrix({
+              data: groupRows,
+              columns: groupInfo.columns,
+            });
+
+            const imputed = this._transformWithModel(
+              result.X,
+              groupInfo.model.statistics,
+            );
+
+            // Apply back to original rows
+            groupIndices.forEach((originalIdx, i) => {
+              groupInfo.columns.forEach((col, colIdx) => {
+                imputedRows[originalIdx][col] = imputed[i][colIdx];
+              });
+            });
+          }
+
+          return imputedRows;
+        }
+
+        // Non-grouped table imputation
+        const result = tableToMatrix({
+          data: X.data,
+          columns: X.columns || this._tableColumns,
+        });
+
+        const imputed = this._transformWithModel(result.X, this.statistics_);
+        return applyColumns(rows, result.columns, imputed);
+      } else {
+        throw new Error(
+          "X must be a 2D array, {data, columns} object, or array of objects",
+        );
+      }
     }
 
     if (!Array.isArray(X) || !Array.isArray(X[0])) {
-      throw new Error('X must be a 2D array or table object');
+      throw new Error("X must be a 2D array or table object");
     }
 
     if (X[0].length !== this.nFeatures_) {
-      throw new Error(`X has ${X[0].length} features, but imputer expected ${this.nFeatures_}`);
+      throw new Error(
+        `X has ${X[0].length} features, but imputer expected ${this.nFeatures_}`,
+      );
     }
 
+    return this._transformWithModel(X, this.statistics_);
+  }
+
+  /**
+   * Internal method to transform data with specific statistics
+   * @param {Array<Array<number>>} X - Data to transform
+   * @param {Array<number>} statistics - Statistics to use for imputation
+   * @returns {Array<Array<number>>} Transformed data
+   */
+  _transformWithModel(X, statistics) {
     // Create copy if requested
-    const result = this.copy ? X.map(row => [...row]) : X;
+    const result = this.copy ? X.map((row) => [...row]) : X;
 
     // Fill missing values
     for (let i = 0; i < result.length; i++) {
-      for (let j = 0; j < this.nFeatures_; j++) {
+      for (let j = 0; j < statistics.length; j++) {
         if (isMissing(result[i][j])) {
-          result[i][j] = this.statistics_[j];
+          result[i][j] = statistics[j];
         }
       }
     }
@@ -246,9 +431,14 @@ export class KNNImputer {
    * @param {Function} options.metric - Distance function (default: euclidean)
    * @param {boolean} options.copy - If true, create copy of X (default: true)
    */
-  constructor({ n_neighbors = 5, weights = 'uniform', metric = null, copy = true } = {}) {
+  constructor({
+    n_neighbors = 5,
+    weights = "uniform",
+    metric = null,
+    copy = true,
+  } = {}) {
     if (n_neighbors <= 0) {
-      throw new Error('n_neighbors must be positive');
+      throw new Error("n_neighbors must be positive");
     }
 
     this.n_neighbors = n_neighbors;
@@ -287,27 +477,42 @@ export class KNNImputer {
 
   /**
    * Fit the imputer on training data
-   * @param {Array<Array<number>>|Object} X - Training data
+   * @param {Array<Array<number>>|Object} X - Training data, table object, or {data, columns} format
    * @returns {KNNImputer} this
    */
   fit(X) {
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
-      const prepared = prepareX({
-        columns: X.columns || X.X,
-        data: X.data,
-        omit_missing: false,
-      });
-      this._tableColumns = X.columns || X.X;
-      X = prepared.X;
+    // Handle table input: either {data, columns} format or array of objects
+    if (X && typeof X === "object" && !Array.isArray(X)) {
+      if (X.data || X.columns) {
+        const result = tableToMatrix({
+          data: X.data,
+          columns: X.columns,
+          includeCategorical: true, // Include categorical columns
+        });
+        this._tableColumns = result.columns;
+        this._columnTypes = result.types; // Store column types
+        X = result.X;
+
+        // Use Gower distance if categorical columns are present
+        if (result.types.includes("categorical")) {
+          this._useGowerDistance = true;
+          this.metric = createGowerDistance(X, result.types);
+        } else {
+          this._useGowerDistance = false;
+        }
+      } else {
+        throw new Error(
+          "X must be a 2D array, {data, columns} object, or array of objects",
+        );
+      }
     }
 
     if (!Array.isArray(X) || !Array.isArray(X[0])) {
-      throw new Error('X must be a 2D array or table object');
+      throw new Error("X must be a 2D array or table object");
     }
 
     // Store training data
-    this.X_ = this.copy ? X.map(row => [...row]) : X;
+    this.X_ = this.copy ? X.map((row) => [...row]) : X;
     this.nFeatures_ = X[0].length;
 
     return this;
@@ -315,35 +520,47 @@ export class KNNImputer {
 
   /**
    * Transform data by filling missing values using KNN
-   * @param {Array<Array<number>>|Object} X - Data to transform
+   * @param {Array<Array<number>>|Object} X - Data to transform, table object, or {data, columns} format
    * @param {Array<number>} exclude_indices - Row indices to exclude from neighbors (for fit_transform)
-   * @returns {Array<Array<number>>} Transformed data
+   * @returns {Array<Array<number>>|Array<Object>} Transformed data (array if input was table)
    */
   transform(X, exclude_indices = []) {
     if (this.X_ === null) {
-      throw new Error('Imputer must be fitted before transform');
+      throw new Error("Imputer must be fitted before transform");
     }
 
     // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
-      const prepared = prepareX({
-        columns: X.columns || X.X || this._tableColumns,
-        data: X.data,
-        omit_missing: false,
-      });
-      X = prepared.X;
+    let originalData = null;
+    let selectedColumns = null;
+    if (X && typeof X === "object" && !Array.isArray(X)) {
+      if (X.data || X.columns) {
+        originalData = X.data;
+        const result = tableToMatrix({
+          data: X.data,
+          columns: X.columns || this._tableColumns,
+          includeCategorical: true, // Include categorical columns
+        });
+        selectedColumns = result.columns;
+        X = result.X;
+      } else {
+        throw new Error(
+          "X must be a 2D array, {data, columns} object, or array of objects",
+        );
+      }
     }
 
     if (!Array.isArray(X) || !Array.isArray(X[0])) {
-      throw new Error('X must be a 2D array or table object');
+      throw new Error("X must be a 2D array or table object");
     }
 
     if (X[0].length !== this.nFeatures_) {
-      throw new Error(`X has ${X[0].length} features, but imputer expected ${this.nFeatures_}`);
+      throw new Error(
+        `X has ${X[0].length} features, but imputer expected ${this.nFeatures_}`,
+      );
     }
 
     // Create copy
-    const result = this.copy ? X.map(row => [...row]) : X;
+    const result = this.copy ? X.map((row) => [...row]) : X;
 
     // For each row with missing values
     for (let i = 0; i < result.length; i++) {
@@ -356,7 +573,11 @@ export class KNNImputer {
 
       // Find k nearest neighbors from training data (excluding this row if in exclude_indices)
       const excludeSet = new Set(exclude_indices);
-      const neighbors = this._findNeighbors(row, this.n_neighbors, excludeSet.has(i) ? i : -1);
+      const neighbors = this._findNeighbors(
+        row,
+        this.n_neighbors,
+        excludeSet.has(i) ? i : -1,
+      );
 
       // Impute each missing feature
       for (const j of missingIndices) {
@@ -371,19 +592,71 @@ export class KNNImputer {
         }
 
         if (values.length === 0) {
-          // No neighbors have this feature - use 0
-          result[i][j] = 0;
+          // No neighbors have this feature - use 0 for numeric, null for categorical
+          result[i][j] =
+            this._columnTypes && this._columnTypes[j] === "categorical"
+              ? null
+              : 0;
         } else {
-          // Weighted mean
-          if (this.weights === 'distance') {
-            const weightSum = weights.reduce((a, b) => a + b, 0);
-            const weightedSum = values.reduce((sum, val, idx) => sum + val * weights[idx], 0);
-            result[i][j] = weightedSum / weightSum;
+          // Check if this is a categorical column
+          const isCategorical =
+            this._columnTypes && this._columnTypes[j] === "categorical";
+
+          if (isCategorical) {
+            // For categorical: use weighted mode (most frequent value)
+            if (this.weights === "distance") {
+              // Weight votes by distance
+              const voteCounts = new Map();
+              for (let idx = 0; idx < values.length; idx++) {
+                const val = values[idx];
+                voteCounts.set(val, (voteCounts.get(val) || 0) + weights[idx]);
+              }
+              // Find value with highest weighted vote
+              let maxVote = -Infinity;
+              let modeValue = values[0];
+              for (const [val, vote] of voteCounts) {
+                if (vote > maxVote) {
+                  maxVote = vote;
+                  modeValue = val;
+                }
+              }
+              result[i][j] = modeValue;
+            } else {
+              // Unweighted mode
+              const counts = new Map();
+              for (const val of values) {
+                counts.set(val, (counts.get(val) || 0) + 1);
+              }
+              let maxCount = 0;
+              let modeValue = values[0];
+              for (const [val, count] of counts) {
+                if (count > maxCount) {
+                  maxCount = count;
+                  modeValue = val;
+                }
+              }
+              result[i][j] = modeValue;
+            }
           } else {
-            result[i][j] = calculateMean(values);
+            // For numeric: use weighted mean
+            if (this.weights === "distance") {
+              const weightSum = weights.reduce((a, b) => a + b, 0);
+              const weightedSum = values.reduce(
+                (sum, val, idx) => sum + val * weights[idx],
+                0,
+              );
+              result[i][j] = weightedSum / weightSum;
+            } else {
+              result[i][j] = calculateMean(values);
+            }
           }
         }
       }
+    }
+
+    // If input was table format, return full table with imputed values
+    if (originalData !== null) {
+      return applyColumns(normalize(originalData), selectedColumns, result);
     }
 
     return result;
@@ -424,12 +697,27 @@ export class KNNImputer {
   /**
    * Fit and transform in one step
    * @param {Array<Array<number>>|Object} X - Data to fit and transform
-   * @returns {Array<Array<number>>} Transformed data
+   * @returns {Array<Array<number>>|Array<Object>} Transformed data
    */
   fit_transform(X) {
+    // Store original input to preserve table format
+    const originalInput = X;
     this.fit(X);
     // Pass all indices to exclude each row from its own neighbor search
     const excludeIndices = Array.from({ length: this.X_.length }, (_, i) => i);
+
+    // If input was table format, pass it through to transform
+    if (
+      originalInput &&
+      typeof originalInput === "object" &&
+      !Array.isArray(originalInput) &&
+      (originalInput.data || originalInput.columns)
+    ) {
+      // Create a modified input for transform that uses the stored data but preserves format
+      return this.transform(originalInput, excludeIndices);
+    }
+
+    // Array format - use stored training data
     return this.transform(this.X_, excludeIndices);
   }
 }
@@ -463,13 +751,13 @@ export class IterativeImputer {
    * @param {boolean} options.copy - If true, create copy of X (default: true)
    */
   constructor({
-    initial_strategy = 'mean',
+    initial_strategy = "mean",
     max_iter = 10,
     tol = 1e-3,
     min_value = -Infinity,
     max_value = Infinity,
     verbose = false,
-    copy = true
+    copy = true,
   } = {}) {
     this.initial_strategy = initial_strategy;
     this.max_iter = max_iter;
@@ -495,14 +783,17 @@ export class IterativeImputer {
     const n = X.length;
     const Xmat = new Matrix(X);
     const ones = Matrix.ones(n, 1);
-    const XwithIntercept = Matrix.columnMatrix(ones.getColumn(0), ...Xmat.transpose().to2DArray());
+    const XwithIntercept = Matrix.columnMatrix(
+      ones.getColumn(0),
+      ...Xmat.transpose().to2DArray(),
+    );
 
     const yMat = new Matrix([y]).transpose();
 
     // Use pseudoinverse for robust estimation: β = (X'X)^(-1) X'y = pinv(X) * y
     const XpInv = pseudoInverse(XwithIntercept);
     const beta = XpInv.mmul(yMat);
-    const coef = beta.to2DArray().map(row => row[0]);
+    const coef = beta.to2DArray().map((row) => row[0]);
 
     return {
       intercept: coef[0],
@@ -517,7 +808,7 @@ export class IterativeImputer {
           predictions.push(pred);
         }
         return predictions;
-      }
+      },
     };
   }
 
@@ -547,7 +838,7 @@ export class IterativeImputer {
 
     // If no missing values, return as-is
     if (missingRows.length === 0) {
-      return X.map(row => row[featureIdx]);
+      return X.map((row) => row[featureIdx]);
     }
 
     // If all values missing, use initial strategy
@@ -602,29 +893,33 @@ export class IterativeImputer {
 
   /**
    * Fit the imputer on training data
-   * @param {Array<Array<number>>|Object} X - Training data
+   * @param {Array<Array<number>>|Object} X - Training data, table object, or {data, columns} format
    * @returns {IterativeImputer} this
    */
   fit(X) {
-    // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
-      const prepared = prepareX({
-        columns: X.columns || X.X,
-        data: X.data,
-        omit_missing: false,
-      });
-      this._tableColumns = X.columns || X.X;
-      X = prepared.X;
+    // Handle table input: either {data, columns} format or array of objects
+    if (X && typeof X === "object" && !Array.isArray(X)) {
+      if (X.data || X.columns) {
+        const result = tableToMatrix({ data: X.data, columns: X.columns });
+        this._tableColumns = result.columns;
+        X = result.X;
+      } else {
+        throw new Error(
+          "X must be a 2D array, {data, columns} object, or array of objects",
+        );
+      }
     }
 
     if (!Array.isArray(X) || !Array.isArray(X[0])) {
-      throw new Error('X must be a 2D array or table object');
+      throw new Error("X must be a 2D array or table object");
     }
 
     this.nFeatures_ = X[0].length;
 
     // Initial imputation using simple strategy
-    this.initial_imputer_ = new SimpleImputer({ strategy: this.initial_strategy });
+    this.initial_imputer_ = new SimpleImputer({
+      strategy: this.initial_strategy,
+    });
     this.initial_imputer_.fit(X);
 
     return this;
@@ -632,30 +927,41 @@ export class IterativeImputer {
 
   /**
    * Transform data by filling missing values using MICE
-   * @param {Array<Array<number>>|Object} X - Data to transform
-   * @returns {Array<Array<number>>} Transformed data
+   * @param {Array<Array<number>>|Object} X - Data to transform, table object, or {data, columns} format
+   * @returns {Array<Array<number>>|Array<Object>} Transformed data (array if input was table)
    */
   transform(X) {
     if (this.initial_imputer_ === null) {
-      throw new Error('Imputer must be fitted before transform');
+      throw new Error("Imputer must be fitted before transform");
     }
 
     // Handle table input
-    if (X && typeof X === 'object' && !Array.isArray(X)) {
-      const prepared = prepareX({
-        columns: X.columns || X.X || this._tableColumns,
-        data: X.data,
-        omit_missing: false,
-      });
-      X = prepared.X;
+    let originalData = null;
+    let selectedColumns = null;
+    if (X && typeof X === "object" && !Array.isArray(X)) {
+      if (X.data || X.columns) {
+        originalData = X.data;
+        const result = tableToMatrix({
+          data: X.data,
+          columns: X.columns || this._tableColumns,
+        });
+        selectedColumns = result.columns;
+        X = result.X;
+      } else {
+        throw new Error(
+          "X must be a 2D array, {data, columns} object, or array of objects",
+        );
+      }
     }
 
     if (!Array.isArray(X) || !Array.isArray(X[0])) {
-      throw new Error('X must be a 2D array or table object');
+      throw new Error("X must be a 2D array or table object");
     }
 
     if (X[0].length !== this.nFeatures_) {
-      throw new Error(`X has ${X[0].length} features, but imputer expected ${this.nFeatures_}`);
+      throw new Error(
+        `X has ${X[0].length} features, but imputer expected ${this.nFeatures_}`,
+      );
     }
 
     const n = X.length;
@@ -674,7 +980,7 @@ export class IterativeImputer {
     }
 
     // Iterative imputation
-    let prev_X = X_filled.map(row => [...row]);
+    let prev_X = X_filled.map((row) => [...row]);
 
     for (let iter = 0; iter < this.max_iter; iter++) {
       // Impute each feature in round-robin fashion
@@ -727,8 +1033,13 @@ export class IterativeImputer {
       }
 
       // Update prev_X
-      prev_X = X_filled.map(row => [...row]);
+      prev_X = X_filled.map((row) => [...row]);
       this.n_iter_ = iter + 1;
+    }
+
+    // If input was table format, return full table with imputed values
+    if (originalData !== null) {
+      return applyColumns(normalize(originalData), selectedColumns, X_filled);
     }
 
     return X_filled;

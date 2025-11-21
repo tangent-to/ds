@@ -363,12 +363,28 @@ function qrangeCDF(q, k, df) {
  * }
  */
 export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
-  if (groups.length < 2) {
+  // Handle both array and object inputs
+  let groupsArray;
+  let groupNames;
+  
+  if (Array.isArray(groups)) {
+    // Input is an array
+    groupsArray = groups;
+    groupNames = groups.map((_, i) => `Group ${i}`);
+  } else if (typeof groups === 'object' && groups !== null) {
+    // Input is an object with named groups
+    groupNames = Object.keys(groups);
+    groupsArray = Object.values(groups);
+  } else {
+    throw new Error('groups must be an array or an object');
+  }
+  
+  if (groupsArray.length < 2) {
     throw new Error('Need at least 2 groups for Tukey HSD test');
   }
 
-  const k = groups.length;
-  const groupSizes = groups.map(g => g.length);
+  const k = groupsArray.length;
+  const groupSizes = groupsArray.map(g => g.length);
   const n = groupSizes.reduce((a, b) => a + b, 0);
 
   // Compute or reuse ANOVA results
@@ -377,13 +393,13 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
     MSwithin = anovaResult.MSwithin;
     dfWithin = anovaResult.dfWithin;
   } else {
-    const anovaRes = oneWayAnova(groups);
+    const anovaRes = oneWayAnova(groupsArray);
     MSwithin = anovaRes.MSwithin;
     dfWithin = anovaRes.dfWithin;
   }
 
   // Compute group means
-  const groupMeans = groups.map(g => mean(g));
+  const groupMeans = groupsArray.map(g => mean(g));
 
   // Perform all pairwise comparisons
   const comparisons = [];
@@ -411,7 +427,7 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
 
       comparisons.push({
         groups: [i, j],
-        groupLabels: [`Group ${i}`, `Group ${j}`],
+        groupLabels: [groupNames[i], groupNames[j]],
         diff: meanDiff,
         lowerCI: meanDiff - margin,
         upperCI: meanDiff + margin,
@@ -425,7 +441,7 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
   return {
     comparisons,
     groupMeans,
-    groupNames: groups.map((_, i) => `Group ${i}`),
+    groupNames: groupNames,
     MSwithin,
     dfWithin,
     alpha,

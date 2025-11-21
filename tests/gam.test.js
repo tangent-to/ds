@@ -180,14 +180,16 @@ describe('GAM estimators', () => {
 
       const result = gam.predictWithInterval([[0], [Math.PI / 2]], 0.95);
 
-      expect(result).toHaveProperty('fitted');
-      expect(result).toHaveProperty('se');
-      expect(result).toHaveProperty('lower');
-      expect(result).toHaveProperty('upper');
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(2);
 
-      expect(result.fitted).toHaveLength(2);
-      expect(result.lower[0]).toBeLessThan(result.fitted[0]);
-      expect(result.upper[0]).toBeGreaterThan(result.fitted[0]);
+      expect(result[0]).toHaveProperty('fitted');
+      expect(result[0]).toHaveProperty('se');
+      expect(result[0]).toHaveProperty('lower');
+      expect(result[0]).toHaveProperty('upper');
+
+      expect(result[0].lower).toBeLessThan(result[0].fitted);
+      expect(result[0].upper).toBeGreaterThan(result[0].fitted);
     });
 
     it('should have narrower intervals with higher confidence level', () => {
@@ -197,8 +199,8 @@ describe('GAM estimators', () => {
       const result90 = gam.predictWithInterval([[0]], 0.90);
       const result95 = gam.predictWithInterval([[0]], 0.95);
 
-      const width90 = result90.upper[0] - result90.lower[0];
-      const width95 = result95.upper[0] - result95.lower[0];
+      const width90 = result90[0].upper - result90[0].lower;
+      const width95 = result95[0].upper - result95[0].lower;
 
       expect(width90).toBeLessThan(width95);
     });
