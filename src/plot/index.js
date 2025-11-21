@@ -11,6 +11,14 @@ export { plotScree } from './plotScree.js';
 
 // Clustering/hierarchical plots
 export { dendrogramLayout, plotHCA } from './plotHCA.js';
+export {
+  plotHDBSCAN,
+  plotCondensedTree,
+  plotHDBSCANDendrogram,
+  plotClusterMembership,
+  plotClusterStability,
+  plotHDBSCANDashboard
+} from './plotHDBSCAN.js';
 
 // Classification metrics plots
 export {

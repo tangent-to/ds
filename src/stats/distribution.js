@@ -276,19 +276,70 @@ export const beta = {
 function incompleteBeta(x, a, b, maxIter = 100) {
   if (x === 0) return 0;
   if (x === 1) return betaFunc(a, b);
-  
+
   // Series expansion
   const logBeta = logGamma(a) + logGamma(b) - logGamma(a + b);
   const front = Math.exp(a * Math.log(x) + b * Math.log(1 - x) - logBeta) / a;
-  
+
   let sum = 1.0;
   let term = 1.0;
-  
+
   for (let n = 0; n < maxIter; n++) {
     term *= (a + b + n) * x / (a + 1 + n);
     sum += term;
     if (Math.abs(term) < 1e-10) break;
   }
-  
+
   return front * sum;
+}
+
+// ============= Chi-Squared Distribution =============
+
+/**
+ * Chi-squared distribution (special case of gamma with shape=df/2, scale=2)
+ */
+export const chisq = {
+  /**
+   * Probability density function
+   * @param {number} x - Value (x >= 0)
+   * @param {Object} params - {df} degrees of freedom
+   * @returns {number} Probability density
+   */
+  pdf(x, { df = 1 } = {}) {
+    guardPositive(df, 'df');
+    return gamma.pdf(x, { shape: df / 2, scale: 2 });
+  },
+
+  /**
+   * Cumulative distribution function
+   * @param {number} x - Value
+   * @param {Object} params - {df} degrees of freedom
+   * @returns {number} Cumulative probability
+   */
+  cdf(x, { df = 1 } = {}) {
+    guardPositive(df, 'df');
+    return gamma.cdf(x, { shape: df / 2, scale: 2 });
+  },
+
+  /**
+   * Quantile function (inverse CDF)
+   * @param {number} p - Probability
+   * @param {Object} params - {df} degrees of freedom
+   * @returns {number} Quantile
+   */
+  quantile(p, { df = 1 } = {}) {
+    guardProbability(p, 'p');
+    guardPositive(df, 'df');
+    return gamma.quantile(p, { shape: df / 2, scale: 2 });
+  }
+};
+
+/**
+ * Shorthand for chi-squared quantile function (R-like API)
+ * @param {number} p - Probability
+ * @param {number} df - Degrees of freedom
+ * @returns {number} Quantile
+ */
+export function qchisq(p, df) {
+  return chisq.quantile(p, { df });
 }
