@@ -248,8 +248,6 @@ export class Regressor extends Estimator {
 export class Classifier extends Estimator {
   constructor(params = {}) {
     super(params);
-<<<<<<< Updated upstream
-=======
     this.labelEncoder_ = null;
     this.classes_ = null;
   }
@@ -333,7 +331,6 @@ export class Classifier extends Estimator {
       return predictions.map((pred) => this.classes_[pred]);
     }
     return predictions;
->>>>>>> Stashed changes
   }
 
   /**
