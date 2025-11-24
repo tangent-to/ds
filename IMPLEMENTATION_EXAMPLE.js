@@ -1,33 +1,29 @@
 /**
- * Base estimator classes for @tangent.to/ds
+ * Enhanced Estimator Base Classes with Observable Safeguards
  *
- * Provides a lightweight, scikit-learn inspired base:
- *  - Estimator: common utilities (params, serialization)
- *  - Regressor: adds a default R^2 scoring helper
- *  - Classifier: adds a default accuracy scoring helper
- *  - Transformer: adds fitTransform convenience
+ * This file demonstrates the recommended enhancements to the base Estimator class
+ * to improve Observable compatibility, add safeguards, and optimize memory usage.
  *
- * Subclasses should implement `fit(...)` and `predict(...)` / `transform(...)`
+ * TO IMPLEMENT: Copy the relevant methods into src/core/estimators/estimator.js
  */
 
-import { prepareX, prepareXY } from "../table.js";
-import { mean } from "../math.js";
+import { prepareX, prepareXY } from "../core/table.js";
+import { mean } from "../core/math.js";
 
 /**
- * Minimal base Estimator
+ * Enhanced Base Estimator with Observable safeguards
  */
 export class Estimator {
-  /**
-   * @param {Object} params Hyperparameters / options for the estimator
-   */
   constructor(params = {}) {
     this.params = { ...params };
     this.fitted = false;
-    // place to store internal learned attributes (e.g. coefficients)
     this._state = {};
-    // track warnings during fitting
-    this._warnings = [];
+    this._warnings = []; // Track warnings during fitting
   }
+
+  // ============================================================================
+  // NEW: Fitted State Safeguards
+  // ============================================================================
 
   /**
    * Check if model is fitted
@@ -58,6 +54,10 @@ export class Estimator {
     }
   }
 
+  // ============================================================================
+  // NEW: Model State Inspection
+  // ============================================================================
+
   /**
    * Get comprehensive model state
    * @returns {Object} State information including fitted status, memory estimate, warnings
@@ -82,10 +82,13 @@ export class Estimator {
     if (!this.fitted) return 0;
 
     try {
+      // Rough estimation based on JSON serialization
       const json = this.toJSON();
       const jsonStr = JSON.stringify(json);
+      // Characters * 2 bytes (UTF-16) / 1024 / 1024
       return (jsonStr.length * 2) / (1024 * 1024);
     } catch (e) {
+      // If serialization fails, return -1 to indicate error
       return -1;
     }
   }
@@ -100,6 +103,10 @@ export class Estimator {
     if (mb < 0.1) return `${(mb * 1024).toFixed(1)} KB`;
     return `${mb.toFixed(2)} MB`;
   }
+
+  // ============================================================================
+  // NEW: Warning System
+  // ============================================================================
 
   /**
    * Add a warning to the model
@@ -122,7 +129,7 @@ export class Estimator {
    * @returns {Array<Object>} Array of warning objects
    */
   getWarnings() {
-    return this._warnings.slice();
+    return this._warnings.slice(); // Return copy
   }
 
   /**
@@ -149,6 +156,10 @@ export class Estimator {
     return this._warnings.filter(w => w.type === type);
   }
 
+  // ============================================================================
+  // NEW: Performance Warnings
+  // ============================================================================
+
   /**
    * Check dataset size and warn if potentially problematic
    * @param {Array} X - Design matrix
@@ -167,6 +178,8 @@ export class Estimator {
 
     const n = X.length;
     const p = X[0]?.length || 0;
+
+    // Check if running in browser
     const isBrowser = typeof window !== 'undefined';
 
     if (n > largeSampleThreshold && isBrowser) {
@@ -194,13 +207,19 @@ export class Estimator {
     }
   }
 
+  // ============================================================================
+  // NEW: Observable Display Support
+  // ============================================================================
+
   /**
    * Observable/Jupyter HTML representation
+   * Shows model state and warnings in a user-friendly format
    * @returns {string} HTML representation
    */
   _repr_html_() {
     const className = this.constructor.name;
 
+    // Not fitted state
     if (!this.fitted) {
       return `
         <div style="padding: 1em; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; font-family: sans-serif;">
@@ -216,6 +235,7 @@ export class Estimator {
       `;
     }
 
+    // Fitted state with warnings
     const state = this.getState();
     let html = `
       <div style="font-family: sans-serif; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden;">
@@ -228,6 +248,7 @@ export class Estimator {
         </div>
     `;
 
+    // Show warnings if any
     if (this.hasWarnings()) {
       const warnings = this.getWarnings();
       html += `
@@ -250,6 +271,7 @@ export class Estimator {
       `;
     }
 
+    // Model parameters
     html += `
         <div style="padding: 0.75em 1em;">
           <details>
@@ -265,6 +287,7 @@ export class Estimator {
 
   /**
    * Node.js inspect customization
+   * Shows concise model info in console
    */
   [Symbol.for('nodejs.util.inspect.custom')]() {
     const className = this.constructor.name;
@@ -277,28 +300,19 @@ export class Estimator {
     return `${className}(fitted, ${this.getMemoryUsage()})${warnings}`;
   }
 
-  /**
-   * Set parameters (mutates instance).
-   * @param {Object} params
-   * @returns {this}
-   */
+  // ============================================================================
+  // Existing Methods (keep as is)
+  // ============================================================================
+
   setParams(params = {}) {
     Object.assign(this.params, params);
     return this;
   }
 
-  /**
-   * Get a shallow copy of parameters.
-   * @returns {Object}
-   */
   getParams() {
     return { ...this.params };
   }
 
-  /**
-   * Serialize minimal model metadata.
-   * Subclasses may override to include learned parameters.
-   */
   toJSON() {
     return {
       params: this.getParams(),
@@ -308,12 +322,6 @@ export class Estimator {
     };
   }
 
-  /**
-   * Basic deserialization. Subclasses should override if they need
-   * to restore learned arrays / matrices.
-   * @param {Object} obj
-   * @returns {Estimator}
-   */
   static fromJSON(obj = {}) {
     const inst = new this(obj.params || {});
     if (obj.state) inst._state = obj.state;
@@ -322,15 +330,11 @@ export class Estimator {
     return inst;
   }
 
-  /**
-   * Save model to JSON string
-   * @returns {string} JSON representation of the model
-   */
   save() {
     const json = this.toJSON();
     const wrapped = {
       __tangentds__: true,
-      version: "0.7.0",
+      version: "0.3.0",
       timestamp: new Date().toISOString(),
       estimatorType: this.constructor.name,
       data: json,
@@ -338,11 +342,6 @@ export class Estimator {
     return JSON.stringify(wrapped, null, 2);
   }
 
-  /**
-   * Load model from JSON string
-   * @param {string} jsonString - JSON representation
-   * @returns {Estimator} Reconstructed estimator instance
-   */
   static load(jsonString) {
     const parsed = JSON.parse(jsonString);
     if (!parsed.__tangentds__) {
@@ -351,90 +350,21 @@ export class Estimator {
     return this.fromJSON(parsed.data);
   }
 
-  /**
-   * Convenience helper: parse arguments passed to fit/predict/transform.
-   *
-   * Supports declarative table-style inputs:
-   *  - fit({ X, y, data, omit_missing })
-   *  - fit({ data, columns, ... })
-   *
-   * Returns an object { X, y, prepared, rows } where X/y are numeric arrays
-   * if preparation was required, otherwise returns the original values.
-   *
-   * Note: this helper only prepares numeric matrices/vectors using core table utilities;
-   * it does not perform encoding of categorical predictors.
-   */
-  _prepareArgsForFit(args = []) {
-    // If called as fit({ X, y, data, ... })
-    if (
-      args.length === 1 &&
-      args[0] &&
-      typeof args[0] === "object" &&
-      !Array.isArray(args[0])
-    ) {
-      const opts = args[0];
-      // { X, y, data }
-      if ((opts.X || opts.columns) && opts.data) {
-        if (opts.X && opts.y) {
-          const prepared = prepareXY({
-            X: opts.X,
-            y: opts.y,
-            data: opts.data,
-            omit_missing:
-              opts.omit_missing !== undefined ? opts.omit_missing : true,
-          });
-          return {
-            X: prepared.X,
-            y: prepared.y,
-            columnsX: prepared.columnsX,
-            rows: prepared.rows,
-            prepared: true,
-          };
-        }
-        // columns-only -> prepareX
-        const prepared = prepareX({
-          columns: opts.columns || opts.X,
-          data: opts.data,
-          omit_missing:
-            opts.omit_missing !== undefined ? opts.omit_missing : true,
-        });
-        return {
-          X: prepared.X,
-          columns: prepared.columns,
-          rows: prepared.rows,
-          prepared: true,
-        };
-      }
-    }
-    // Otherwise, return original args to be interpreted by subclass
-    return { raw: args };
-  }
-
-  /**
-   * Fit should be implemented by subclasses.
-   * Return `this` for chaining.
-   */
   fit(/* ...args */) {
     throw new Error("fit() not implemented for this estimator");
   }
 
-  /**
-   * Predict should be implemented by supervised estimators.
-   */
   predict(/* X, options */) {
     throw new Error("predict() not implemented for this estimator");
   }
 
-  /**
-   * Transform should be implemented by transformers.
-   */
   transform(/* X, options */) {
     throw new Error("transform() not implemented for this estimator");
   }
 }
 
 /**
- * Regressor base class
+ * Enhanced Regressor with safeguards
  */
 export class Regressor extends Estimator {
   constructor(params = {}) {
@@ -442,35 +372,27 @@ export class Regressor extends Estimator {
   }
 
   /**
-   * Predict - subclasses must override
-   * Ensures model is fitted before prediction
+   * Enhanced predict with fitted check
    */
   predict(X, options = {}) {
     this._ensureFitted('predict');
+    // Subclass implements actual prediction
     throw new Error("predict() not implemented for this regressor");
   }
 
   /**
-   * Default R^2 scoring implementation:
-   *   1 - SS_res / SS_tot
-   *
-   * Accepts either:
-   *  - arrays: score(yTrue, yPred)
-   *  - table-style: score({ X, y, data }) where predict will be called internally
+   * Default R² scoring with fitted check
    */
   score(yTrueOrOpts, yPred = null, opts = {}) {
     this._ensureFitted('score');
 
-    // If first argument is an options object assume we need to predict
     if (
       arguments.length === 1 &&
       yTrueOrOpts &&
       typeof yTrueOrOpts === "object" &&
       !Array.isArray(yTrueOrOpts)
     ) {
-      // Expect { X, y, data }
       const { X, y, data, omit_missing = true } = yTrueOrOpts;
-      // prepare inputs using table helper
       if (X && y && data) {
         const prepared = prepareXY({ X, y, data, omit_missing });
         const preds = this.predict(prepared.X);
@@ -478,11 +400,10 @@ export class Regressor extends Estimator {
         return this._r2(yTrue, preds);
       }
       throw new Error(
-        "score({ X, y, data }) expects X,y column names and data table",
+        "score({ X, y, data }) expects X, y column names and data table",
       );
     }
 
-    // Otherwise regular usage: score(yTrue, yPred)
     return this._r2(yTrueOrOpts, yPred);
   }
 
@@ -492,7 +413,7 @@ export class Regressor extends Estimator {
       !Array.isArray(yPred) ||
       yTrue.length !== yPred.length
     ) {
-      throw new Error("yTrue and yPred must be arrays of same length for R^2");
+      throw new Error("yTrue and yPred must be arrays of same length for R²");
     }
     const yMean = mean(yTrue);
     let ssTot = 0;
@@ -506,7 +427,7 @@ export class Regressor extends Estimator {
 }
 
 /**
- * Classifier base class
+ * Enhanced Classifier with safeguards
  */
 export class Classifier extends Estimator {
   constructor(params = {}) {
@@ -516,17 +437,16 @@ export class Classifier extends Estimator {
   }
 
   /**
-   * Predict - subclasses must override
-   * Ensures model is fitted before prediction
+   * Enhanced predict with fitted check
    */
   predict(X, options = {}) {
     this._ensureFitted('predict');
+    // Subclass implements actual prediction
     throw new Error("predict() not implemented for this classifier");
   }
 
   /**
-   * Predict probabilities - subclasses should override
-   * Ensures model is fitted before prediction
+   * Enhanced predictProba with fitted check
    */
   predictProba(X) {
     this._ensureFitted('predictProba');
@@ -534,90 +454,7 @@ export class Classifier extends Estimator {
   }
 
   /**
-   * Extract and store label encoder from prepared data
-   * @param {Object} prepared - Result from prepareXY/prepareDataset
-   * @returns {boolean} True if encoder was found and stored
-   */
-  _extractLabelEncoder(prepared) {
-    if (prepared && prepared.encoders && prepared.encoders.y) {
-      this.labelEncoder_ = prepared.encoders.y;
-      if (this.labelEncoder_.classes_) {
-        this.classes_ = this.labelEncoder_.classes_.slice();
-      }
-      return true;
-    }
-    this.labelEncoder_ = null;
-    this.classes_ = null;
-    return false;
-  }
-
-  /**
-   * Get unique classes from labels (encoded or raw)
-   * If labelEncoder exists, preparedY is assumed to be numeric indices [0, 1, 2, ...]
-   * Otherwise, creates classes from unique values in preparedY
-   *
-   * @param {Array} preparedY - Label array (numeric if encoded, or raw labels)
-   * @param {boolean} onlyPresentClasses - If true, only return classes present in preparedY
-   * @returns {Object} { numericY, classes }
-   */
-  _getClasses(preparedY, onlyPresentClasses = true) {
-    if (this.labelEncoder_) {
-      // preparedY is already encoded as numbers by prepareXY
-      const numericY = preparedY;
-
-      if (onlyPresentClasses) {
-        // Get only classes actually present in training data
-        const uniqueIndices = Array.from(new Set(numericY)).sort(
-          (a, b) => a - b,
-        );
-        const classes = uniqueIndices.map(
-          (idx) => this.labelEncoder_.classes_[idx],
-        );
-        return { numericY, classes };
-      } else {
-        // Return all classes from encoder
-        return { numericY, classes: this.labelEncoder_.classes_.slice() };
-      }
-    } else {
-      // No encoder - handle string or numeric labels
-      const uniqueLabels = Array.from(new Set(preparedY));
-
-      if (typeof uniqueLabels[0] === "string") {
-        // Create our own mapping for string labels
-        const classes = uniqueLabels.sort();
-        const classMap = {};
-        classes.forEach((label, idx) => (classMap[label] = idx));
-        const numericY = preparedY.map((label) => classMap[label]);
-        return { numericY, classes };
-      } else {
-        // Already numeric
-        const numericY = preparedY;
-        const classes = uniqueLabels.sort((a, b) => a - b);
-        return { numericY, classes };
-      }
-    }
-  }
-
-  /**
-   * Decode numeric predictions to original labels
-   * @param {Array} predictions - Numeric predictions or label strings
-   * @returns {Array} Decoded labels (or original if no encoder)
-   */
-  _decodeLabels(predictions) {
-    if (this.labelEncoder_) {
-      return this.labelEncoder_.inverseTransform(predictions);
-    }
-    // If we have classes_ but no encoder, manually decode
-    if (this.classes_ && typeof this.classes_[0] === "string") {
-      return predictions.map((pred) => this.classes_[pred]);
-    }
-    return predictions;
-  }
-
-  /**
-   * Default accuracy scoring:
-   *  - score(yTrue, yPred)
-   *  - or score({ X, y, data }) which predicts internally
+   * Default accuracy scoring with fitted check
    */
   score(yTrueOrOpts, yPred = null, opts = {}) {
     this._ensureFitted('score');
@@ -635,7 +472,7 @@ export class Classifier extends Estimator {
         return this._accuracy(prepared.y, preds);
       }
       throw new Error(
-        "score({ X, y, data }) expects X,y column names and data table",
+        "score({ X, y, data }) expects X, y column names and data table",
       );
     }
     return this._accuracy(yTrueOrOpts, yPred);
@@ -657,10 +494,12 @@ export class Classifier extends Estimator {
     }
     return correct / yTrue.length;
   }
+
+  // ... existing label encoder methods
 }
 
 /**
- * Transformer base class
+ * Enhanced Transformer with safeguards
  */
 export class Transformer extends Estimator {
   constructor(params = {}) {
@@ -668,20 +507,74 @@ export class Transformer extends Estimator {
   }
 
   /**
-   * Transform - subclasses must override
-   * Ensures model is fitted before transformation
+   * Enhanced transform with fitted check
    */
   transform(X, options = {}) {
     this._ensureFitted('transform');
+    // Subclass implements actual transformation
     throw new Error("transform() not implemented for this transformer");
   }
 
   /**
    * Convenience: fit then transform
-   * Returns transformed data.
    */
   fitTransform(...args) {
     this.fit(...args);
     return this.transform(...args);
+  }
+}
+
+// ============================================================================
+// Example Usage in Subclass
+// ============================================================================
+
+/**
+ * Example: How to use enhanced base class in a model
+ */
+export class ExampleGLM extends Estimator {
+  constructor(params = {}) {
+    super(params);
+    this._model = null;
+  }
+
+  fit(X, y) {
+    // Add dataset size warnings
+    this._checkDatasetSize(X, y, {
+      warnLargeDataset: this.params.warnOnLargeDataset !== false
+    });
+
+    // ... fitting logic
+
+    // Simulate convergence warning
+    const converged = true; // from fitting algorithm
+    if (!converged) {
+      const message =
+        `⚠️ GLM did not converge after iterations.\n` +
+        `Consider increasing maxIter or checking data quality.`;
+
+      console.warn(message);
+      this._addWarning('convergence', message, {
+        iterations: this.params.maxIter
+      });
+    }
+
+    this.fitted = true;
+    return this;
+  }
+
+  predict(X) {
+    // Use centralized fitted check
+    this._ensureFitted('predict');
+
+    // ... prediction logic
+    return [];
+  }
+
+  summary() {
+    // Use centralized fitted check
+    this._ensureFitted('summary');
+
+    // ... summary logic
+    return "Summary output";
   }
 }

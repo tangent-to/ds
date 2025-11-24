@@ -1,6 +1,16 @@
-# Ml Module
+---
+layout: default
+title: Machine Learning
+nav_order: 7
+description: "Machine learning models - classification, regression, clustering, and neural networks"
+permalink: /ml
+---
 
-Machine Learning module exports
+# Machine Learning Module
+{: .no_toc }
+
+Build predictive models with scikit-learn style APIs.
+{: .fs-6 .fw-300 }
 
 ## Exports
 

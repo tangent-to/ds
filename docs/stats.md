@@ -1,6 +1,16 @@
-# Stats module
+---
+layout: default
+title: Statistics
+nav_order: 6
+description: "Statistical analysis tools - hypothesis tests, GLMs, distributions, and more"
+permalink: /stats
+---
 
-Stats module exports
+# Statistics Module
+{: .no_toc }
+
+Comprehensive statistical analysis toolkit for JavaScript.
+{: .fs-6 .fw-300 }
 
 ## Exports
 

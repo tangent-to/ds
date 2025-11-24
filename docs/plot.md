@@ -1,7 +1,16 @@
-# Plot Module
+---
+layout: default
+title: Visualization
+nav_order: 9
+description: "Data visualization with Observable Plot - biplots, dendrograms, confusion matrices"
+permalink: /plot
+---
 
-Visualization module
-Observable Plot configuration generators for data analysis
+# Visualization Module
+{: .no_toc }
+
+Publication-ready visualizations powered by Observable Plot.
+{: .fs-6 .fw-300 }
 
 ## Exports
 
