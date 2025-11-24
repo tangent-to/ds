@@ -1,11 +1,18 @@
-# Mva Module
+---
+layout: default
+title: Multivariate Analysis
+nav_order: 8
+description: "Ordination and multivariate methods - PCA, LDA, RDA, CCA"
+permalink: /mva
+---
 
-Multivariate Analysis module exports
+# Multivariate Analysis Module
+{: .no_toc }
 
-Provide both the functional namespaces (pca, hca, lda, rda) and the
-class-based PCA and LDA estimators. Import the classes and re-export them
-together with the functional namespaces to ensure consumers can import
-either the functional API or the class-based estimators.
+Explore high-dimensional data with ordination techniques.
+{: .fs-6 .fw-300 }
+
+This module provides both functional APIs and class-based estimators for multivariate analysis.
 
 ## Exports
 
