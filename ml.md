@@ -13,6 +13,12 @@ Machine Learning module exports
 - `DecisionTreeRegressor` (named)
 - `GAMClassifier` (named)
 - `GAMRegressor` (named)
+- `// Gaussian Process
+  GaussianProcessRegressor` (named)
+- `Kernel` (named)
+- `RBF` (named)
+- `Periodic` (named)
+- `RationalQuadratic` (named)
 - `GridSearchCV` (named)
 - `HCA` (named)
 - `hca` (named)
