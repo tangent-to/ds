@@ -36,17 +36,17 @@ ds.plot.ordiplot(pca.model).show(Plot);
 ### Multivariate analysis
 Ordination techniques (PCA, LDA, RDA) and clustering algorithms (hierarchical, k-means) for exploring complex datasets.
 
-[Try Ordination](tutorials/ordination){: .btn .btn-outline }
+[Try Ordination](https://observablehq.com/@essi/ordinations){: .btn .btn-outline }
 
 ### Statistical analysis
 Comprehensive statistical toolkit including t-tests, ANOVA, generalized linear models (GLM), and mixed-effects models.
 
-[Explore Statistics](tutorials/statistics){: .btn .btn-outline }
+[Explore Statistics](https://observablehq.com/@essi/stats){: .btn .btn-outline }
 
 ### Machine learning
 Build predictive models with K-nearest neighbors, multilayer perceptrons, decision trees, and more. Complete with cross-validation and hyperparameter tuning.
 
-[Learn ML](tutorials/machine-learning){: .btn .btn-outline }
+[Learn ML](https://observablehq.com/@essi/machine-learning){: .btn .btn-outline }
 
 ### Visualization
 Publication-ready plots powered by Observable Plot. Create biplots, confusion matrices, dendrograms, and more.
