@@ -13,19 +13,16 @@ Step-by-step guides to master data science with tangent/ds.
 
 ---
 
-## Jupyter Notebooks
+## Observable Notebooks
 
-Interactive tutorials are available as Jupyter notebooks in the repository:
+Interactive tutorials are available as Observable notebooks:
 
 | Tutorial | Topics |
 |----------|--------|
-| [Ordination Analysis](https://github.com/tangent-to/ds/tree/main/examples/user-guide/01-ordination.ipynb) | PCA, LDA, RDA, biplots |
-| [Statistical Analysis](https://github.com/tangent-to/ds/tree/main/examples/user-guide/02-statistics.ipynb) | t-tests, ANOVA, GLM, mixed-effects |
-| [Clustering](https://github.com/tangent-to/ds/tree/main/examples/user-guide/03-clustering.ipynb) | HCA, K-means, dendrograms |
-| [Machine Learning](https://github.com/tangent-to/ds/tree/main/examples/user-guide/04-ml.ipynb) | Classification, cross-validation, tuning |
-| [API Overview](https://github.com/tangent-to/ds/tree/main/examples/user-guide/05-api.ipynb) | Full API walkthrough |
-| [Outliers & Imputation](https://github.com/tangent-to/ds/tree/main/examples/user-guide/06-outliers-imputation.ipynb) | Missing data, outlier detection |
-| [GAMs](https://github.com/tangent-to/ds/tree/main/examples/user-guide/07-gam.ipynb) | Generalized Additive Models |
+| [Ordination Analysis](https://observablehq.com/@essi/ordinations) | PCA, LDA, RDA, biplots |
+| [Statistical Analysis](https://observablehq.com/@essi/stats) | t-tests, ANOVA, GLM, mixed-effects |
+| [Clustering](https://observablehq.com/@essi/clustering) | HCA, K-means, dendrograms |
+| [Machine Learning](https://observablehq.com/@essi/machine-learning) | Classification, cross-validation, tuning |
 
 ---
 

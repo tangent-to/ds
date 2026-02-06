@@ -173,10 +173,10 @@ ds.plot.ordiplot(pcaEstimator.model, {
 
 ### Learn by Example
 
-- [Statistics](tutorials/statistics) - t-tests, ANOVA, GLM, mixed-effects models
-- [Ordination](tutorials/ordination) - PCA, LDA, RDA for multivariate analysis
-- [Clustering](tutorials/clustering) - Hierarchical and k-means clustering
-- [Machine learning](tutorials/machine-learning) - Classification and regression
+- [Statistics](https://observablehq.com/@essi/stats) - t-tests, ANOVA, GLM, mixed-effects models
+- [Ordination](https://observablehq.com/@essi/ordinations) - PCA, LDA, RDA for multivariate analysis
+- [Clustering](https://observablehq.com/@essi/clustering) - Hierarchical and k-means clustering
+- [Machine learning](https://observablehq.com/@essi/machine-learning) - Classification and regression
 
 ### Browse the API
 
