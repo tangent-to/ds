@@ -77,7 +77,7 @@ const chinstrap_var = penguinsData
   .filter((d) => d.Species == "Chinstrap")
   .map((d) => d[tested_variable]);
 
-const ttest = ds.stats.hypothesis.twoSampleTTest(adelie_var, gentoo_var);
+const ttest = ds.stats.hypothesis.twoSampleTTest(adelie_var, chinstrap_var);
 
 console.log(ttest);
 ```
@@ -94,7 +94,7 @@ console.log(ttest);
 }
 ```
 
---- ICICICICICICICICI
+---
 
 ## Core concepts
 
@@ -183,7 +183,7 @@ ds.plot.ordiplot(pcaEstimator.model, {
 - [Statistics API](api/statistics)
 - [Machine learning API](api/machine-learning)
 - [Multivariate analysis API](api/multivariate)
-- [Plotting API](api/plotting)
+- [Visualization API](api/visualization)
 
 ### Run Interactive Examples
 
