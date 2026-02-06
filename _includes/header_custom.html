@@ -1,1 +1,129 @@
-<!-- Header is handled by Just the Docs theme via _config.yml (logo, title, aux_links) -->
+<!-- Branding banner for tangent/ds documentation -->
+<div class="ds-custom-header">
+  <style>
+    .ds-custom-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border-bottom: 3px solid #5568d3;
+    }
+
+    .ds-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .ds-header-branding {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .ds-header-logo {
+      width: 36px;
+      height: 36px;
+      filter: brightness(0) invert(1);
+    }
+
+    .ds-header-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 0;
+      color: white;
+    }
+
+    .ds-header-tagline {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin: 0;
+      color: white;
+    }
+
+    .ds-header-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .ds-header-btn {
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .ds-header-btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .ds-header-btn-primary:hover {
+      background: #f0f0f0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .ds-header-btn-secondary {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .ds-header-btn-secondary:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .ds-header-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 768px) {
+      .ds-custom-header {
+        padding: 0.75rem 1rem;
+      }
+
+      .ds-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .ds-header-actions {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <div class="ds-header-content">
+    <div class="ds-header-branding">
+      {% if site.logo %}
+      <img src="{{ site.logo | relative_url }}" alt="{{ site.title }} logo" class="ds-header-logo">
+      {% endif %}
+      <div>
+        <h1 class="ds-header-title">{{ site.title }}</h1>
+        <p class="ds-header-tagline">{{ site.tagline }}</p>
+      </div>
+    </div>
+
+    <div class="ds-header-actions">
+      <span class="ds-header-badge">v{{ site.version | default: "0.3.1" }}</span>
+      <a href="{{ site.baseurl }}/getting-started" class="ds-header-btn ds-header-btn-primary">
+        Get Started
+      </a>
+      <a href="https://github.com/{{ site.repository }}" class="ds-header-btn ds-header-btn-secondary" target="_blank" rel="noopener">
+        GitHub
+      </a>
+    </div>
+  </div>
+</div>
