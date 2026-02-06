@@ -14,7 +14,7 @@ remote_theme: just-the-docs/just-the-docs
 color_scheme: light
 
 # Logo
-logo: "/assets/images/logo.png"
+logo: "/ds/assets/images/logo.png"
 
 # Search
 search_enabled: true
@@ -101,6 +101,7 @@ defaults:
 
 # Plugins
 plugins:
+  - jekyll-remote-theme
   - jekyll-seo-tag
   - jekyll-github-metadata
   - jekyll-include-cache
