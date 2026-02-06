@@ -2,7 +2,7 @@
 title: "tangent/ds"
 tagline: "data science toolkit for JavaScript"
 description: "Statistical analysis and machine learning for JavaScript/TypeScript. Analyze data, build models, visualize results."
-version: "0.3.0"
+version: "0.3.1"
 url: "https://tangent-to.github.io"
 baseurl: "/ds"
 
@@ -44,10 +44,6 @@ footer_content: 'Copyright &copy; 2025 Tangent. Distributed under the <a href="h
 back_to_top: true
 back_to_top_text: "Back to top"
 
-# Google Analytics (optional - add your ID later)
-# ga_tracking: UA-XXXXXXXX-X
-# ga_tracking_anonymize_ip: true
-
 # Build settings
 markdown: kramdown
 highlighter: rouge
@@ -58,27 +54,6 @@ kramdown:
     block:
       line_numbers: false
 
-# Collections
-collections:
-  tutorials:
-    permalink: "/:collection/:path/"
-    output: true
-  api:
-    permalink: "/:collection/:path/"
-    output: true
-
-# Just the Docs specific settings
-just_the_docs:
-  collections:
-    tutorials:
-      name: Tutorials
-      nav_exclude: false
-      search_exclude: false
-    api:
-      name: API Reference
-      nav_exclude: false
-      search_exclude: false
-
 # Default front matter
 defaults:
   - scope:
@@ -86,18 +61,6 @@ defaults:
       type: "pages"
     values:
       layout: "default"
-  - scope:
-      path: ""
-      type: "tutorials"
-    values:
-      layout: "default"
-      parent: Tutorials
-  - scope:
-      path: ""
-      type: "api"
-    values:
-      layout: "default"
-      parent: "API Reference"
 
 # Plugins
 plugins:
@@ -113,3 +76,9 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
+  - _api/
+  - _tutorials/
+  - DOCUMENTATION_GUIDE.md
+  - QUICK_REFERENCE.md
+  - README_DOCS.md
+  - API.md
