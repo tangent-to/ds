@@ -24,43 +24,26 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   }
 
-  /* Gradient site header */
-  .site-header {
+  /* Gradient sidebar header (top-left brand area) */
+  .side-bar .site-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-bottom: 3px solid #5568d3;
   }
 
-  .site-header .site-title {
+  /* Make site title text white on gradient */
+  .side-bar .site-header .site-title {
     color: white !important;
+    font-weight: 700;
   }
 
-  .site-header .search-input {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.3);
+  /* Invert the logo so it's visible on the gradient */
+  .side-bar .site-header .site-logo {
+    filter: brightness(0) invert(1);
+  }
+
+  /* Mobile menu button white on gradient */
+  .side-bar .site-header .site-button {
     color: white;
-  }
-
-  .site-header .search-input::placeholder {
-    color: rgba(255,255,255,0.7);
-  }
-
-  .site-header .search-input:focus {
-    background: white;
-    color: #24292e;
-    border-color: white;
-  }
-
-  .site-header .search-input:focus::placeholder {
-    color: #586069;
-  }
-
-  .site-header .aux-nav .aux-nav-list-item a {
-    color: white !important;
-    opacity: 0.9;
-  }
-
-  .site-header .aux-nav .aux-nav-list-item a:hover {
-    opacity: 1;
   }
 
   /* Improve code blocks */
