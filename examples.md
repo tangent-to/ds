@@ -131,5 +131,5 @@ const dendrogram = ds.plot.plotHCA(hca.model);
 
 For complete, runnable examples with explanations, check out:
 
-- [Jupyter Notebooks](https://github.com/tangent-to/ds/tree/main/examples/user-guide)
+- [Observable Notebooks](https://observablehq.com/@essi) — interactive tutorials
 - [Tutorials](tutorials)
