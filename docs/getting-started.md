@@ -9,7 +9,7 @@ permalink: /getting-started
 # Getting started
 {: .no_toc }
 
-Get up and running with DS in minutes.
+Get up and running with tangent/ds in minutes.
 {: .fs-6 .fw-300 }
 
 ## Table of contents
@@ -20,18 +20,48 @@ Get up and running with DS in minutes.
 
 ---
 
+## No install
+
+The easiest way to use tangent/ds is to head directly to Observablehq.com, then import the library in a JavaScript.
+
+```javascript
+ds = await import("https://esm.sh/@tangent.to/ds")
+```
+
+If you need some example to kick start your analysis, check out the data science collection [Data science with tangent/ds](https://observablehq.com/collection/@essi/data-science-with-tangent).
+
 ## Installation
+
+If you prefer to work locally, you can install tangent/ds with deno, npm, or downloading it in the browser on refresh. 
+
+### Deno
+
+Deno supports Jupyter, the most widely used notebook interface of the multiverse. After installing Deno, write `deno jupyter --install` in the terminal to install Jupyter, `deno add @tangent/ds` to install tangent/ds, then launch your app with `jupyter`.
+
+Once Jupyter is installed, you can also run the notebook in [Zed](https://zed.dev/). Create workspace settings (e.g., /.zed/settings.json) to prefer the Deno kernel and enable Deno LSP:
+
+```
+{
+  "jupyter": { "kernel_selections": { "typescript": "deno", "javascript": "deno" } },
+  "lsp": { "deno": { "settings": { "deno": { "enable": true } } } }
+}
+```
+
+In Zed's deno notebooks, cells are separated by `// %%` tags as
+
+```
+// %%
+import * as aq from "https://esm.sh/arquero@5.3.0";
+
+// %%
+const t = aq.table([{a:1},{a:2}]);
+console.log(t.toString());
+```
 
 ### NPM
 
 ```bash
 npm install @tangent/ds
-```
-
-### Deno
-
-```bash
-deno add @tangent/ds
 ```
 
 ### CDN (Browser)
@@ -156,7 +186,7 @@ const penguinsTestScaled = penguinScaler.transform({
 
 ### Integration with Observable Plot
 
-DS works seamlessly with Observable Plot for visualization:
+tagent/ds works seamlessly with Observable Plot for visualization:
 
 ```javascript
 import * as Plot from '@observablehq/plot';
