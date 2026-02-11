@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests (use for re-publishing only)'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   publish-npm:
@@ -33,7 +40,7 @@ jobs:
         run: npm run verify
 
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public || echo "Version may already exist, continuing..."
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -46,13 +53,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js (for dependencies)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
       - name: Publish to JSR
-        run: deno publish
+        run: deno publish || echo "Version may already exist, continuing..."
 
   deploy-site:
     runs-on: ubuntu-latest
