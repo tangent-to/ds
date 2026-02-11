@@ -199,8 +199,8 @@ export class GLM extends Estimator {
       intercept: this.params.intercept,
     });
 
-    // Store column names for later use
-    this._columnsX = result.columnNames.filter((c) => c !== '(Intercept)');
+    // Store column names for later use (include intercept since fitGLM won't track it)
+    this._columnsX = result.columnNames;
     this._columnY = result.parsed.response.variable;
     this._formula = formula;
 
@@ -1625,7 +1625,10 @@ export class GLM extends Estimator {
     }
 
     if (this._columnsX) {
-      labels.push(...this._columnsX);
+      // Avoid double-adding (Intercept) when _columnsX already includes it
+      // (happens with formula-fitted models where intercept is in the design matrix)
+      const cols = this._columnsX.filter((c) => c !== '(Intercept)' || !this._model.intercept);
+      labels.push(...cols);
     } else {
       const nCoef = this._isMixed
         ? this._model.fixedEffects.length

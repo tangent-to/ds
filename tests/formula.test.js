@@ -402,6 +402,24 @@ describe('Formula Parser', () => {
       expect(model._model.coefficients).toHaveLength(2); // intercept + Beak Length
     });
 
+    it('should produce summary with backtick-quoted column names', async () => {
+      const { GLM } = await import('../src/stats/index.js');
+
+      const data = [
+        { 'Body Mass (g)': 100, 'Beak Length (mm)': 10 },
+        { 'Body Mass (g)': 120, 'Beak Length (mm)': 11 },
+        { 'Body Mass (g)': 150, 'Beak Length (mm)': 12 },
+        { 'Body Mass (g)': 200, 'Beak Length (mm)': 14 }
+      ];
+
+      const model = new GLM({ family: 'gaussian', link: 'identity' });
+      model.fit('`Body Mass (g)` ~ `Beak Length (mm)`', data);
+
+      const output = model.summary({ alpha: 0.05 });
+      expect(output).toContain('(Intercept)');
+      expect(output).toContain('Beak Length (mm)');
+    });
+
     it('should work with mixed effects in GLM', async () => {
       const { GLM } = await import('../src/stats/index.js');
 
