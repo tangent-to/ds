@@ -48,7 +48,7 @@ For example, fitting a linear model uses a syntax familiar to R users.
 ```javascript
 import { GLM } from "@tangent.to/ds";
 const simple_lm = new GLM({ family: "gaussian", link: "identity" })
-  .fit('`Body Mass (g)` ~ `Beak Length (mm)`', penguinsData);
+  .fit("`Body Mass (g)` ~ `Beak Length (mm)`", penguinsData);
 console.log(simple_lm.summary());
 ```
 
