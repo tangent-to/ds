@@ -29,6 +29,7 @@
     "verify": "node verify-package.js",
     "docs:generate": "node scripts/generate-docs.js",
     "docs:convert": "python3 scripts/convert-notebooks.py",
+    "version:bump": "node scripts/bump-version.js",
     "jsr:publish": "deno publish --allow-dirty",
     "jsr:publish:dry-run": "deno publish --dry-run --allow-dirty",
     "deno:lint": "deno lint src/",
