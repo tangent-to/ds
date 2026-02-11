@@ -46,6 +46,23 @@ export function parseFormula(formula, data = null) {
 function parseResponse(part) {
   const trimmed = part.trim();
 
+  // Handle backtick-quoted response variable
+  if (trimmed.startsWith('`') && trimmed.endsWith('`')) {
+    return {
+      variable: trimmed.slice(1, -1),
+      transform: null
+    };
+  }
+
+  // Check for transformation on backtick-quoted variable: log(`col name`)
+  const backtickTransformMatch = trimmed.match(/^(\w+)\(`([^`]+)`\)$/);
+  if (backtickTransformMatch) {
+    return {
+      variable: backtickTransformMatch[2],
+      transform: backtickTransformMatch[1]
+    };
+  }
+
   // Check for transformation
   if (trimmed.includes('(')) {
     const match = trimmed.match(/^(\w+)\((.*)\)$/);
@@ -142,16 +159,23 @@ function parseFixedTerms(part) {
 
 /**
  * Tokenize formula string
+ * Supports backtick-quoted identifiers for column names with spaces/special chars
  */
 function tokenize(str) {
   const tokens = [];
   let current = '';
   let parenDepth = 0;
+  let inBacktick = false;
 
   for (let i = 0; i < str.length; i++) {
     const char = str[i];
 
-    if (char === '(') {
+    if (char === '`') {
+      inBacktick = !inBacktick;
+      current += char;
+    } else if (inBacktick) {
+      current += char;
+    } else if (char === '(') {
       parenDepth++;
       current += char;
     } else if (char === ')') {
@@ -164,7 +188,7 @@ function tokenize(str) {
       tokens.push(char);
       current = '';
     } else if (char === ' ' && parenDepth === 0) {
-      // Skip whitespace outside parentheses
+      // Skip whitespace outside parentheses and backticks
       continue;
     } else {
       current += char;
@@ -179,9 +203,49 @@ function tokenize(str) {
 }
 
 /**
+ * Strip backticks from a quoted identifier
+ */
+function stripBackticks(name) {
+  if (name.startsWith('`') && name.endsWith('`')) {
+    return name.slice(1, -1);
+  }
+  return name;
+}
+
+/**
  * Parse a single term
  */
 function parseTerm(token) {
+  // Handle backtick-quoted identifiers
+  if (token.startsWith('`') && token.endsWith('`')) {
+    return {
+      type: 'variable',
+      name: token.slice(1, -1)
+    };
+  }
+
+  // Check for function calls on backtick-quoted variables: log(`col name`)
+  const backtickFuncMatch = token.match(/^(\w+)\(`([^`]+)`(?:,\s*(.*))?\)$/);
+  if (backtickFuncMatch) {
+    const func = backtickFuncMatch[1];
+    const quotedArg = backtickFuncMatch[2];
+    const extraArgs = backtickFuncMatch[3];
+
+    if (func === 'poly' && extraArgs) {
+      return {
+        type: 'polynomial',
+        variable: quotedArg,
+        degree: parseInt(extraArgs.trim())
+      };
+    } else {
+      return {
+        type: 'transform',
+        transform: func,
+        variable: quotedArg
+      };
+    }
+  }
+
   // Check for function calls
   const funcMatch = token.match(/^(\w+)\((.*)\)$/);
   if (funcMatch) {
@@ -201,7 +265,7 @@ function parseTerm(token) {
       const [variable, degree] = args.split(',').map(s => s.trim());
       return {
         type: 'polynomial',
-        variable,
+        variable: stripBackticks(variable),
         degree: parseInt(degree)
       };
     } else {
@@ -209,7 +273,7 @@ function parseTerm(token) {
       return {
         type: 'transform',
         transform: func,
-        variable: args.trim()
+        variable: stripBackticks(args.trim())
       };
     }
   }
@@ -275,19 +339,21 @@ function parseRandomEffects(randomEffects) {
   };
 
   for (const { terms, grouping } of randomEffects) {
+    const cleanGrouping = stripBackticks(grouping);
     const termsList = terms.split('+').map(t => t.trim());
 
     for (const term of termsList) {
       if (term === '1') {
         // Random intercept
-        structure.intercept = grouping;
+        structure.intercept = cleanGrouping;
       } else if (term === '0') {
         // Suppress intercept (rare)
         continue;
       } else {
         // Random slope
-        if (!structure.slopes[term]) {
-          structure.slopes[term] = grouping;
+        const cleanTerm = stripBackticks(term);
+        if (!structure.slopes[cleanTerm]) {
+          structure.slopes[cleanTerm] = cleanGrouping;
         }
       }
     }

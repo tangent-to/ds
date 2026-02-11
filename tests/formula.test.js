@@ -117,6 +117,69 @@ describe('Formula Parser', () => {
       expect(parsed.response.variable).toBe('y');
       expect(parsed.fixed).toHaveLength(2);
     });
+
+    it('should parse backtick-quoted response variable', () => {
+      const formula = '`Body Mass (g)` ~ x1';
+      const parsed = parseFormula(formula);
+
+      expect(parsed.response).toEqual({
+        variable: 'Body Mass (g)',
+        transform: null
+      });
+    });
+
+    it('should parse backtick-quoted predictor variables', () => {
+      const formula = 'y ~ `Beak Length (mm)` + `Bill Depth (mm)`';
+      const parsed = parseFormula(formula);
+
+      expect(parsed.fixed).toHaveLength(2);
+      expect(parsed.fixed[0]).toEqual({
+        type: 'variable',
+        name: 'Beak Length (mm)'
+      });
+      expect(parsed.fixed[1]).toEqual({
+        type: 'variable',
+        name: 'Bill Depth (mm)'
+      });
+    });
+
+    it('should parse formula with backticks on both sides', () => {
+      const formula = '`Body Mass (g)` ~ `Beak Length (mm)`';
+      const parsed = parseFormula(formula);
+
+      expect(parsed.response.variable).toBe('Body Mass (g)');
+      expect(parsed.fixed[0].name).toBe('Beak Length (mm)');
+    });
+
+    it('should parse transformation on backtick-quoted response', () => {
+      const formula = 'log(`Body Mass (g)`) ~ x';
+      const parsed = parseFormula(formula);
+
+      expect(parsed.response).toEqual({
+        variable: 'Body Mass (g)',
+        transform: 'log'
+      });
+    });
+
+    it('should parse transformation on backtick-quoted predictor', () => {
+      const formula = 'y ~ log(`Beak Length (mm)`)';
+      const parsed = parseFormula(formula);
+
+      expect(parsed.fixed[0]).toEqual({
+        type: 'transform',
+        transform: 'log',
+        variable: 'Beak Length (mm)'
+      });
+    });
+
+    it('should parse mixed quoted and unquoted terms', () => {
+      const formula = '`Body Mass (g)` ~ `Beak Length (mm)` + species';
+      const parsed = parseFormula(formula);
+
+      expect(parsed.response.variable).toBe('Body Mass (g)');
+      expect(parsed.fixed[0].name).toBe('Beak Length (mm)');
+      expect(parsed.fixed[1].name).toBe('species');
+    });
   });
 
   describe('applyFormula', () => {
@@ -256,6 +319,36 @@ describe('Formula Parser', () => {
       expect(result.y[0]).toBeCloseTo(1, 5); // log(e)
       expect(result.y[1]).toBeCloseTo(2, 5); // log(e^2)
     });
+
+    it('should build design matrix with backtick-quoted columns', () => {
+      const formula = '`Body Mass (g)` ~ `Beak Length (mm)`';
+      const data = [
+        { 'Body Mass (g)': 100, 'Beak Length (mm)': 10 },
+        { 'Body Mass (g)': 120, 'Beak Length (mm)': 11 },
+        { 'Body Mass (g)': 150, 'Beak Length (mm)': 12 }
+      ];
+
+      const result = applyFormula(formula, data);
+
+      expect(result.y).toEqual([100, 120, 150]);
+      expect(result.X[0]).toEqual([1, 10]); // Intercept + Beak Length
+      expect(result.columnNames).toEqual(['(Intercept)', 'Beak Length (mm)']);
+    });
+
+    it('should handle transformation on backtick-quoted predictor in design matrix', () => {
+      const formula = '`y col` ~ log(`x col`)';
+      const data = [
+        { 'y col': 1, 'x col': Math.E },
+        { 'y col': 2, 'x col': Math.E * Math.E }
+      ];
+
+      const result = applyFormula(formula, data);
+
+      expect(result.y).toEqual([1, 2]);
+      expect(result.X[0][1]).toBeCloseTo(1, 5);
+      expect(result.X[1][1]).toBeCloseTo(2, 5);
+      expect(result.columnNames).toContain('log(x col)');
+    });
   });
 
   describe('Formula integration with GLM', () => {
@@ -290,6 +383,23 @@ describe('Formula Parser', () => {
       model.fit('y ~ log(x)', data);
 
       expect(model.fitted).toBe(true);
+    });
+
+    it('should work with backtick-quoted column names in GLM', async () => {
+      const { GLM } = await import('../src/stats/index.js');
+
+      const data = [
+        { 'Body Mass (g)': 100, 'Beak Length (mm)': 10 },
+        { 'Body Mass (g)': 120, 'Beak Length (mm)': 11 },
+        { 'Body Mass (g)': 150, 'Beak Length (mm)': 12 },
+        { 'Body Mass (g)': 200, 'Beak Length (mm)': 14 }
+      ];
+
+      const model = new GLM({ family: 'gaussian' });
+      model.fit('`Body Mass (g)` ~ `Beak Length (mm)`', data);
+
+      expect(model.fitted).toBe(true);
+      expect(model._model.coefficients).toHaveLength(2); // intercept + Beak Length
     });
 
     it('should work with mixed effects in GLM', async () => {
