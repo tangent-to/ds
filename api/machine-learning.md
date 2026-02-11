@@ -624,6 +624,438 @@ ds.ml.GridSearchCV(fitFn, scoreFn, X, y, paramGrid, { k: 5 })
 
 ---
 
+## Gaussian Process Regression
+
+### GaussianProcessRegressor
+
+Gaussian Process regression with uncertainty quantification.
+
+```javascript
+new ds.ml.GaussianProcessRegressor(options)
+```
+
+#### Options
+
+```javascript
+{
+  kernel: string|Kernel,  // 'rbf', 'periodic', 'matern', 'rationalquadratic', 'constant', or Kernel instance
+  lengthScale: number,    // Length scale (default: 1.0)
+  variance: number,       // Signal variance / amplitude (default: 1.0)
+  alpha: number,          // Noise level / regularization (default: 1e-10)
+  period: number,         // Period for periodic kernel
+  nu: number              // Smoothness for Matern kernel (0.5, 1.5, 2.5, or Infinity)
+}
+```
+
+#### Methods
+
+##### `.fit(X, y)`
+
+Fit the GP to training data.
+
+```javascript
+gp.fit(X_train, y_train)
+```
+
+##### `.predict(X, options)`
+
+Make predictions with optional uncertainty.
+
+```javascript
+// Mean predictions only
+const predictions = gp.predict(X_test);
+
+// With standard deviation
+const { mean, std } = gp.predict(X_test, { returnStd: true });
+
+// With full covariance matrix
+const { mean, covariance } = gp.predict(X_test, { returnCov: true });
+```
+
+##### `.samplePosterior(X, nSamples, options)`
+
+Draw samples from the posterior distribution.
+
+```javascript
+const samples = gp.samplePosterior(X_test, 5, { seed: 42 });
+// Returns array of 5 sample functions evaluated at X_test
+```
+
+##### `.samplePrior(X, nSamples, options)`
+
+Draw samples from the prior distribution (before seeing data).
+
+```javascript
+const priorSamples = gp.samplePrior(X_test, 3);
+```
+
+#### Example
+
+```javascript
+const gp = new ds.ml.GaussianProcessRegressor({
+  kernel: 'rbf',
+  lengthScale: 1.0,
+  variance: 1.0,
+  alpha: 0.1
+});
+
+gp.fit(X_train, y_train);
+
+const { mean, std } = gp.predict(X_test, { returnStd: true });
+
+// Draw posterior samples for visualization
+const samples = gp.samplePosterior(X_test, 10);
+```
+
+---
+
+### Kernels
+
+Kernel functions for Gaussian Processes. All kernels support both positional and object-style construction.
+
+#### RBF (Radial Basis Function)
+
+Also known as Squared Exponential or Gaussian kernel. Produces very smooth functions.
+
+```javascript
+new ds.ml.RBF(lengthScale, variance)
+// or
+new ds.ml.RBF({ lengthScale: 1.0, amplitude: 1.0 })
+```
+
+**Formula:** `k(x1, x2) = variance * exp(-||x1 - x2||^2 / (2 * lengthScale^2))`
+
+#### Matern
+
+Matern kernel with configurable smoothness. More flexible than RBF.
+
+```javascript
+new ds.ml.Matern({ lengthScale: 1.0, nu: 1.5, amplitude: 1.0 })
+```
+
+**Supported nu values:**
+- `0.5` - Exponential kernel (rough, non-differentiable)
+- `1.5` - Once differentiable (default)
+- `2.5` - Twice differentiable
+- `Infinity` - Equivalent to RBF (infinitely differentiable)
+
+#### Periodic
+
+For modeling repeating/seasonal patterns.
+
+```javascript
+new ds.ml.Periodic(lengthScale, period, variance)
+```
+
+**Parameters:**
+- `period` - Distance between repetitions
+- `lengthScale` - Smoothness within each period
+
+#### RationalQuadratic
+
+Mixture of RBF kernels with different length scales. Good for multi-scale patterns.
+
+```javascript
+new ds.ml.RationalQuadratic(lengthScale, alpha, variance)
+// or
+new ds.ml.RationalQuadratic({ lengthScale: 1.0, alpha: 1.0, amplitude: 1.0 })
+```
+
+#### ConstantKernel
+
+Returns a constant covariance. Useful for combining with other kernels.
+
+```javascript
+new ds.ml.ConstantKernel({ value: 1.0 })
+```
+
+#### SumKernel
+
+Combines multiple kernels by summing their outputs.
+
+```javascript
+new ds.ml.SumKernel({
+  kernels: [new ds.ml.RBF(1.0), new ds.ml.Periodic(1.0, 7.0)]
+})
+```
+
+#### Kernel Methods
+
+All kernels support:
+- `.compute(x1, x2)` - Compute covariance between two points
+- `.call(X1, X2)` - Compute covariance matrix between sets of points
+- `.getParams()` - Get current parameters
+- `.setParams(params)` - Update parameters
+
+---
+
+## Clustering (continued)
+
+### DBSCAN
+
+Density-Based Spatial Clustering of Applications with Noise. Finds clusters of arbitrary shape and identifies outliers as noise.
+
+```javascript
+new ds.ml.DBSCAN(options)
+```
+
+#### Options
+
+```javascript
+{
+  eps: number,        // Maximum distance for neighborhood (default: 0.5)
+  minSamples: number  // Minimum points to form dense region (default: 5)
+}
+```
+
+#### Methods
+
+- `.fit(X)` or `.fit({ data, columns })` - Cluster the data
+- `.predict(X)` - Assign new points to nearest cluster or noise (-1)
+- `.summary()` - Get clustering statistics
+
+#### Properties
+
+```javascript
+dbscan.labels           // Cluster assignments (-1 = noise, 0+ = cluster ID)
+dbscan.nClusters        // Number of clusters found
+dbscan.nNoise           // Number of noise points
+dbscan.coreSampleIndices // Indices of core points
+dbscan.coreSampleMask   // Boolean mask for core points
+dbscan.components       // Core sample data points
+```
+
+#### Example
+
+```javascript
+const dbscan = new ds.ml.DBSCAN({ eps: 0.3, minSamples: 5 });
+dbscan.fit({
+  data: myData,
+  columns: ['x', 'y']
+});
+
+console.log(`Found ${dbscan.nClusters} clusters`);
+console.log(`Noise points: ${dbscan.nNoise}`);
+console.log(dbscan.labels);  // [-1, 0, 0, 1, 1, -1, ...]
+```
+
+---
+
+## Outlier Detection
+
+### IsolationForest
+
+Tree-based anomaly detection. Outliers are isolated in fewer splits.
+
+```javascript
+new ds.ml.IsolationForest(options)
+```
+
+#### Options
+
+```javascript
+{
+  n_estimators: number,   // Number of trees (default: 100)
+  max_samples: number,    // Samples per tree (default: 'auto' = min(256, n))
+  contamination: number,  // Expected outlier proportion (default: 0.1)
+  random_state: number    // Random seed
+}
+```
+
+#### Methods
+
+- `.fit(X)` or `.fit({ data, columns, group })` - Fit the model
+- `.predict(X)` - Returns -1 for outliers, 1 for inliers
+- `.score_samples(X)` - Anomaly scores (lower = more anomalous)
+- `.fit_predict(X)` - Fit and predict in one step
+
+#### Example
+
+```javascript
+const iso = new ds.ml.IsolationForest({ contamination: 0.1 });
+iso.fit({ data: myData, columns: ['feature1', 'feature2'] });
+
+const predictions = iso.predict({ data: myData, columns: ['feature1', 'feature2'] });
+// Returns array with -1 for outliers, 1 for inliers
+```
+
+---
+
+### LocalOutlierFactor
+
+Density-based outlier detection using local density deviation.
+
+```javascript
+new ds.ml.LocalOutlierFactor(options)
+```
+
+#### Options
+
+```javascript
+{
+  n_neighbors: number,    // Number of neighbors (default: 20)
+  contamination: number,  // Expected outlier proportion (default: 0.1)
+  novelty: boolean        // If true, can predict on new data (default: false)
+}
+```
+
+#### Methods
+
+- `.fit(X)` - Fit the model
+- `.fit_predict(X)` - Fit and predict (for novelty=false)
+- `.negative_outlier_factor` - LOF scores (more negative = more anomalous)
+
+#### Example
+
+```javascript
+const lof = new ds.ml.LocalOutlierFactor({ n_neighbors: 20 });
+const predictions = lof.fit_predict(X_train);
+// -1 for outliers, 1 for inliers
+```
+
+---
+
+### MahalanobisDistance
+
+Statistical distance-based outlier detection accounting for covariance.
+
+```javascript
+new ds.ml.MahalanobisDistance(options)
+```
+
+#### Options
+
+```javascript
+{
+  contamination: number  // Expected outlier proportion (default: 0.1)
+}
+```
+
+#### Methods
+
+- `.fit(X)` - Fit the model (compute mean and covariance)
+- `.predict(X)` - Returns -1 for outliers, 1 for inliers
+- `.score_samples(X)` - Negative Mahalanobis distances
+- `.fit_predict(X)` - Fit and predict in one step
+
+---
+
+## Missing Data Imputation
+
+### SimpleImputer
+
+Fill missing values with statistical measures.
+
+```javascript
+new ds.ml.SimpleImputer(options)
+```
+
+#### Options
+
+```javascript
+{
+  strategy: string,     // 'mean', 'median', 'most_frequent', or 'constant'
+  fill_value: any       // Value for 'constant' strategy
+}
+```
+
+#### Methods
+
+- `.fit(X)` or `.fit({ data, columns, group })` - Learn statistics from data
+- `.transform(X)` - Fill missing values
+- `.fit_transform(X)` - Fit and transform in one step
+
+#### Example
+
+```javascript
+const imputer = new ds.ml.SimpleImputer({ strategy: 'mean' });
+imputer.fit({ data: trainData, columns: ['age', 'income'] });
+
+const filled = imputer.transform({ data: testData, columns: ['age', 'income'] });
+```
+
+---
+
+### KNNImputer
+
+Fill missing values using k-nearest neighbors.
+
+```javascript
+new ds.ml.KNNImputer(options)
+```
+
+#### Options
+
+```javascript
+{
+  n_neighbors: number,  // Number of neighbors (default: 5)
+  weights: string       // 'uniform' or 'distance' (default: 'uniform')
+}
+```
+
+#### Methods
+
+- `.fit(X)` - Store training data
+- `.transform(X)` - Impute missing values
+- `.fit_transform(X)` - Fit and transform in one step
+
+#### Features
+
+- Supports mixed numeric and categorical data
+- Uses Gower distance for mixed types
+- Categorical columns imputed with weighted mode
+
+#### Example
+
+```javascript
+const imputer = new ds.ml.KNNImputer({ n_neighbors: 5, weights: 'distance' });
+const filled = imputer.fit_transform({
+  data: myData,
+  columns: ['age', 'income', 'category']
+});
+```
+
+---
+
+### IterativeImputer
+
+Multivariate imputation using chained equations (MICE algorithm). Models each feature as a function of others.
+
+```javascript
+new ds.ml.IterativeImputer(options)
+```
+
+#### Options
+
+```javascript
+{
+  initial_strategy: string,  // Initial fill strategy (default: 'mean')
+  max_iter: number,          // Maximum iterations (default: 10)
+  tol: number,               // Convergence tolerance (default: 1e-3)
+  min_value: number,         // Minimum imputed value (default: -Infinity)
+  max_value: number,         // Maximum imputed value (default: Infinity)
+  verbose: boolean           // Print progress (default: false)
+}
+```
+
+#### Methods
+
+- `.fit(X)` - Fit initial imputer
+- `.transform(X)` - Iteratively impute missing values
+- `.fit_transform(X)` - Fit and transform in one step
+
+#### Example
+
+```javascript
+const imputer = new ds.ml.IterativeImputer({ max_iter: 10, verbose: true });
+const filled = imputer.fit_transform({
+  data: myData,
+  columns: ['feature1', 'feature2', 'feature3']
+});
+```
+
+---
+
 ## See Also
 
 - [Statistics API](statistics) - GLM, hypothesis tests
