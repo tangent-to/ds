@@ -14,12 +14,12 @@ Quick code snippets to get you started. For in-depth tutorials, see the [Tutoria
 ### T-test
 
 ```javascript
-import * as ds from '@tangent/ds';
+import * as ds from '@tangent.to/ds';
 
 const group1 = [5.1, 4.9, 4.7, 4.6, 5.0];
 const group2 = [7.0, 6.4, 6.9, 6.5, 6.3];
 
-const result = ds.stats.ttest(group1, group2);
+const result = ds.stats.hypothesis.twoSampleTTest(group1, group2);
 console.log(`p-value: ${result.pValue}`);
 ```
 
@@ -56,14 +56,14 @@ const predictions = knn.predict({ data: testData, X: features });
 ### Cross-validation
 
 ```javascript
-const scores = ds.ml.validation.crossValidate(
+const cv = ds.ml.validation.crossValidate(
   (Xtr, ytr) => new ds.ml.KNNClassifier({ k: 5 }).fit(Xtr, ytr),
   (model, Xte, yte) => ds.ml.metrics.accuracy(yte, model.predict(Xte)),
   { data: myData, X: features, y: 'target' },
   { k: 5, shuffle: true }
 );
 
-console.log(`Mean accuracy: ${scores.mean()}`);
+console.log(`Mean accuracy: ${cv.mean}`);
 ```
 
 ---
@@ -105,11 +105,10 @@ const biplot = ds.plot.ordiplot(lda.model, {
 ### K-Means
 
 ```javascript
-const kmeans = new ds.ml.KMeans({ k: 3, random_state: 42 });
+const kmeans = new ds.ml.KMeans({ k: 3, seed: 42 });
 kmeans.fit({
   data: myData,
-  columns: features,
-  standardize: true
+  columns: features
 });
 
 console.log(`Cluster labels: ${kmeans.labels}`);
@@ -119,7 +118,7 @@ console.log(`Cluster labels: ${kmeans.labels}`);
 
 ```javascript
 const hca = new ds.ml.HCA({ linkage: 'ward' });
-hca.fit({ data: myData, X: features });
+hca.fit({ data: myData, columns: features });
 
 // Plot dendrogram
 const dendrogram = ds.plot.plotHCA(hca.model);

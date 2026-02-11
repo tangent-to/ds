@@ -206,6 +206,231 @@ console.log(`F = ${result.statistic}, p = ${result.pValue}`);
 
 ---
 
+#### pairedTTest
+
+Paired samples t-test for dependent samples.
+
+```javascript
+ds.stats.pairedTTest(sample1, sample2, options)
+```
+
+**Parameters:**
+- `sample1` (Array&lt;number&gt;): First sample (must match length of sample2)
+- `sample2` (Array&lt;number&gt;): Second sample
+- `options.alternative` (string): `'two-sided'`, `'less'`, or `'greater'`
+
+**Returns:** Object with `statistic`, `pValue`, `df`, `meanDiff`
+
+---
+
+#### mannWhitneyU
+
+Non-parametric test for comparing two independent samples.
+
+```javascript
+ds.stats.mannWhitneyU(sample1, sample2)
+```
+
+**Returns:** Object with `statistic` (U), `pValue`
+
+---
+
+#### kruskalWallis
+
+Non-parametric alternative to one-way ANOVA for comparing multiple groups.
+
+```javascript
+ds.stats.kruskalWallis(groups)
+```
+
+**Parameters:**
+- `groups` (Array&lt;Array&lt;number&gt;&gt;): Array of groups to compare
+
+**Returns:** Object with `statistic` (H), `pValue`, `df`
+
+---
+
+#### tukeyHSD
+
+Post-hoc pairwise comparisons after ANOVA.
+
+```javascript
+ds.stats.hypothesis.tukeyHSD(groups, options)
+```
+
+**Parameters:**
+- `groups` (Array&lt;Array&lt;number&gt;&gt; | Object): Groups to compare, or `{ data, y, group }` format
+- `options.names` (Array&lt;string&gt;): Optional group names
+
+**Returns:** Object with `comparisons` array containing pairwise results
+
+**Example:**
+```javascript
+const result = ds.stats.hypothesis.tukeyHSD([groupA, groupB, groupC], {
+  names: ['Control', 'Treatment1', 'Treatment2']
+});
+// result.comparisons: [{comparison: 'Control - Treatment1', diff, pValue, ci}, ...]
+```
+
+---
+
+#### fisherExactTest
+
+Fisher's exact test for 2x2 contingency tables.
+
+```javascript
+ds.stats.fisherExactTest(table)
+```
+
+**Parameters:**
+- `table` (Array&lt;Array&lt;number&gt;&gt;): 2x2 contingency table `[[a, b], [c, d]]`
+
+**Returns:** Object with `pValue`, `oddsRatio`
+
+---
+
+#### leveneTest
+
+Test for homogeneity of variances across groups.
+
+```javascript
+ds.stats.leveneTest(groups)
+```
+
+**Parameters:**
+- `groups` (Array&lt;Array&lt;number&gt;&gt;): Array of groups
+
+**Returns:** Object with `statistic`, `pValue`, `df1`, `df2`
+
+---
+
+### Correlation Tests
+
+#### pearsonCorrelation
+
+Pearson correlation coefficient with significance test.
+
+```javascript
+ds.stats.pearsonCorrelation(x, y)
+```
+
+**Returns:** Object
+```javascript
+{
+  r: number,        // Correlation coefficient (-1 to 1)
+  pValue: number,   // Two-tailed p-value
+  n: number         // Sample size
+}
+```
+
+---
+
+#### spearmanCorrelation
+
+Spearman rank correlation coefficient.
+
+```javascript
+ds.stats.spearmanCorrelation(x, y)
+```
+
+**Returns:** Object with `rho`, `pValue`, `n`
+
+---
+
+### Effect Sizes
+
+#### cohensD
+
+Cohen's d for standardized mean difference between two groups.
+
+```javascript
+ds.stats.cohensD(sample1, sample2)
+```
+
+**Returns:** number (effect size)
+
+**Interpretation:**
+- |d| < 0.2: Negligible
+- |d| < 0.5: Small
+- |d| < 0.8: Medium
+- |d| >= 0.8: Large
+
+---
+
+#### etaSquared
+
+Eta-squared effect size for ANOVA.
+
+```javascript
+ds.stats.etaSquared(groups)
+```
+
+**Returns:** number (proportion of variance explained, 0 to 1)
+
+---
+
+#### omegaSquared
+
+Omega-squared effect size for ANOVA (less biased than eta-squared).
+
+```javascript
+ds.stats.omegaSquared(groups)
+```
+
+**Returns:** number
+
+---
+
+### Multiple Testing Corrections
+
+#### bonferroni
+
+Bonferroni correction for multiple comparisons.
+
+```javascript
+ds.stats.bonferroni(pValues, alpha)
+```
+
+**Parameters:**
+- `pValues` (Array&lt;number&gt;): Array of p-values
+- `alpha` (number): Significance level (default: 0.05)
+
+**Returns:** Object with `adjusted` (corrected p-values), `significant` (boolean array)
+
+---
+
+#### holmBonferroni
+
+Holm-Bonferroni step-down correction (less conservative than Bonferroni).
+
+```javascript
+ds.stats.holmBonferroni(pValues, alpha)
+```
+
+**Returns:** Object with `adjusted`, `significant`
+
+---
+
+#### fdr
+
+Benjamini-Hochberg False Discovery Rate correction.
+
+```javascript
+ds.stats.fdr(pValues, alpha)
+```
+
+**Returns:** Object with `adjusted`, `significant`
+
+**Example:**
+```javascript
+const pValues = [0.01, 0.03, 0.05, 0.15, 0.20];
+const result = ds.stats.fdr(pValues, 0.05);
+console.log(result.adjusted);    // Adjusted p-values
+console.log(result.significant); // [true, true, false, false, false]
+```
+
+---
+
 ### Class-based API
 
 Estimator-style classes that follow the fit/predict pattern.
@@ -236,6 +461,20 @@ new ds.stats.ChiSquareTest()
 
 ```javascript
 new ds.stats.OneWayAnova()
+```
+
+#### TukeyHSD
+
+```javascript
+new ds.stats.TukeyHSD()
+```
+
+Post-hoc pairwise comparisons with Tukey's Honest Significant Difference.
+
+```javascript
+const tukey = new ds.stats.TukeyHSD();
+tukey.fit({ data: myData, y: 'value', group: 'treatment' });
+console.log(tukey.summary());
 ```
 
 ---
@@ -269,6 +508,21 @@ new ds.stats.GLM(options)
 | Logistic Regression | `binomial` | `logit` | Binary outcomes (0/1) |
 | Poisson Regression | `poisson` | `log` | Count data |
 | Gamma Regression | `gamma` | `inverse` | Positive continuous, skewed |
+
+**Regularization:**
+
+GLM supports L2 (Ridge) regularization via the `alpha` and `l1_ratio` parameters:
+
+```javascript
+new ds.stats.GLM({
+  family: 'gaussian',
+  alpha: 0.1,      // Regularization strength
+  l1_ratio: 0.0    // 0 = pure L2 (Ridge), 1 = pure L1 (Lasso)
+})
+```
+
+{: .warning }
+> **Known Limitation:** L1 (Lasso) regularization is not yet implemented. Setting `l1_ratio > 0` will fall back to L2-only regularization with a console warning. Elastic Net and Lasso require coordinate descent optimization which is planned for a future release.
 
 #### Methods
 

@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "@tangent.to/ds"
+abstract: "A minimalist, browser-friendly data science library for modern JavaScript (ESM). Provides statistical analysis, machine learning, multivariate analysis, and visualization tools inspired by scikit-learn and R."
+authors:
+  - family-names: Parent
+    given-names: Essi
+    email: essi.parent.info@gmail.com
+repository-code: "https://github.com/tangent-to/ds"
+url: "https://tangent-to.github.io/ds/"
+license: GPL-3.0
+version: "0.3.1"
+date-released: "2025-01-01"
+keywords:
+  - data-science
+  - statistics
+  - machine-learning
+  - javascript
+  - esm
+  - browser
+  - glm
+  - pca
+  - clustering
+  - regression
