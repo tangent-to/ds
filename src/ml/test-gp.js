@@ -10,7 +10,7 @@
  * - gp.sample_y(X, n_samples=1, random_state=None)
  */
 
-import { GaussianProcessRegressor, RBF, Periodic, RationalQuadratic, Kernel } from './index.js';
+import { GaussianProcessRegressor, RBF, Periodic, RationalQuadratic, Kernel, ConstantKernel, SumKernel, Matern } from './index.js';
 
 // Test 1: Basic kernel construction (both APIs)
 console.log('=== Test 1: Kernel Construction ===');
@@ -126,3 +126,22 @@ try {
 }
 
 console.log('=== All tests completed ===');
+
+// Additional sanity checks for new kernels
+console.log('\n=== Extra Kernels ===');
+try {
+  const rq = new RationalQuadratic(1.2, 0.3, 2.0);
+  console.log('RationalQuadratic k([0],[0]) =', rq.compute([0], [0]));
+
+  const matern = new Matern({ lengthScale: 0.8, nu: 1.5, amplitude: 1.0 });
+  console.log('Matérn ν=1.5 k([0],[1]) =', matern.compute([0], [1]).toFixed(3));
+
+  const constant = new ConstantKernel({ value: 5 });
+  console.log('Constant kernel always returns', constant.compute([10], [50]));
+
+  const sum = new SumKernel({ kernels: [constant, rq] });
+  console.log('Sum kernel combines to', sum.compute([0], [0]));
+  console.log('✓ Additional kernels working');
+} catch (e) {
+  console.error('✗ Additional kernel test failed:', e.message);
+}

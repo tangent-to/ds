@@ -17,7 +17,14 @@
 import { Regressor } from '../../core/estimators/estimator.js';
 import { toMatrix } from '../../core/linalg.js';
 import { prepareXY, prepareX } from '../../core/table.js';
-import { Kernel, RBF, Periodic, RationalQuadratic } from '../kernels/index.js';
+import {
+  Kernel,
+  RBF,
+  Periodic,
+  RationalQuadratic,
+  ConstantKernel,
+  Matern,
+} from '../kernels/index.js';
 
 /**
  * Seeded random number generator (Mulberry32)
@@ -131,8 +138,8 @@ export class GaussianProcessRegressor extends Regressor {
       this.kernel = opts.kernel;
     } else {
       const kernelType = (opts.kernel || 'rbf').toLowerCase();
-      const lengthScale = opts.lengthScale || 1.0;
-      const variance = opts.variance || 1.0;
+      const lengthScale = opts.lengthScale ?? 1.0;
+      const variance = opts.variance ?? opts.amplitude ?? 1.0;
       
       switch (kernelType) {
         case 'rbf':
@@ -144,6 +151,13 @@ export class GaussianProcessRegressor extends Regressor {
         case 'rational_quadratic':
         case 'rationalquadratic':
           this.kernel = new RationalQuadratic(lengthScale, opts.alpha || 1.0, variance);
+          break;
+        case 'matern':
+          this.kernel = new Matern({ lengthScale, nu: opts.nu ?? 1.5, amplitude: variance });
+          break;
+        case 'constant':
+        case 'constantkernel':
+          this.kernel = new ConstantKernel({ value: variance });
           break;
         default:
           throw new Error(`Unknown kernel type: ${kernelType}`);
@@ -218,7 +232,7 @@ export class GaussianProcessRegressor extends Regressor {
    */
   predict(X, opts = {}) {
     this._ensureFitted('predict');
-    const { returnStd = false } = opts;
+    const { returnStd = false, returnCov = false } = opts;
 
     const XTest = toMatrix(X);
     const KStar = this.kernel.call(this._XTrain, XTest);
@@ -232,13 +246,22 @@ export class GaussianProcessRegressor extends Regressor {
       }
     }
 
-    if (!returnStd) {
+    if (!returnStd && !returnCov) {
       return mean;
     }
 
-    // Compute std
-    const std = this._computeStd(XTest, KStar);
-    return { mean, std };
+    const { covarianceMatrix, diag } = this._computePosteriorCovariance(XTest, KStar);
+    const result = { mean };
+
+    if (returnStd) {
+      result.std = diag.map(v => Math.sqrt(Math.max(0, v)));
+    }
+
+    if (returnCov) {
+      result.covariance = covarianceMatrix.to2DArray();
+    }
+
+    return result;
   }
 
   /**
@@ -253,19 +276,22 @@ export class GaussianProcessRegressor extends Regressor {
 
     const rng = seed !== null ? mulberry32(seed) : Math.random;
     const XTest = toMatrix(X);
-    const { mean, std } = this.predict(X, { returnStd: true });
+    const KStar = this.kernel.call(this._XTrain, XTest);
+
+    // Mean of posterior
+    const mean = new Array(XTest.rows);
+    for (let i = 0; i < XTest.rows; i++) {
+      mean[i] = 0;
+      for (let j = 0; j < this._XTrain.rows; j++) {
+        mean[i] += KStar.get(j, i) * this._alphaVector[j];
+      }
+    }
+
+    const { covarianceMatrix } = this._computePosteriorCovariance(XTest, KStar);
 
     const samples = [];
     for (let s = 0; s < nSamples; s++) {
-      const sample = new Array(XTest.rows);
-      for (let i = 0; i < XTest.rows; i++) {
-        // Sample from N(mean[i], std[i]²)
-        const u1 = rng();
-        const u2 = rng();
-        const z = Math.sqrt(-2 * Math.log(u1 || 1e-10)) * Math.cos(2 * Math.PI * u2);
-        sample[i] = mean[i] + std[i] * z;
-      }
-      samples.push(sample);
+      samples.push(sampleMultivariateNormal(mean, covarianceMatrix, rng));
     }
 
     return samples;
@@ -301,31 +327,47 @@ export class GaussianProcessRegressor extends Regressor {
     return samples;
   }
 
-  _computeStd(XTest, KStar) {
-    const std = new Array(XTest.rows);
+  _computePosteriorCovariance(XTest, KStar) {
+    const nTrain = this._XTrain.rows;
+    const nTest = XTest.rows;
 
-    for (let i = 0; i < XTest.rows; i++) {
-      // K** diagonal element
-      const kStarStar = this.kernel.compute(XTest.getRow(i), XTest.getRow(i));
-
-      // Solve L @ v = k*
-      const kStarColumn = new Array(this._XTrain.rows);
-      for (let j = 0; j < this._XTrain.rows; j++) {
-        kStarColumn[j] = KStar.get(j, i);
-      }
-      const v = this._forwardSubstitution(this._L, kStarColumn);
-
-      // Variance = k** - v^T @ v
-      let vTv = 0;
-      for (let j = 0; j < v.length; j++) {
-        vTv += v[j] * v[j];
-      }
-
-      const variance = kStarStar - vTv;
-      std[i] = Math.sqrt(Math.max(0, variance));
+    // Solve L @ V = K*
+    const V = new Array(nTrain);
+    for (let i = 0; i < nTrain; i++) {
+      V[i] = new Array(nTest).fill(0);
     }
 
-    return std;
+    for (let col = 0; col < nTest; col++) {
+      const kStarColumn = new Array(nTrain);
+      for (let row = 0; row < nTrain; row++) {
+        kStarColumn[row] = KStar.get(row, col);
+      }
+      const solved = this._forwardSubstitution(this._L, kStarColumn);
+      for (let row = 0; row < nTrain; row++) {
+        V[row][col] = solved[row];
+      }
+    }
+
+    const covarianceMatrix = this.kernel.call(XTest);
+    const diag = new Array(nTest);
+
+    for (let i = 0; i < nTest; i++) {
+      for (let j = 0; j <= i; j++) {
+        let cov = covarianceMatrix.get(i, j);
+        for (let k = 0; k < nTrain; k++) {
+          cov -= V[k][i] * V[k][j];
+        }
+        covarianceMatrix.set(i, j, cov);
+        if (i !== j) {
+          covarianceMatrix.set(j, i, cov);
+        }
+        if (i === j) {
+          diag[i] = cov;
+        }
+      }
+    }
+
+    return { covarianceMatrix, diag };
   }
 
   _solveCholesky(L, y) {

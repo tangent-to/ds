@@ -62,7 +62,15 @@ import { MLPRegressor } from "./estimators/MLPRegressor.js";
 import { GaussianProcessRegressor } from "./estimators/GaussianProcessRegressor.js";
 
 // Kernels for Gaussian Processes
-import { Kernel, RBF, Periodic, RationalQuadratic } from "./kernels/index.js";
+import {
+  Kernel,
+  RBF,
+  Periodic,
+  RationalQuadratic,
+  ConstantKernel,
+  SumKernel,
+  Matern,
+} from "./kernels/index.js";
 
 export {
   // Clustering algorithms
@@ -80,6 +88,9 @@ export {
   RBF,
   Periodic,
   RationalQuadratic,
+  ConstantKernel,
+  SumKernel,
+  Matern,
   GridSearchCV,
   HCA,
   hca,

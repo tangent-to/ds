@@ -14,15 +14,28 @@ import { Kernel } from './base.js';
 
 export class RationalQuadratic extends Kernel {
   /**
-   * @param {number} lengthScale - Length scale (default: 1.0)
+   * @param {number|Object} lengthScaleOrOpts - Length scale or options object
    * @param {number} alpha - Scale mixture parameter (default: 1.0)
    * @param {number} variance - Signal variance (default: 1.0)
    */
-  constructor(lengthScale = 1.0, alpha = 1.0, variance = 1.0) {
+  constructor(lengthScaleOrOpts = 1.0, alpha = 1.0, variance = 1.0) {
     super();
-    this.lengthScale = lengthScale;
-    this.alpha = alpha;
-    this.variance = variance;
+
+    if (typeof lengthScaleOrOpts === 'object') {
+      const {
+        lengthScale = 1.0,
+        alpha: alphaOpt = 1.0,
+        variance: varianceOpt = 1.0,
+        amplitude,
+      } = lengthScaleOrOpts;
+      this.lengthScale = lengthScale;
+      this.alpha = alphaOpt;
+      this.variance = amplitude ?? varianceOpt;
+    } else {
+      this.lengthScale = lengthScaleOrOpts;
+      this.alpha = alpha;
+      this.variance = variance;
+    }
   }
 
   compute(x1, x2) {
@@ -43,9 +56,10 @@ export class RationalQuadratic extends Kernel {
     };
   }
 
-  setParams({ lengthScale, alpha, variance }) {
+  setParams({ lengthScale, alpha, variance, amplitude }) {
     if (lengthScale !== undefined) this.lengthScale = lengthScale;
     if (alpha !== undefined) this.alpha = alpha;
     if (variance !== undefined) this.variance = variance;
+    if (amplitude !== undefined) this.variance = amplitude;
   }
 }
