@@ -276,4 +276,4 @@ See `examples/` directory for working examples:
 
 GPL-3.0
 
-https://doi.org/10.5281/zenodo.18614746
+<a href="https://doi.org/10.5281/zenodo.18614745"><img src="https://zenodo.org/badge/1086841692.svg" alt="DOI"></a>
