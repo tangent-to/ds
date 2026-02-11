@@ -275,3 +275,5 @@ See `examples/` directory for working examples:
 ## License
 
 GPL-3.0
+
+https://doi.org/10.5281/zenodo.18614746
