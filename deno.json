@@ -1,6 +1,6 @@
 {
   "name": "@tangent-to/ds",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "exports": "./src/index.js",
   "tasks": {
     "test": "deno test --allow-read",

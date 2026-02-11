@@ -10,7 +10,7 @@ authors:
 repository-code: "https://github.com/tangent-to/ds"
 url: "https://tangent-to.github.io/ds/"
 license: GPL-3.0
-version: "0.4.2"
+version: "0.4.3"
 date-released: "2025-01-01"
 keywords:
   - data-science
