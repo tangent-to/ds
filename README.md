@@ -1,4 +1,4 @@
-# @tangent.to/ds
+# @tangent/ds
 
 A browser-friendly data science library in modern JavaScript (ESM).
 
