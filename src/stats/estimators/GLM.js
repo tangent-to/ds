@@ -194,12 +194,15 @@ export class GLM extends Estimator {
    * @private
    */
   _fitWithFormula(formula, data, options = {}) {
-    // Parse formula and apply to data
+    // Parse formula and apply to data. Do not bake the intercept column into
+    // the design matrix here; let fitGLM/fitGLMM add it so model.intercept is
+    // tracked correctly for predict().
     const result = applyFormula(formula, data, {
-      intercept: this.params.intercept,
+      intercept: false,
     });
 
-    // Store column names for later use (include intercept since fitGLM won't track it)
+    // Store predictor column names (without "(Intercept)") so predict() can
+    // resolve them from the input data table.
     this._columnsX = result.columnNames;
     this._columnY = result.parsed.response.variable;
     this._formula = formula;
@@ -212,13 +215,12 @@ export class GLM extends Estimator {
     this._isMixed = !!result.randomEffects;
 
     // Fit the model
-    // Note: result.X already includes intercept from applyFormula, so don't add it again
     const fitOptions = {
       family: this.params.family,
       link: this.params.link,
       weights,
       offset,
-      intercept: false, // intercept already in result.X from applyFormula
+      intercept: this.params.intercept,
       maxIter: this.params.maxIter,
       tol: this.params.tol,
       regularization: this.params.regularization,
