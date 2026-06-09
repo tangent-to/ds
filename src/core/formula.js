@@ -119,42 +119,120 @@ function parsePredictors(part) {
  * Parse fixed effects terms
  */
 function parseFixedTerms(part) {
-  const terms = [];
   const tokens = tokenize(part);
 
-  let i = 0;
-  while (i < tokens.length) {
-    const token = tokens[i];
-
-    if (token === '+' || token === '-') {
-      i++;
-      continue;
+  // Split the token stream into top-level groups separated by '+'
+  const groups = [];
+  let current = [];
+  for (const token of tokens) {
+    if (token === '+') {
+      if (current.length) groups.push(current);
+      current = [];
+    } else if (token === '-') {
+      throw new Error(
+        "Formula term removal with '-' is not supported; list the desired terms with '+' " +
+          '(use the intercept option to drop the intercept)',
+      );
+    } else {
+      current.push(token);
     }
+  }
+  if (current.length) groups.push(current);
 
-    if (token === '*') {
-      // Interaction: expand a * b to a + b + a:b
-      // This requires looking back at the previous term
-      i++;
-      continue;
+  const expanded = [];
+  for (const group of groups) {
+    // A bare '1' is the intercept, which the fitter adds itself
+    if (group.length === 1 && group[0] === '1') continue;
+    for (const term of expandGroup(group)) {
+      expanded.push(term);
     }
-
-    if (token === ':') {
-      // Explicit interaction
-      i++;
-      continue;
-    }
-
-    // Parse term
-    const term = parseTerm(token);
-    terms.push(term);
-
-    i++;
   }
 
-  // Expand interactions
-  const expanded = expandInteractions(tokens, terms);
+  return dedupeTerms(expanded);
+}
 
-  return expanded;
+/**
+ * Expand one '+'-separated group of tokens into terms.
+ *
+ * ':' binds tighter than '*'. A group like `a * b:c` is split on '*' into
+ * factor chains ([a] and [b, c]); each chain alone is one term (an
+ * interaction if it has several factors), and '*' crosses chains R-style:
+ * a * b * c -> a + b + c + a:b + a:c + b:c + a:b:c.
+ */
+function expandGroup(group) {
+  // Split on '*' into chains, each chain a list of ':'-joined factor tokens
+  const chains = [[]];
+  for (const token of group) {
+    if (token === '*') {
+      chains.push([]);
+    } else if (token === ':') {
+      continue;
+    } else {
+      chains[chains.length - 1].push(parseTerm(token));
+    }
+  }
+
+  if (chains.some((chain) => chain.length === 0)) {
+    throw new Error(`Invalid formula term: ${group.join(' ')}`);
+  }
+
+  const asTerm = (factors) =>
+    factors.length === 1 ? factors[0] : { type: 'interaction', terms: factors };
+
+  if (chains.length === 1) {
+    return [asTerm(chains[0])];
+  }
+
+  // Cross the chains: every non-empty subset, main effects first
+  const terms = [];
+  const n = chains.length;
+  const subsets = [];
+  for (let mask = 1; mask < (1 << n); mask++) {
+    subsets.push(mask);
+  }
+  const popcount = (m) => {
+    let c = 0;
+    while (m) {
+      c += m & 1;
+      m >>= 1;
+    }
+    return c;
+  };
+  subsets.sort((a, b) => popcount(a) - popcount(b) || a - b);
+
+  for (const mask of subsets) {
+    const factors = [];
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) factors.push(...chains[i]);
+    }
+    terms.push(asTerm(factors));
+  }
+
+  return terms;
+}
+
+/**
+ * Remove duplicate terms (e.g. from `a + a` or overlapping expansions),
+ * keeping first occurrence order
+ */
+function dedupeTerms(terms) {
+  const seen = new Set();
+  const result = [];
+  for (const term of terms) {
+    const key = termKey(term);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(term);
+    }
+  }
+  return result;
+}
+
+function termKey(term) {
+  if (term.type === 'interaction') {
+    return term.terms.map(termKey).sort().join(':');
+  }
+  return JSON.stringify(term);
 }
 
 /**
@@ -292,41 +370,6 @@ function extractVariables(expr) {
   // Simple extraction - just find word characters
   const matches = expr.match(/\b[a-zA-Z_]\w*\b/g);
   return matches ? [...new Set(matches)] : [];
-}
-
-/**
- * Expand interactions (a * b becomes a + b + a:b)
- */
-function expandInteractions(tokens, terms) {
-  const expanded = [...terms];
-
-  for (let i = 0; i < tokens.length; i++) {
-    if (tokens[i] === '*') {
-      // Find the terms before and after *
-      let beforeIdx = i - 1;
-      while (beforeIdx >= 0 && (tokens[beforeIdx] === '+' || tokens[beforeIdx] === '-')) {
-        beforeIdx--;
-      }
-
-      let afterIdx = i + 1;
-      while (afterIdx < tokens.length && (tokens[afterIdx] === '+' || tokens[afterIdx] === '-')) {
-        afterIdx++;
-      }
-
-      if (beforeIdx >= 0 && afterIdx < tokens.length) {
-        const term1 = parseTerm(tokens[beforeIdx]);
-        const term2 = parseTerm(tokens[afterIdx]);
-
-        // Add interaction term
-        expanded.push({
-          type: 'interaction',
-          terms: [term1, term2]
-        });
-      }
-    }
-  }
-
-  return expanded;
 }
 
 /**
@@ -488,17 +531,16 @@ function processTerm(term, data) {
   }
 
   if (term.type === 'interaction') {
-    // Compute interaction (element-wise product)
-    const term1Data = processTerm(term.terms[0], data);
-    const term2Data = processTerm(term.terms[1], data);
+    // Compute interaction (element-wise product across all factors)
+    const factorData = term.terms.map((t) => processTerm(t, data));
 
-    const interaction = term1Data.columns[0].map((v1, i) =>
-      v1 * term2Data.columns[0][i]
+    const interaction = factorData[0].columns[0].map((v, i) =>
+      factorData.slice(1).reduce((prod, fd) => prod * fd.columns[0][i], v)
     );
 
     return {
       columns: [interaction],
-      names: [`${term1Data.names[0]}:${term2Data.names[0]}`]
+      names: [factorData.map((fd) => fd.names[0]).join(':')]
     };
   }
 
