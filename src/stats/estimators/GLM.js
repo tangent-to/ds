@@ -261,7 +261,10 @@ export class GLM extends Estimator {
 
     if (this._classes.length === 2) {
       // Binary case - fit single model with 0/1 encoding
-      console.warn('Only 2 classes detected. Consider using binary GLM without multiclass option.');
+      this._addWarning(
+        'multiclass',
+        'Only 2 classes detected. Consider using binary GLM without multiclass option.',
+      );
       this._isMulticlass = false;
 
       // Encode as 0/1
@@ -278,8 +281,9 @@ export class GLM extends Estimator {
     }
 
     // Multiclass case - fit one model per class
-    console.log(
-      `ℹ️  Multiclass: Fitting ${this._classes.length} binary models using one-vs-rest strategy.`,
+    this._addWarning(
+      'multiclass',
+      `Multiclass: fitting ${this._classes.length} binary models using one-vs-rest strategy.`,
     );
     this._models = {};
 
@@ -332,7 +336,10 @@ export class GLM extends Estimator {
 
     if (this._classes.length === 2) {
       // Binary case - fit single model with 0/1 encoding
-      console.warn('Only 2 classes detected. Consider using binary GLM without multiclass option.');
+      this._addWarning(
+        'multiclass',
+        'Only 2 classes detected. Consider using binary GLM without multiclass option.',
+      );
       this._isMulticlass = false;
 
       // Encode as 0/1
@@ -349,8 +356,9 @@ export class GLM extends Estimator {
     }
 
     // Multiclass case - create K-1 binary indicators and fit true multinomial
-    console.log(
-      `ℹ️  Multinomial: Fitting true multinomial model with K=${this._classes.length} classes (K-1=${
+    this._addWarning(
+      'multinomial',
+      `Multinomial: fitting true multinomial model with K=${this._classes.length} classes (K-1=${
         this._classes.length - 1
       } parameters, joint optimization with softmax).`,
     );
@@ -403,8 +411,9 @@ export class GLM extends Estimator {
       this._checkIfMultinomial(data, yColumns);
 
     if (isMultinomial) {
-      console.log(
-        `ℹ️  Multinomial logit: Fitting true multinomial model (K-1=${yColumns.length} for K=${
+      this._addWarning(
+        'multinomial',
+        `Multinomial logit: fitting true multinomial model (K-1=${yColumns.length} for K=${
           yColumns.length + 1
         } classes, joint optimization).`,
       );
@@ -412,8 +421,9 @@ export class GLM extends Estimator {
       // Use true multinomial logistic regression
       return this._fitTrueMultinomial(opts);
     } else {
-      console.warn(
-        `⚠️  Multi-output: Fitting ${yColumns.length} independent models. Targets are modeled separately without considering correlations.`,
+      this._addWarning(
+        'multioutput',
+        `Multi-output: fitting ${yColumns.length} independent models. Targets are modeled separately without considering correlations.`,
       );
     }
 

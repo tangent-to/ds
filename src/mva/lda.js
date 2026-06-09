@@ -256,7 +256,13 @@ export function fit(X, y, options = {}) {
     for (let i = 0; i < p; i++) {
       column.push(scalingsMatrix.get(i, j));
     }
-    const sign = Math.sign(column.reduce((acc, val) => acc + val, 0)) || 1;
+    // Orient each axis so its largest-magnitude loading is positive.
+    // (A sum-based sign is unstable when loadings nearly cancel out.)
+    let maxAbsIdx = 0;
+    for (let i = 1; i < column.length; i++) {
+      if (Math.abs(column[i]) > Math.abs(column[maxAbsIdx])) maxAbsIdx = i;
+    }
+    const sign = Math.sign(column[maxAbsIdx]) || 1;
     axisSigns.push(sign);
     rawLoadingColumns.push(column.map((v) => v * sign));
     for (let i = 0; i < rawSiteMatrix.length; i++) {

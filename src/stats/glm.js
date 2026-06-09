@@ -111,6 +111,7 @@ export function fitGLM(X, y, options = {}) {
   const { standardErrors, covarianceMatrix } = computeStandardErrors(
     Xmat,
     mu,
+    eta,
     w,
     phi,
     familyObj,
@@ -224,7 +225,9 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
 
     // L1 regularization would require coordinate descent, not implemented yet
     if (alpha * l1_ratio > 0) {
-      console.warn('L1 regularization not yet implemented, using L2 only');
+      throw new Error(
+        'L1 regularization is not implemented for GLM; set l1_ratio to 0 to use ridge (L2) regularization',
+      );
     }
   }
 
@@ -251,13 +254,14 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
 /**
  * Compute standard errors for coefficients
  */
-function computeStandardErrors(X, mu, weights, phi, family) {
+function computeStandardErrors(X, mu, eta, weights, phi, family) {
   const n = X.length;
   const p = X[0].length;
 
-  // Compute working weights
+  // Compute working weights (dmu/deta at the final linear predictor;
+  // using eta directly avoids a lossy mu -> linkfun(mu) round-trip)
   const variance = family.variance(mu);
-  const mu_eta = family.link.mu_eta(family.link.linkfun(mu));
+  const mu_eta = family.link.mu_eta(eta);
 
   const W = new Array(n);
   for (let i = 0; i < n; i++) {
@@ -493,6 +497,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     Xmat,
     Z,
     mu,
+    eta,
     beta,
     u,
     theta,
@@ -767,18 +772,21 @@ function computeMarginalLogLikelihood(y, mu, u, theta, weights, family, groupInf
 }
 
 /**
- * Compute standard errors for GLMM fixed effects
+ * Compute standard errors for GLMM fixed effects.
+ *
+ * Approximation: these are conditional standard errors from the weighted
+ * information matrix X'WX at the final estimates. They ignore the
+ * uncertainty in the variance components (exact SEs would need the Hessian
+ * of the marginal likelihood, as in lme4), so they are typically somewhat
+ * anti-conservative, especially with few groups.
  */
-function computeGLMMStandardErrors(X, Z, mu, beta, u, theta, weights, family, groupInfo) {
-  // This is a simplified approximation
-  // True standard errors would require Hessian of marginal likelihood
-
+function computeGLMMStandardErrors(X, Z, mu, eta, beta, u, theta, weights, family, groupInfo) {
   const n = X.length;
   const p = X[0].length;
 
-  // Compute working weights
+  // Compute working weights (dmu/deta at the final linear predictor)
   const variance = family.variance(mu);
-  const mu_eta = family.link.mu_eta(family.link.linkfun(mu));
+  const mu_eta = family.link.mu_eta(eta);
 
   const W = new Array(n);
   for (let i = 0; i < n; i++) {
