@@ -8,7 +8,7 @@
  * - Random intercepts and slopes
  */
 
-import { inverse, Matrix, SingularValueDecomposition } from 'ml-matrix';
+import { inverse, Matrix, SingularValueDecomposition, solve } from 'ml-matrix';
 import { createFamily } from './families.js';
 import { mean, sum } from '../core/math.js';
 
@@ -233,7 +233,7 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
 
   // Solve: (X'WX)β = X'Wy
   try {
-    const beta = XtX.solve(Xty);
+    const beta = solve(XtX, Xty);
     return Array.from(beta.getColumn(0));
   } catch (e) {
     // Singular normal equations: solve the original weighted least-squares
@@ -686,7 +686,7 @@ function updateRandomEffects(X, Z, y, weights, beta, theta) {
 
   // Solve: (Z'WZ + D^{-1})u = Z'Wy
   try {
-    const u = ZtWZ.solve(ZtWy);
+    const u = solve(ZtWZ, ZtWy);
     return Array.from(u.getColumn(0));
   } catch (e) {
     // If solve fails, try inverse

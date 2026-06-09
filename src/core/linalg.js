@@ -3,7 +3,7 @@
  * This abstraction allows future backend swaps (e.g., WASM)
  */
 
-import { Matrix, SingularValueDecomposition, EigenvalueDecomposition, inverse as mlInverse, pseudoInverse as mlPseudoInverse } from 'ml-matrix';
+import { Matrix, SingularValueDecomposition, EigenvalueDecomposition, inverse as mlInverse, pseudoInverse as mlPseudoInverse, solve as mlSolve } from 'ml-matrix';
 
 /**
  * Convert array-like structure to Matrix
@@ -34,7 +34,7 @@ export function solveLeastSquares(A, b) {
   const Atb = matA.transpose().mmul(matB);
   
   try {
-    return AtA.solve(Atb);
+    return mlSolve(AtA, Atb);
   } catch (e) {
     // If singular, use pseudoinverse via SVD
     const svd = new SingularValueDecomposition(matA);

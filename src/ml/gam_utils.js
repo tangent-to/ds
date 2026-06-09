@@ -9,7 +9,7 @@
  * - Confidence intervals for predictions
  */
 
-import { Matrix, inverse, SingularValueDecomposition, EigenvalueDecomposition } from 'ml-matrix';
+import { Matrix, inverse, SingularValueDecomposition, EigenvalueDecomposition, solve } from 'ml-matrix';
 import { qchisq } from '../stats/distribution.js';
 
 /**
@@ -41,7 +41,7 @@ export function fitPenalizedRegression(X, y, S, lambda) {
   // Solve for coefficients
   let beta;
   try {
-    beta = penalized.solve(Xty);
+    beta = solve(penalized, Xty);
   } catch (e) {
     // Use pseudoinverse if singular
     const svd = new SingularValueDecomposition(penalized);
@@ -472,7 +472,7 @@ function fitMultinomialIRLS(X, y, S, lambda, K, options = {}) {
     // Solve for beta
     let betaMat;
     try {
-      betaMat = penalized.solve(XtWz);
+      betaMat = solve(penalized, XtWz);
     } catch (e) {
       const svd = new SingularValueDecomposition(penalized);
       betaMat = svd.solve(XtWz);

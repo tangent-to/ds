@@ -6,7 +6,7 @@
  * Matches R's nnet::multinom() behavior
  */
 
-import { Matrix } from 'ml-matrix';
+import { inverse, Matrix, solve } from 'ml-matrix';
 import { sum } from '../core/math.js';
 
 /**
@@ -181,7 +181,7 @@ export function fitMultinomial(X, y, options = {}) {
       const g = Matrix.columnVector(gradient);
 
       // Solve H * delta = -g (Newton direction)
-      const delta = H.solve(g.mul(-1));
+      const delta = solve(H, g.mul(-1));
 
       // Update coefficients
       for (let k = 0; k < K - 1; k++) {
@@ -221,7 +221,7 @@ export function fitMultinomial(X, y, options = {}) {
 
   try {
     const H = new Matrix(finalHessian);
-    const covMatrix = H.inverse().mul(-1); // Negative inverse of Hessian
+    const covMatrix = inverse(H).mul(-1); // Negative inverse of Hessian
 
     for (let k = 0; k < K - 1; k++) {
       for (let j = 0; j < p; j++) {

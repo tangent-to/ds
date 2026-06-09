@@ -130,10 +130,15 @@ describe('Model Comparison', () => {
     });
 
     it('should detect significant improvement', () => {
-      // Create data where x2 is clearly important
-      const X1 = [[1], [2], [3], [4], [5], [6]];
-      const X2 = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]];
-      const y = [3, 6, 9, 12, 15, 18]; // y = 3 * x2
+      // y depends strongly on x2, which is nearly uncorrelated with x1,
+      // and carries a little noise so neither model fits perfectly
+      const x1 = [1, 2, 3, 4, 5, 6, 7, 8];
+      const x2 = [5, 3, 8, 1, 9, 2, 7, 4];
+      const noise = [0.05, -0.1, 0.08, -0.03, 0.12, -0.07, 0.02, -0.06];
+
+      const X1 = x1.map((v) => [v]);
+      const X2 = x1.map((v, i) => [v, x2[i]]);
+      const y = x1.map((v, i) => 0.1 * v + 3 * x2[i] + noise[i]);
 
       const m1 = new GLM({ family: 'gaussian' });
       m1.fit(X1, y);
