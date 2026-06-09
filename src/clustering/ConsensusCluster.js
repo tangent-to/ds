@@ -48,6 +48,7 @@ export class ConsensusCluster extends Estimator {
     this.linkage = linkage;
     this.coAssocMatrix = null;
     this.labels = null;
+    this.X_train = null;
   }
 
   /**
@@ -71,6 +72,10 @@ export class ConsensusCluster extends Estimator {
     if (!n) {
       throw new Error('Empty data provided');
     }
+
+    // Keep the training data for methods that need to re-predict
+    // (e.g. getEstimatorAgreement)
+    this.X_train = X;
 
     // Initialize co-association matrix (counts co-occurrences)
     const coAssoc = Array(n).fill(0).map(() => Array(n).fill(0));

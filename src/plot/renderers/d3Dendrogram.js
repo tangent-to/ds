@@ -26,6 +26,12 @@ function makeClusterKey(indices = []) {
 }
 
 function createSvgElement(tag) {
+  if (typeof document === 'undefined') {
+    throw new Error(
+      'createD3DendrogramRenderer requires a DOM (browser or jsdom); ' +
+        'SVG rendering is not available in plain Node.js.',
+    );
+  }
   return document.createElementNS(SVG_NS, tag);
 }
 
