@@ -236,18 +236,13 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
     const beta = XtX.solve(Xty);
     return Array.from(beta.getColumn(0));
   } catch (e) {
-    // If singular, use SVD-based pseudoinverse
-    try {
-      const beta = inverse(XtX).mmul(Xty);
-      return Array.from(beta.getColumn(0));
-    } catch (e2) {
-      // Last resort: use SVD on original problem
-      const WXmat = new Matrix(WX);
-      const Wymat = Matrix.columnVector(Wy);
-      const svd = new SingularValueDecomposition(WXmat);
-      const beta = svd.solve(Wymat);
-      return Array.from(beta.getColumn(0));
-    }
+    // Singular normal equations: solve the original weighted least-squares
+    // problem with an SVD-based pseudoinverse (minimum-norm solution)
+    const WXmat = new Matrix(WX);
+    const Wymat = Matrix.columnVector(Wy);
+    const svd = new SingularValueDecomposition(WXmat);
+    const beta = svd.solve(Wymat);
+    return Array.from(beta.getColumn(0));
   }
 }
 
