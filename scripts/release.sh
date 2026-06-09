@@ -8,7 +8,7 @@ Usage: scripts/release.sh -m "commit message"
 
 Automates the release flow:
   1. Commit current working tree with the provided message.
-  2. Bump tangent-ds/package.json patch version.
+  2. Bump package.json patch version.
   3. Commit the release bump and create matching tag.
   4. Push branch and tag to origin.
 EOF
@@ -49,13 +49,11 @@ fi
 git add .
 git commit -m "$commit_msg"
 
-pushd tangent-ds >/dev/null
 echo "Bumping patch version..."
 npm version patch --no-git-tag-version >/dev/null
 new_version="$(npm pkg get version | tr -d '"')"
-popd >/dev/null
 
-git add tangent-ds/package.json tangent-ds/package-lock.json
+git add package.json package-lock.json
 git commit -m "chore: release $new_version"
 
 tag="v$new_version"

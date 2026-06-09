@@ -2,8 +2,8 @@
  * Compare ds GaussianProcessRegressor with scikit-learn reference values.
  * Reference values from running test-gp-vs-sklearn.py
  */
-import { GaussianProcessRegressor } from './estimators/GaussianProcessRegressor.js';
-import { RBF } from './kernels/rbf.js';
+import { GaussianProcessRegressor } from '../src/ml/estimators/GaussianProcessRegressor.js';
+import { RBF } from '../src/ml/kernels/rbf.js';
 
 const TOLERANCE = 1e-6;
 

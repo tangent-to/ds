@@ -327,6 +327,11 @@ export class MinMaxScaler {
 
 /**
  * Encode target labels with value between 0 and n_classes-1
+ *
+ * Note: distinct from the internal core/table.js LabelEncoder used by
+ * prepareX/prepareXY (which keeps first-seen class order and is persisted
+ * with fitted models). This one sorts classes and supports table
+ * descriptors; the two are intentionally separate.
  */
 export class LabelEncoder {
   constructor() {

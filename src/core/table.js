@@ -213,6 +213,11 @@ function isMissing(v) {
 /**
  * Simple Label Encoder for categorical labels -> integers
  *
+ * Note: this is the internal encoder used by prepareX/prepareXY and
+ * persisted with fitted models (classes keep first-seen order). The
+ * user-facing ml.preprocessing.LabelEncoder is a separate class with
+ * different semantics (sorted classes, table-descriptor support).
+ *
  * handleUnknown controls what transform() does with categories not seen
  * during fit: 'error' (default) throws, 'ignore' maps them to NaN, and
  * 'extend' registers them as new classes (legacy behaviour; unsafe at

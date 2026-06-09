@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-// CCA temporarily disabled due to Observable performance issues
-// import { cca, CCA } from '../src/mva/index.js';
+import { cca, CCA } from '../src/mva/index.js';
 
 function generateData() {
   const X = [];
@@ -21,7 +20,7 @@ function generateData() {
   return { X, Y };
 }
 
-describe.skip('CCA - functional API', () => {
+describe('CCA - functional API', () => {
   it('should compute canonical correlations for numeric matrices', () => {
     const { X, Y } = generateData();
     const model = cca.fit(X, Y);
@@ -70,7 +69,7 @@ describe.skip('CCA - functional API', () => {
   });
 });
 
-describe.skip('CCA - estimator class', () => {
+describe('CCA - estimator class', () => {
   it('should fit and provide summary', () => {
     const { X, Y } = generateData();
     const estimator = new CCA();

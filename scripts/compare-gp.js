@@ -10,7 +10,7 @@
  * - gp.sample_y(X, n_samples=1, random_state=None)
  */
 
-import { GaussianProcessRegressor, RBF, Periodic, RationalQuadratic, Kernel, ConstantKernel, SumKernel, Matern } from './index.js';
+import { GaussianProcessRegressor, RBF, Periodic, RationalQuadratic, Kernel, ConstantKernel, SumKernel, Matern } from '../src/ml/index.js';
 
 // Test 1: Basic kernel construction (both APIs)
 console.log('=== Test 1: Kernel Construction ===');
