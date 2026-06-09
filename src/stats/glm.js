@@ -72,8 +72,8 @@ export function fitGLM(X, y, options = {}) {
     // Weighted least squares
     coefficients = weightedLeastSquares(Xmat, z, wt, regularization);
 
-    // Update eta and mu
-    eta = matrixVectorMultiply(Xmat, coefficients);
+    // Update eta and mu (eta is the full linear predictor, including offset)
+    eta = matrixVectorMultiply(Xmat, coefficients).map((e, i) => e + off[i]);
     mu = familyObj.link.linkinv(eta);
 
     // Compute deviance
@@ -175,7 +175,8 @@ function computeWorkingWeights(y, mu, eta, offset, weights, family) {
   const wt = new Array(n);
 
   const variance = family.variance(mu);
-  const mu_eta = family.link.mu_eta(eta.map((e, i) => e - offset[i]));
+  // dmu/deta is evaluated at the full linear predictor (which includes the offset)
+  const mu_eta = family.link.mu_eta(eta);
 
   for (let i = 0; i < n; i++) {
     const v = Math.max(variance[i], 1e-10);
@@ -539,7 +540,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     nFixedEffects: nFixedCoef,
     nRandomEffects: nRandomCoef,
     df: nParams,
-    dfResidual: n - nFixedCoef,
+    dfResidual: n - nParams,
     family: familyObj.family,
     link: familyObj.link.name,
     intercept,

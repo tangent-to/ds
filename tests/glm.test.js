@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { GLM } from '../src/stats/estimators/GLM.js';
+import { fitGLM } from '../src/stats/glm.js';
 
 describe('GLM - Gaussian Family', () => {
   it('should fit a simple linear regression', () => {
@@ -472,5 +473,65 @@ describe('GLM - Edge Cases', () => {
     expect(model.fitted).toBe(true);
     const predictions = model.predict(X);
     expect(predictions.every((p) => p >= 0)).toBe(true);
+  });
+});
+
+describe('GLM - Offset handling', () => {
+  const X = [[1], [2], [3], [4], [5], [6], [7], [8]];
+
+  it('gaussian: fitting y with offset o equals fitting (y - o) without offset', () => {
+    const y = [2.1, 3.9, 6.2, 8.1, 9.8, 12.2, 14.1, 15.9];
+    const offset = [0.5, -1, 2, 0, 1.5, -0.5, 1, -2];
+
+    const withOffset = fitGLM(X, y, { family: 'gaussian', offset });
+    const shifted = fitGLM(X, y.map((yi, i) => yi - offset[i]), { family: 'gaussian' });
+
+    withOffset.coefficients.forEach((c, i) => {
+      expect(c).toBeCloseTo(shifted.coefficients[i], 8);
+    });
+  });
+
+  it('poisson: constant offset c shifts the intercept by -c and leaves slopes unchanged', () => {
+    const y = [1, 3, 4, 8, 11, 19, 28, 42];
+    const c = 1.7;
+    const offset = Array(X.length).fill(c);
+
+    const withOffset = fitGLM(X, y, { family: 'poisson', offset });
+    const without = fitGLM(X, y, { family: 'poisson' });
+
+    expect(withOffset.coefficients[0]).toBeCloseTo(without.coefficients[0] - c, 6);
+    expect(withOffset.coefficients[1]).toBeCloseTo(without.coefficients[1], 6);
+  });
+
+  it('poisson: varying offset (log exposure) satisfies the score equations', () => {
+    const y = [2, 1, 6, 4, 12, 8, 25, 16];
+    const exposure = [1, 0.5, 2, 1, 3, 1.5, 5, 2];
+    const offset = exposure.map((e) => Math.log(e));
+
+    const model = fitGLM(X, y, { family: 'poisson', offset });
+    expect(model.converged).toBe(true);
+
+    // For the canonical log link, the MLE satisfies X'(y - mu) = 0
+    // with mu = exp(X*beta + offset)
+    const mu = X.map((row, i) =>
+      Math.exp(model.coefficients[0] + model.coefficients[1] * row[0] + offset[i])
+    );
+    const scoreIntercept = y.reduce((s, yi, i) => s + (yi - mu[i]), 0);
+    const scoreSlope = y.reduce((s, yi, i) => s + (yi - mu[i]) * X[i][0], 0);
+
+    expect(Math.abs(scoreIntercept)).toBeLessThan(1e-4);
+    expect(Math.abs(scoreSlope)).toBeLessThan(1e-4);
+  });
+
+  it('binomial: constant offset c shifts the intercept by -c', () => {
+    const y = [0, 0, 1, 0, 1, 1, 1, 1];
+    const c = 0.8;
+    const offset = Array(X.length).fill(c);
+
+    const withOffset = fitGLM(X, y, { family: 'binomial', offset });
+    const without = fitGLM(X, y, { family: 'binomial' });
+
+    expect(withOffset.coefficients[0]).toBeCloseTo(without.coefficients[0] - c, 5);
+    expect(withOffset.coefficients[1]).toBeCloseTo(without.coefficients[1], 5);
   });
 });
