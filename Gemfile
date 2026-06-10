@@ -4,12 +4,6 @@ gem "jekyll", "~> 4.3"
 gem "just-the-docs", "0.8.2"
 gem "webrick", "~> 1.8"  # Required for Ruby 3.0+
 
-# Pin the SCSS converter to the 2.x line, which uses sassc/libsass.
-# The 3.x line pulls dart-sass via sass-embedded, whose latest build
-# (1.100.0) calls JSON::Fragment and fails on Ruby 3.1's bundled json
-# (< 2.9). sassc builds reliably on the CI Ruby and produces identical CSS.
-gem "jekyll-sass-converter", "~> 2.0"
-
 group :jekyll_plugins do
   gem "jekyll-seo-tag"
   gem "jekyll-github-metadata"
