@@ -56,6 +56,10 @@ import {
   RandomForestClassifier,
   RandomForestRegressor,
 } from "./estimators/RandomForest.js";
+import {
+  GradientBoostingClassifier,
+  GradientBoostingRegressor,
+} from "./estimators/GradientBoosting.js";
 import { GAMClassifier, GAMRegressor } from "./estimators/GAM.js";
 import { PolynomialRegressor } from "./estimators/PolynomialRegressor.js";
 import { MLPRegressor } from "./estimators/MLPRegressor.js";
@@ -82,6 +86,9 @@ export {
   DecisionTreeRegressor,
   GAMClassifier,
   GAMRegressor,
+  // Gradient Boosting
+  GradientBoostingClassifier,
+  GradientBoostingRegressor,
   // Gaussian Process
   GaussianProcessRegressor,
   Kernel,
