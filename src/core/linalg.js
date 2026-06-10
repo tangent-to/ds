@@ -3,7 +3,7 @@
  * This abstraction allows future backend swaps (e.g., WASM)
  */
 
-import { Matrix, SingularValueDecomposition, EigenvalueDecomposition, inverse as mlInverse, pseudoInverse as mlPseudoInverse, solve as mlSolve } from 'ml-matrix';
+import { Matrix, SingularValueDecomposition, EigenvalueDecomposition, inverse as mlInverse, solve as mlSolve } from 'ml-matrix';
 
 /**
  * Convert array-like structure to Matrix
@@ -127,7 +127,12 @@ export function inverse(data) {
 
 export function pseudoInverse(data) {
   const mat = toMatrix(data);
-  return mlPseudoInverse(mat);
+  // SVD inverse() uses a singular-value threshold scaled by the matrix size
+  // and largest singular value; ml-matrix's pseudoInverse() default threshold
+  // is an unscaled epsilon, which inverts near-zero singular values and
+  // produces garbage for nearly rank-deficient matrices
+  const svd = new SingularValueDecomposition(mat, { autoTranspose: true });
+  return svd.inverse();
 }
 
 export { Matrix };

@@ -9,7 +9,7 @@
 
 import { mean as calculateMean } from "../core/math.js";
 import { normalize, applyColumns } from "../core/table.js";
-import { Matrix, pseudoInverse } from "ml-matrix";
+import { Matrix, SingularValueDecomposition } from "ml-matrix";
 import { createGowerDistance } from "./distances.js";
 
 /**
@@ -780,19 +780,16 @@ export class IterativeImputer {
    */
   _fitLinearRegression(X, y) {
     // Add intercept column
-    const n = X.length;
-    const Xmat = new Matrix(X);
-    const ones = Matrix.ones(n, 1);
-    const XwithIntercept = Matrix.columnMatrix(
-      ones.getColumn(0),
-      ...Xmat.transpose().to2DArray(),
-    );
+    const XwithIntercept = new Matrix(X.map((row) => [1, ...row]));
 
     const yMat = new Matrix([y]).transpose();
 
-    // Use pseudoinverse for robust estimation: β = (X'X)^(-1) X'y = pinv(X) * y
-    const XpInv = pseudoInverse(XwithIntercept);
-    const beta = XpInv.mmul(yMat);
+    // SVD-based least squares (minimum-norm solution): robust to the
+    // rank-deficient designs that arise during round-robin imputation.
+    // (ml-matrix's pseudoInverse mishandles near-zero singular values.)
+    // autoTranspose handles wide systems (fewer known rows than features)
+    const svd = new SingularValueDecomposition(XwithIntercept, { autoTranspose: true });
+    const beta = svd.solve(yMat);
     const coef = beta.to2DArray().map((row) => row[0]);
 
     return {
@@ -814,21 +811,24 @@ export class IterativeImputer {
 
   /**
    * Impute a single feature using other features
-   * @param {Array<Array<number>>} X - Data matrix
+   * @param {Array<Array<number>>} X - Data matrix (current working copy, all values filled)
    * @param {number} featureIdx - Index of feature to impute
+   * @param {Array<Array<boolean>>} missing_mask - Original missingness mask
    * @returns {Array<number>} Imputed values for this feature
    */
-  _imputeFeature(X, featureIdx) {
+  _imputeFeature(X, featureIdx, missing_mask) {
     const n = X.length;
     const nFeatures = X[0].length;
 
-    // Separate rows with and without missing values for this feature
+    // Separate rows by the ORIGINAL missingness of this feature: X is the
+    // working copy with all values filled in, so re-detecting missing values
+    // here would always find none and skip the regression entirely
     const knownRows = [];
     const missingRows = [];
     const knownY = [];
 
     for (let i = 0; i < n; i++) {
-      if (!isMissing(X[i][featureIdx])) {
+      if (!missing_mask[i][featureIdx]) {
         knownRows.push(i);
         knownY.push(X[i][featureIdx]);
       } else {
@@ -999,7 +999,7 @@ export class IterativeImputer {
         }
 
         // Impute this feature
-        const imputed = this._imputeFeature(X_filled, featureIdx);
+        const imputed = this._imputeFeature(X_filled, featureIdx, missing_mask);
 
         // Update only the originally missing values
         for (let i = 0; i < n; i++) {

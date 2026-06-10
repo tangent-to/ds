@@ -9,7 +9,7 @@
 
 import { normalize, applyColumns } from "../core/table.js";
 import { random, randomInt, sample as randomSample } from "./utils.js";
-import { Matrix, pseudoInverse } from "ml-matrix";
+import { Matrix, SingularValueDecomposition } from "ml-matrix";
 
 /**
  * Helper: Check if value is missing (NaN, null, undefined)
@@ -949,9 +949,10 @@ export class MahalanobisDistance {
       .mmul(Xcentered)
       .div(n - 1);
 
-    // Compute precision matrix (inverse covariance) using pseudoinverse
-    // This handles singular/near-singular covariance matrices
-    this.precision_ = pseudoInverse(cov);
+    // Compute precision matrix (inverse covariance) via SVD pseudoinverse,
+    // whose singular-value threshold scales with the matrix (ml-matrix's
+    // pseudoInverse default threshold inverts near-zero singular values)
+    this.precision_ = new SingularValueDecomposition(cov, { autoTranspose: true }).inverse();
 
     // Compute distances and threshold
     const distances = this._mahalanobis_distances(X);
