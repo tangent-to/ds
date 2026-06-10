@@ -1,4 +1,5 @@
 import { attachShow } from './show.js';
+import { resolveGroupValues } from './utils.js';
 
 /**
  * Unified ordination plot (ordiplot) for PCA, LDA, and RDA
@@ -12,8 +13,10 @@ import { attachShow } from './show.js';
  * @param {Object} result - Ordination result (from PCA, LDA, or RDA)
  * @param {Object} options - Configuration options
  * @param {string} options.type - Type of ordination ('pca', 'lda', 'rda') - auto-detected if not specified
- * @param {string|null} options.colorBy - Array of colors/groups for points (optional)
- * @param {Array<string>|null} options.labels - Labels for points (optional)
+ * @param {Array|Iterable|Object|string|null} options.colorBy - Group values for points: an array,
+ *   any iterable (e.g. an Arquero column), a { data, column } descriptor, or the name of a
+ *   column in the data the model was fit on (requires a declarative fit({ data, ... }))
+ * @param {Array|Iterable|Object|string|null} options.labels - Labels for points (same accepted forms as colorBy)
  * @param {boolean} options.showLoadings - Show loading vectors (PCA/RDA only)
  * @param {boolean} options.showCentroids - Show class centroids (LDA only)
  * @param {boolean} options.showConvexHulls - Show convex hulls around groups (optional)
@@ -46,6 +49,11 @@ export function ordiplot(result, {
     type = detectOrdinationType(result);
   }
 
+  // Accept arrays, iterables (e.g. Arquero columns), { data, column }
+  // descriptors, or a column name from the model's source data
+  colorBy = resolveGroupValues(colorBy, result, 'colorBy');
+  labels = resolveGroupValues(labels, result, 'labels');
+
   // Extract scores and construct data based on ordination type
   const { scoresData, loadingsData, centroidsData, axisLabels, predictorData } = extractOrdinationData(
     result,
@@ -56,6 +64,15 @@ export function ordiplot(result, {
     labels,
     loadingScale
   );
+
+  if (colorBy && colorBy.length !== scoresData.length) {
+    throw new Error(
+      `colorBy has ${colorBy.length} values but the ordination has ${scoresData.length} scores. ` +
+        `If rows with missing values were dropped during fitting (naOmit), ` +
+        `use a column name or { data, column } so values stay aligned, ` +
+        `or filter your colorBy array the same way.`,
+    );
+  }
 
   // Build plot configuration
   const config = {

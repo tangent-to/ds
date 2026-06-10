@@ -447,3 +447,61 @@ describe('Plot Configuration Generators', () => {
     });
   });
 });
+
+describe('ordiplot colorBy resolution', () => {
+  const data = [
+    { a: 1, b: 2.0, sp: 'x' },
+    { a: 2, b: 3.1, sp: 'x' },
+    { a: 3, b: 4.2, sp: 'y' },
+    { a: 4, b: null, sp: 'y' }, // dropped by naOmit
+    { a: 5, b: 6.1, sp: 'z' },
+    { a: 6, b: 7.3, sp: 'z' },
+  ];
+
+  it('resolves a column-name string against the model source rows (naOmit aligned)', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    const config = plot.ordiplot(model, { colorBy: 'sp' });
+
+    expect(config.data.scores.map((s) => s.color)).toEqual(['x', 'x', 'y', 'z', 'z']);
+  });
+
+  it('accepts iterables such as typed arrays and Arquero-style columns', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    const groups = new Float64Array([0, 0, 1, 2, 2]);
+    const config = plot.ordiplot(model, { colorBy: groups });
+
+    expect(config.data.scores.map((s) => s.color)).toEqual([0, 0, 1, 2, 2]);
+  });
+
+  it('accepts a { data, column } descriptor', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    const kept = data.filter((d) => d.b !== null);
+    const config = plot.ordiplot(model, { colorBy: { data: kept, column: 'sp' } });
+
+    expect(config.data.scores.map((s) => s.color)).toEqual(['x', 'x', 'y', 'z', 'z']);
+  });
+
+  it('throws an informative error when colorBy length does not match scores', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    expect(() => plot.ordiplot(model, { colorBy: data.map((d) => d.sp) }))
+      .toThrow(/6 values but the ordination has 5 scores/);
+  });
+
+  it('throws an informative error for string colorBy on a matrix-fitted model', () => {
+    const model = mva.pca.fit(data.filter((d) => d.b !== null).map((d) => [d.a, d.b]));
+    expect(() => plot.ordiplot(model, { colorBy: 'sp' }))
+      .toThrow(/no source rows/);
+  });
+
+  it('does not serialize the retained source rows', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    expect(model.rows).toHaveLength(5);
+    expect(JSON.stringify(model)).not.toContain('"sp"');
+  });
+
+  it('resolves labels with the same forms', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    const config = plot.ordiplot(model, { colorBy: 'sp', labels: 'sp' });
+    expect(config.data.scores.map((s) => s.label)).toEqual(['x', 'x', 'y', 'z', 'z']);
+  });
+});
