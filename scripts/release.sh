@@ -50,10 +50,15 @@ git add .
 git commit -m "$commit_msg"
 
 echo "Bumping patch version..."
-npm version patch --no-git-tag-version >/dev/null
+# bump-version.js keeps package.json, deno.json, jsr.json and CITATION.cff in
+# sync (npm version would only update package.json and desync the JSR publish)
+node scripts/bump-version.js patch --no-git >/dev/null
 new_version="$(npm pkg get version | tr -d '"')"
 
-git add package.json package-lock.json
+# Sync the version field in package-lock.json without reinstalling
+npm install --package-lock-only --ignore-scripts >/dev/null
+
+git add package.json package-lock.json deno.json jsr.json CITATION.cff
 git commit -m "chore: release $new_version"
 
 tag="v$new_version"
