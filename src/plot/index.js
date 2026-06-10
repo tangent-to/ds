@@ -36,6 +36,7 @@ export {
   plotPartialDependence,
   plotQQ,
   plotResiduals,
+  resolveGroupValues,
 } from './utils.js';
 
 // Renderer helpers

@@ -118,7 +118,7 @@ export function train(model, X, y, options = {}) {
 
     // Epoch callback
     if (callbacks.onEpochEnd) {
-      const info = { loss: epochLoss };
+      const info = { loss: epochLoss, verbose };
       if (history.valLoss.length > 0) {
         info.valLoss = history.valLoss[history.valLoss.length - 1];
       }
@@ -198,7 +198,9 @@ export function earlyStopping(patience = 10, minDelta = 0) {
         wait += 1;
         if (wait >= patience) {
           stopped = true;
-          console.log(`Early stopping at epoch ${epoch}`);
+          if (logs.verbose) {
+            console.log(`Early stopping at epoch ${epoch}`);
+          }
         }
       }
     },
@@ -244,7 +246,9 @@ export function modelCheckpoint(metric = 'valLoss') {
       if (currentMetric !== undefined && currentMetric < bestMetric) {
         bestMetric = currentMetric;
         // In a real implementation, would save model here
-        console.log(`New best ${metric}: ${currentMetric.toFixed(6)} at epoch ${epoch}`);
+        if (logs.verbose) {
+          console.log(`New best ${metric}: ${currentMetric.toFixed(6)} at epoch ${epoch}`);
+        }
       }
     },
     getBest: () => ({ metric: bestMetric, params: bestParams })

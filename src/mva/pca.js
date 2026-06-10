@@ -95,10 +95,12 @@ export function fit(
   // Convert to array format
   let data;
   let featureNames = null;
+  let sourceRows = null;
   if (data_in) {
     // Prepare numeric matrix from table-like input
     const prepared = prepareX({ columns, data: data_in, naOmit: shouldOmitMissing });
     data = prepared.X;
+    sourceRows = prepared.rows;
     if (prepared.columns && prepared.columns.length) {
       featureNames = prepared.columns.map((name) => String(name));
     }
@@ -106,6 +108,7 @@ export function fit(
     // Array of objects (table-like data) - use prepareX
     const prepared = prepareX({ columns, data: X, naOmit: shouldOmitMissing });
     data = prepared.X;
+    sourceRows = prepared.rows;
     if (prepared.columns && prepared.columns.length) {
       featureNames = prepared.columns.map((name) => String(name));
     }
@@ -219,6 +222,18 @@ export function fit(
     components: componentColumns,
     featureNames: variableNames,
   };
+
+  // Keep a reference (not a copy) to the filtered source rows so plot
+  // helpers can resolve column names (e.g. colorBy: 'Species'), aligned
+  // row-for-row with the scores after naOmit filtering. Non-enumerable so
+  // it is skipped by JSON serialization / model persistence.
+  if (sourceRows) {
+    Object.defineProperty(model, 'rows', {
+      value: sourceRows,
+      enumerable: false,
+      configurable: true,
+    });
+  }
 
   return model;
 }

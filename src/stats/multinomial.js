@@ -6,7 +6,7 @@
  * Matches R's nnet::multinom() behavior
  */
 
-import { Matrix } from 'ml-matrix';
+import { inverse, Matrix, solve } from 'ml-matrix';
 import { sum } from '../core/math.js';
 
 /**
@@ -166,6 +166,7 @@ export function fitMultinomial(X, y, options = {}) {
   let converged = false;
   let iteration = 0;
   let logLik = -Infinity;
+  const warnings = [];
 
   for (iteration = 0; iteration < maxIter; iteration++) {
     const logLikPrev = logLik;
@@ -180,7 +181,7 @@ export function fitMultinomial(X, y, options = {}) {
       const g = Matrix.columnVector(gradient);
 
       // Solve H * delta = -g (Newton direction)
-      const delta = H.solve(g.mul(-1));
+      const delta = solve(H, g.mul(-1));
 
       // Update coefficients
       for (let k = 0; k < K - 1; k++) {
@@ -191,7 +192,10 @@ export function fitMultinomial(X, y, options = {}) {
       }
     } catch (e) {
       // If Hessian is singular, try gradient ascent with small step
-      console.warn(`Iteration ${iteration}: Hessian singular, using gradient ascent`);
+      const msg = `Iteration ${iteration}: Hessian singular, using gradient ascent. ` +
+        'Coefficient estimates may be unreliable; check model.warnings and model.converged.';
+      warnings.push(msg);
+      console.warn(msg);
       const stepSize = 0.01;
       for (let k = 0; k < K - 1; k++) {
         for (let j = 0; j < p; j++) {
@@ -217,7 +221,7 @@ export function fitMultinomial(X, y, options = {}) {
 
   try {
     const H = new Matrix(finalHessian);
-    const covMatrix = H.inverse().mul(-1); // Negative inverse of Hessian
+    const covMatrix = inverse(H).mul(-1); // Negative inverse of Hessian
 
     for (let k = 0; k < K - 1; k++) {
       for (let j = 0; j < p; j++) {
@@ -226,7 +230,9 @@ export function fitMultinomial(X, y, options = {}) {
       }
     }
   } catch (e) {
-    console.warn('Could not compute standard errors (Hessian not invertible)');
+    const msg = 'Could not compute standard errors (Hessian not invertible)';
+    warnings.push(msg);
+    console.warn(msg);
   }
 
   // Compute fitted probabilities
@@ -281,6 +287,7 @@ export function fitMultinomial(X, y, options = {}) {
     bic,
     iterations: converged ? iteration + 1 : iteration,
     converged,
+    warnings,
     n,
     p,
     K,

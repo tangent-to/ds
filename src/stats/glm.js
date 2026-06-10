@@ -8,7 +8,7 @@
  * - Random intercepts and slopes
  */
 
-import { inverse, Matrix, SingularValueDecomposition } from 'ml-matrix';
+import { inverse, Matrix, SingularValueDecomposition, solve } from 'ml-matrix';
 import { createFamily } from './families.js';
 import { mean, sum } from '../core/math.js';
 
@@ -72,8 +72,8 @@ export function fitGLM(X, y, options = {}) {
     // Weighted least squares
     coefficients = weightedLeastSquares(Xmat, z, wt, regularization);
 
-    // Update eta and mu
-    eta = matrixVectorMultiply(Xmat, coefficients);
+    // Update eta and mu (eta is the full linear predictor, including offset)
+    eta = matrixVectorMultiply(Xmat, coefficients).map((e, i) => e + off[i]);
     mu = familyObj.link.linkinv(eta);
 
     // Compute deviance
@@ -111,6 +111,7 @@ export function fitGLM(X, y, options = {}) {
   const { standardErrors, covarianceMatrix } = computeStandardErrors(
     Xmat,
     mu,
+    eta,
     w,
     phi,
     familyObj,
@@ -175,7 +176,8 @@ function computeWorkingWeights(y, mu, eta, offset, weights, family) {
   const wt = new Array(n);
 
   const variance = family.variance(mu);
-  const mu_eta = family.link.mu_eta(eta.map((e, i) => e - offset[i]));
+  // dmu/deta is evaluated at the full linear predictor (which includes the offset)
+  const mu_eta = family.link.mu_eta(eta);
 
   for (let i = 0; i < n; i++) {
     const v = Math.max(variance[i], 1e-10);
@@ -223,40 +225,38 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
 
     // L1 regularization would require coordinate descent, not implemented yet
     if (alpha * l1_ratio > 0) {
-      console.warn('L1 regularization not yet implemented, using L2 only');
+      throw new Error(
+        'L1 regularization is not implemented for GLM; set l1_ratio to 0 to use ridge (L2) regularization',
+      );
     }
   }
 
   // Solve: (X'WX)β = X'Wy
   try {
-    const beta = XtX.solve(Xty);
+    const beta = solve(XtX, Xty);
     return Array.from(beta.getColumn(0));
   } catch (e) {
-    // If singular, use SVD-based pseudoinverse
-    try {
-      const beta = inverse(XtX).mmul(Xty);
-      return Array.from(beta.getColumn(0));
-    } catch (e2) {
-      // Last resort: use SVD on original problem
-      const WXmat = new Matrix(WX);
-      const Wymat = Matrix.columnVector(Wy);
-      const svd = new SingularValueDecomposition(WXmat);
-      const beta = svd.solve(Wymat);
-      return Array.from(beta.getColumn(0));
-    }
+    // Singular normal equations: solve the original weighted least-squares
+    // problem with an SVD-based pseudoinverse (minimum-norm solution)
+    const WXmat = new Matrix(WX);
+    const Wymat = Matrix.columnVector(Wy);
+    const svd = new SingularValueDecomposition(WXmat);
+    const beta = svd.solve(Wymat);
+    return Array.from(beta.getColumn(0));
   }
 }
 
 /**
  * Compute standard errors for coefficients
  */
-function computeStandardErrors(X, mu, weights, phi, family) {
+function computeStandardErrors(X, mu, eta, weights, phi, family) {
   const n = X.length;
   const p = X[0].length;
 
-  // Compute working weights
+  // Compute working weights (dmu/deta at the final linear predictor;
+  // using eta directly avoids a lossy mu -> linkfun(mu) round-trip)
   const variance = family.variance(mu);
-  const mu_eta = family.link.mu_eta(family.link.linkfun(mu));
+  const mu_eta = family.link.mu_eta(eta);
 
   const W = new Array(n);
   for (let i = 0; i < n; i++) {
@@ -492,6 +492,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     Xmat,
     Z,
     mu,
+    eta,
     beta,
     u,
     theta,
@@ -539,7 +540,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     nFixedEffects: nFixedCoef,
     nRandomEffects: nRandomCoef,
     df: nParams,
-    dfResidual: n - nFixedCoef,
+    dfResidual: n - nParams,
     family: familyObj.family,
     link: familyObj.link.name,
     intercept,
@@ -685,7 +686,7 @@ function updateRandomEffects(X, Z, y, weights, beta, theta) {
 
   // Solve: (Z'WZ + D^{-1})u = Z'Wy
   try {
-    const u = ZtWZ.solve(ZtWy);
+    const u = solve(ZtWZ, ZtWy);
     return Array.from(u.getColumn(0));
   } catch (e) {
     // If solve fails, try inverse
@@ -766,18 +767,21 @@ function computeMarginalLogLikelihood(y, mu, u, theta, weights, family, groupInf
 }
 
 /**
- * Compute standard errors for GLMM fixed effects
+ * Compute standard errors for GLMM fixed effects.
+ *
+ * Approximation: these are conditional standard errors from the weighted
+ * information matrix X'WX at the final estimates. They ignore the
+ * uncertainty in the variance components (exact SEs would need the Hessian
+ * of the marginal likelihood, as in lme4), so they are typically somewhat
+ * anti-conservative, especially with few groups.
  */
-function computeGLMMStandardErrors(X, Z, mu, beta, u, theta, weights, family, groupInfo) {
-  // This is a simplified approximation
-  // True standard errors would require Hessian of marginal likelihood
-
+function computeGLMMStandardErrors(X, Z, mu, eta, beta, u, theta, weights, family, groupInfo) {
   const n = X.length;
   const p = X[0].length;
 
-  // Compute working weights
+  // Compute working weights (dmu/deta at the final linear predictor)
   const variance = family.variance(mu);
-  const mu_eta = family.link.mu_eta(family.link.linkfun(mu));
+  const mu_eta = family.link.mu_eta(eta);
 
   const W = new Array(n);
   for (let i = 0; i < n; i++) {

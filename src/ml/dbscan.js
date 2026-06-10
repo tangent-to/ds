@@ -49,9 +49,10 @@ function regionQuery(data, pointIdx, eps) {
  * @param {number} clusterId - ID of current cluster
  * @param {number} eps - Maximum distance for neighborhood
  * @param {number} minSamples - Minimum samples for core point
+ * @param {Array<number>} coreSampleIndices - Accumulator for core point indices
  * @returns {boolean} True if cluster was expanded
  */
-function expandCluster(data, labels, pointIdx, clusterId, eps, minSamples) {
+function expandCluster(data, labels, pointIdx, clusterId, eps, minSamples, coreSampleIndices) {
   const seeds = regionQuery(data, pointIdx, eps);
 
   // Not a core point
@@ -79,6 +80,7 @@ function expandCluster(data, labels, pointIdx, clusterId, eps, minSamples) {
 
     // If current point is a core point
     if (neighbors.length >= minSamples) {
+      coreSampleIndices.push(currentIdx);
       for (const neighborIdx of neighbors) {
         // If neighbor is noise or unvisited
         if (labels[neighborIdx] === -1 || labels[neighborIdx] === 0) {
@@ -166,7 +168,8 @@ export function fit(
     if (neighbors.length >= minSamples) {
       coreSampleIndices.push(i);
       clusterId++;
-      expandCluster(data, labels, i, clusterId, eps, minSamples);
+      // expandCluster also records core points discovered during expansion
+      expandCluster(data, labels, i, clusterId, eps, minSamples, coreSampleIndices);
     } else {
       // Mark as noise (will be changed if density-reachable from core point)
       labels[i] = -1;

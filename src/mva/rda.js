@@ -36,6 +36,7 @@ export function fit(Y, X, options = {}) {
     : (options.naOmit !== undefined ? options.naOmit : true);
   let responseMatrix = Y;
   let predictorMatrix = X;
+  let sourceRows = null;
   let responseNames = Array.isArray(options.responseNames)
     ? options.responseNames.map((name) => String(name))
     : null;
@@ -85,6 +86,7 @@ export function fit(Y, X, options = {}) {
 
     responseMatrix = responsePrepAligned.X;
     predictorMatrix = predictorPrep.X;
+    sourceRows = predictorPrep.rows;
     responseNames = responsePrepAligned.columns.map((name) => String(name));
     predictorNames = predictorPrep.columns.map((name) => String(name));
   }
@@ -281,6 +283,16 @@ export function fit(Y, X, options = {}) {
   model.canonicalScores = scoresObjects;
   model.canonicalLoadings = loadingsObjects;
   model.predictorCorrelations = predictorCorrelations;
+
+  // Reference to the filtered source rows for plot helpers (colorBy by
+  // column name); non-enumerable so persistence/JSON skips it
+  if (sourceRows) {
+    Object.defineProperty(model, 'rows', {
+      value: sourceRows,
+      enumerable: false,
+      configurable: true,
+    });
+  }
 
   return model;
 }

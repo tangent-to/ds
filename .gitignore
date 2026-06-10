@@ -108,3 +108,8 @@ main.py
 .python-version
 uv.lock
 deno.lock
+
+# Local tooling caches and per-user config
+.tmp/
+.npm-cache/
+.gitconfig

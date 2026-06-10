@@ -391,8 +391,10 @@ describe('Imputation (compared with sklearn)', () => {
       const imputer = new IterativeImputer({ initial_strategy: 'median', max_iter: 3 });
       const result = imputer.fit_transform(X);
 
-      expect(result[0][1]).toBeGreaterThan(0);
-      expect(result[2][0]).toBeGreaterThan(0);
+      // With only two complete pairs the regression may extrapolate
+      // beyond the observed range; just check the values were filled
+      expect(Number.isFinite(result[0][1])).toBe(true);
+      expect(Number.isFinite(result[2][0])).toBe(true);
     });
 
     it('should converge within max_iter iterations', () => {
@@ -487,8 +489,8 @@ describe('Imputation (compared with sklearn)', () => {
 
       const result = iterativeImpute(X, { max_iter: 5 });
 
-      expect(result[0][1]).toBeGreaterThan(0);
-      expect(result[2][0]).toBeGreaterThan(0);
+      expect(Number.isFinite(result[0][1])).toBe(true);
+      expect(Number.isFinite(result[2][0])).toBe(true);
     });
 
     it('should handle all missing column gracefully', () => {
@@ -522,6 +524,27 @@ describe('Imputation (compared with sklearn)', () => {
       // Should impute based on correlation with other features
       expect(result[1][2]).toBeGreaterThan(0);
       expect(result[1][2]).toBeCloseTo(6, 0.5); // Expect close to 6
+    });
+
+    it('should recover exact linear relationships between features', () => {
+      // col2 = 2*col1 and col3 = 2*col1 + 5 exactly; mean imputation would
+      // give 7.6, 11.8 and 3 instead (regression guard: the MICE loop must
+      // actually regress on the original missingness mask)
+      const X = [
+        [1, 2, 7],
+        [2, NaN, 9],
+        [3, 6, 11],
+        [4, 8, NaN],
+        [5, 10, 15],
+        [NaN, 12, 17],
+      ];
+
+      const imputer = new IterativeImputer({ max_iter: 20, tol: 1e-6 });
+      const result = imputer.fit_transform(X);
+
+      expect(result[1][1]).toBeCloseTo(4, 3);
+      expect(result[3][2]).toBeCloseTo(13, 3);
+      expect(result[5][0]).toBeCloseTo(6, 3);
     });
 
     it('should handle multiple missing values in same row', () => {

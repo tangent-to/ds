@@ -21,6 +21,7 @@ function toNumericMatrix(X) {
 
 export function fit(X, y, options = {}) {
   let featureNames = null;
+  let sourceRows = null;
   let scale = options.scale !== undefined ? options.scale : false;
   let scaling = options.scaling !== undefined ? options.scaling : 2;
   let labelEncoder = null;
@@ -47,6 +48,7 @@ export function fit(X, y, options = {}) {
     });
     X = prepared.X;
     y = prepared.y;
+    sourceRows = prepared.rows;
     if (prepared.columnsX && prepared.columnsX.length) {
       featureNames = prepared.columnsX.map((name) => String(name));
     }
@@ -256,7 +258,13 @@ export function fit(X, y, options = {}) {
     for (let i = 0; i < p; i++) {
       column.push(scalingsMatrix.get(i, j));
     }
-    const sign = Math.sign(column.reduce((acc, val) => acc + val, 0)) || 1;
+    // Orient each axis so its largest-magnitude loading is positive.
+    // (A sum-based sign is unstable when loadings nearly cancel out.)
+    let maxAbsIdx = 0;
+    for (let i = 1; i < column.length; i++) {
+      if (Math.abs(column[i]) > Math.abs(column[maxAbsIdx])) maxAbsIdx = i;
+    }
+    const sign = Math.sign(column[maxAbsIdx]) || 1;
     axisSigns.push(sign);
     rawLoadingColumns.push(column.map((v) => v * sign));
     for (let i = 0; i < rawSiteMatrix.length; i++) {
@@ -316,7 +324,7 @@ export function fit(X, y, options = {}) {
     return stdVec;
   });
 
-  return {
+  const model = {
     scores,
     loadings,
     eigenvalues: sortedEigenvalues,
@@ -340,6 +348,18 @@ export function fit(X, y, options = {}) {
     featureNames: variableNames,
     labelEncoder, // Include label encoder for decoding predictions
   };
+
+  // Reference to the filtered source rows for plot helpers (colorBy by
+  // column name); non-enumerable so persistence/JSON skips it
+  if (sourceRows) {
+    Object.defineProperty(model, 'rows', {
+      value: sourceRows,
+      enumerable: false,
+      configurable: true,
+    });
+  }
+
+  return model;
 }
 
 export function transform(model, X) {

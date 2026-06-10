@@ -19,6 +19,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "prepare": "npm run build:browser",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",

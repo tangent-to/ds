@@ -212,11 +212,22 @@ function isMissing(v) {
 
 /**
  * Simple Label Encoder for categorical labels -> integers
+ *
+ * Note: this is the internal encoder used by prepareX/prepareXY and
+ * persisted with fitted models (classes keep first-seen order). The
+ * user-facing ml.preprocessing.LabelEncoder is a separate class with
+ * different semantics (sorted classes, table-descriptor support).
+ *
+ * handleUnknown controls what transform() does with categories not seen
+ * during fit: 'error' (default) throws, 'ignore' maps them to NaN, and
+ * 'extend' registers them as new classes (legacy behaviour; unsafe at
+ * predict time because indices grow past the fitted class set).
  */
 export class LabelEncoder {
-  constructor() {
+  constructor({ handleUnknown = 'error' } = {}) {
     this.classes_ = [];
     this.classIndex = new Map();
+    this.handleUnknown = handleUnknown;
   }
 
   fit(values = []) {
@@ -237,11 +248,16 @@ export class LabelEncoder {
       if (isMissing(v)) return NaN;
       const idx = this.classIndex.get(v);
       if (idx === undefined) {
-        // unseen category -> register as new class (useful for small pipelines)
-        const newIdx = this.classes_.length;
-        this.classIndex.set(v, newIdx);
-        this.classes_.push(v);
-        return newIdx;
+        if (this.handleUnknown === 'extend') {
+          const newIdx = this.classes_.length;
+          this.classIndex.set(v, newIdx);
+          this.classes_.push(v);
+          return newIdx;
+        }
+        if (this.handleUnknown === 'ignore') return NaN;
+        throw new Error(
+          `LabelEncoder: unseen category "${v}". Use handleUnknown: 'ignore' or 'extend' to allow unseen categories.`,
+        );
       }
       return idx;
     });
@@ -257,11 +273,17 @@ export class LabelEncoder {
   }
 
   toJSON() {
-    return { __class__: 'LabelEncoder', classes: this.classes_ };
+    return {
+      __class__: 'LabelEncoder',
+      classes: this.classes_,
+      handleUnknown: this.handleUnknown,
+    };
   }
 
   static fromJSON(obj = {}) {
-    const le = new LabelEncoder();
+    const le = new LabelEncoder(
+      obj.handleUnknown ? { handleUnknown: obj.handleUnknown } : {},
+    );
     if (Array.isArray(obj.classes)) {
       le.classes_ = obj.classes.slice();
       le.classIndex = new Map(obj.classes.map((c, i) => [c, i]));

@@ -59,13 +59,13 @@ requiredFiles.forEach(file => {
   }
 });
 
-// Check dist build
+// Check dist build (package.json "main" points at it, so it must exist)
 const distPath = resolve(__dirname, 'dist/index.js');
 if (existsSync(distPath)) {
   console.log(`\n✓ Browser bundle exists: dist/index.js`);
 } else {
-  console.warn(`\n⚠ Browser bundle not found. Run: npm run build:browser`);
-  warnings++;
+  console.error(`\n✗ Browser bundle not found. Run: npm run build:browser`);
+  errors++;
 }
 
 // Check tests

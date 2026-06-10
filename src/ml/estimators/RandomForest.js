@@ -89,30 +89,6 @@ function preparePredict(X, columns) {
   return toNumericMatrix(X);
 }
 
-function computeFeatureImportances(tree, nFeatures, nSamples) {
-  const importances = new Array(nFeatures).fill(0);
-
-  function traverse(node, nNodeSamples) {
-    if (!node || node.type === "leaf") return;
-
-    // For internal nodes, compute weighted impurity decrease
-    const feature = node.feature;
-    const threshold = node.threshold;
-
-    // Estimate samples in left and right based on split
-    // We don't have exact counts, so we'll use a simplified version
-    // In practice, we'd need to track sample counts during tree building
-    traverse(node.left, nNodeSamples);
-    traverse(node.right, nNodeSamples);
-
-    // Simplified importance: just count splits per feature
-    importances[feature] += 1;
-  }
-
-  traverse(tree.root, nSamples);
-  return importances;
-}
-
 function applyClassWeights(y, classWeight) {
   if (!classWeight) return null;
 
@@ -302,12 +278,9 @@ class RandomForestBase extends Estimator {
       tree.fit(XSample, ySample);
       this.trees.push(tree);
 
-      // Compute feature importances for this tree
-      const treeImportances = computeFeatureImportances(
-        tree.tree,
-        featureCount,
-        nSamples,
-      );
+      // Accumulate the tree's impurity-decrease feature importances
+      // (computed and normalized during tree building)
+      const treeImportances = tree.tree.featureImportances;
       for (let f = 0; f < featureCount; f++) {
         featureImportances[f] += treeImportances[f];
       }

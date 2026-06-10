@@ -1,9 +1,63 @@
 import { attachShow } from './show.js';
+import { normalize } from '../core/table.js';
 
 /**
  * Visualization utilities for model interpretation
  * Returns Observable Plot configuration objects
  */
+
+/**
+ * Normalize a colorBy (or labels) specification into a plain array of
+ * per-observation values.
+ *
+ * Accepted forms:
+ * - an array (used as-is)
+ * - any iterable, e.g. an Arquero column or a typed array (converted)
+ * - a { data, column } descriptor (column extracted from table-like data)
+ * - a column-name string, resolved against the source rows the model kept
+ *   from a declarative fit (e.g. pca.fit({ data, columns }) stores the
+ *   naOmit-filtered rows so values stay aligned with the scores)
+ *
+ * @param {*} spec - colorBy specification
+ * @param {Object|null} result - Fitted model (for string column lookup)
+ * @param {string} name - Option name used in error messages
+ * @returns {Array|null} Array of values, or null when spec is null
+ */
+export function resolveGroupValues(spec, result = null, name = 'colorBy') {
+  if (spec === null || spec === undefined) return null;
+
+  if (Array.isArray(spec)) return spec;
+
+  if (typeof spec === 'string') {
+    const rows = result && result.rows;
+    if (!rows) {
+      throw new Error(
+        `${name}: "${spec}" is a column name, but the model has no source rows. ` +
+          `Column-name lookup requires fitting with table data (e.g. fit({ data, columns })); ` +
+          `otherwise pass an array of values instead.`,
+      );
+    }
+    if (rows.length > 0 && !(spec in rows[0])) {
+      throw new Error(`${name}: column "${spec}" not found in the model's source data.`);
+    }
+    return rows.map((row) => row[spec]);
+  }
+
+  if (typeof spec === 'object' && spec.data !== undefined && spec.column !== undefined) {
+    const rows = normalize(spec.data);
+    return rows.map((row) => row[spec.column]);
+  }
+
+  if (typeof spec[Symbol.iterator] === 'function') {
+    // Arquero columns, typed arrays, Sets, generators...
+    return Array.from(spec);
+  }
+
+  throw new Error(
+    `${name} must be an array, an iterable (e.g. an Arquero column), ` +
+      `a { data, column } descriptor, or a column-name string.`,
+  );
+}
 
 /**
  * Generate feature importance bar plot configuration

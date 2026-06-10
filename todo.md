@@ -4,7 +4,6 @@ TODO
     - implement tensorflowjs
     - implement xgboost
     - implement Gaussian processes inspired by https://github.com/jmonlabs/jmon-algo/tree/main/src/algorithms/generative/gaussian-processes, then generate python tests and examples
-    - implement CCA
 
 DOING
 

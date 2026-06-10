@@ -438,3 +438,52 @@ describe('Formula Parser', () => {
     });
   });
 });
+
+describe('Interaction expansion', () => {
+  const names = (parsed) =>
+    parsed.fixed.map((t) =>
+      t.type === 'interaction'
+        ? t.terms.map((x) => x.name).join(':')
+        : t.name
+    );
+
+  it('expands a * b * c to all subsets (R semantics)', () => {
+    const parsed = parseFormula('y ~ a * b * c');
+    expect(names(parsed)).toEqual(['a', 'b', 'c', 'a:b', 'a:c', 'b:c', 'a:b:c']);
+  });
+
+  it('parses a:b as a pure interaction with no main effects', () => {
+    const parsed = parseFormula('y ~ a:b');
+    expect(names(parsed)).toEqual(['a:b']);
+  });
+
+  it('binds : tighter than *', () => {
+    const parsed = parseFormula('y ~ a * b:c');
+    expect(names(parsed)).toEqual(['a', 'b:c', 'a:b:c']);
+  });
+
+  it('deduplicates repeated terms', () => {
+    const parsed = parseFormula('y ~ a + a + a:b + b:a');
+    expect(names(parsed)).toEqual(['a', 'a:b']);
+  });
+
+  it('treats a bare 1 as the intercept (no term)', () => {
+    const parsed = parseFormula('y ~ 1 + a');
+    expect(names(parsed)).toEqual(['a']);
+  });
+
+  it('rejects term removal with -', () => {
+    expect(() => parseFormula('y ~ a - b')).toThrow(/not supported/);
+  });
+
+  it('builds three-way interaction columns as element-wise products', () => {
+    const data = [
+      { y: 1, a: 2, b: 3, c: 5 },
+      { y: 2, a: 1, b: 4, c: 2 },
+    ];
+    const result = applyFormula('y ~ a * b * c', data);
+    const idx = result.columnNames.indexOf('a:b:c');
+    expect(idx).toBeGreaterThan(-1);
+    expect(result.X.map((row) => row[idx])).toEqual([30, 8]);
+  });
+});
