@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Carnet de calcul</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@observablehq/inspector/dist/inspector.css">
+<div id="out"></div>
+
+<script type="module">
+
+// Simple display helper: Nodes, toHTML, Markdown strings, else the Observable Inspector.
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/+esm";
+import { Inspector } from "https://esm.sh/@observablehq/inspector";
+const out = document.getElementById("out");
+const display = v => {
+  if (v instanceof Node) return out.append(v);
+  if (v && typeof v.toHTML === "function") {
+    const div = document.createElement("div");
+    div.innerHTML = v.toHTML();
+    return out.append(div);
+  }
+  if (typeof v === "string") {
+    // render Markdown when it looks like markdown
+    try {
+      // lazy import: marked may or may not be present; only use if available
+      if (typeof marked !== 'undefined' && /\n|^\s*#|```|\*\*|\* |\-|>/.test(v)) {
+        const md = document.createElement('div');
+        md.innerHTML = marked.parse(v);
+        return out.append(md);
+      }
+    } catch (e) {
+      // fall back to plain text
+    }
+    const pre = document.createElement('pre');
+    pre.textContent = v;
+    return out.append(pre);
+  }
+  // any other value: collapsible hierarchical inspector
+  new Inspector(out.appendChild(document.createElement("div"))).fulfilled(v);
+};
+
+// ------------------------
+// The notebook starts here
+// ------------------------
+
+
+// Content
+display(`
+  # Running your own computational notebook
+
+  The small \`display\` function allows to write markdown content, show tables, plots and javascript objects. This is just an example to show how to use this simple skeleton to use JavaScript in a data science workflow, with the penguins data set. The main difficulty is to load local data, since they have to be *served*. The easiest way is to use VSCode, then install the Live Preview extension. While you are there, also install the Live Preview extension. Once installed, open this html file, then Ctrl (Cmd on Mac) + Ctrl + P to open the command palette, and type "Live Preview: Start Server". A new html window should appear, that you can dick asides your coding window, and you are all set. Other options are to serve your html file with a Deno (recommanded), Nodejs or Python server.
+
+  This html has no css, and you are welcome to style it to your taste.
+`)
+
+display(`
+  # Penguins data analysis
+
+  The penguins toy (alhtough real) data set is a json available online. It shows morphology data of penguins per species, island and sex.
+`)
+
+// Import libraries
+import * as Plot from "https://esm.sh/@observablehq/plot";
+import * as aq from "https://esm.sh/arquero";
+import ds from "https://esm.sh/@tangent.to/ds";
+
+// Data
+const penguins = aq.fromJSON(await fetch("https://cdn.jsdelivr.net/npm/vega-datasets@3.2.1/data/penguins.json").then(r => r.json()));
+
+
+display("Table 1. Penguins data set")
+display(penguins.sample(20));
+
+display(`
+  Graphical heuristic explorations shows that morphology differ between species.
+`)
+
+const plot_penguins = Plot.plot({
+  marks: [
+    Plot.dot(penguins, {x: "Body Mass (g)", y: "Flipper Length (mm)", fill: "Species"})
+  ]
+});
+display(plot_penguins);
+display("Figure 1. Penguins : body mass and flipper length")
+
+display(`
+  Statistical analyses are needed to assess if the difference are important. A Tukey test compares which species differs from which on a specific variable.
+`)
+
+const tested_variable = "Body Mass (g)"
+
+const adelie_var = penguins
+  .filter((d) => d.Species == "Adelie")
+  .array(tested_variable)
+
+const chinstrap_var = penguins
+  .filter((d) => d.Species == "Chinstrap")
+  .array(tested_variable)
+
+const gentoo_var = penguins
+  .filter((d) => d.Species == "Gentoo")
+  .array(tested_variable)
+
+const tukey_var = ds.stats.hypothesis.tukeyHSD(
+  { Adelie: adelie_var, Chinstrap: chinstrap_var, Gentoo: gentoo_var },
+  { alpha: 0.05 }
+)
+
+display(tukey_var)
+
+</script>
