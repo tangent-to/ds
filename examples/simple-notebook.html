@@ -18,16 +18,24 @@ const display = v => {
     return out.append(div);
   }
   if (typeof v === "string") {
-    // render Markdown when it looks like markdown
-    try {
-      // lazy import: marked may or may not be present; only use if available
-      if (typeof marked !== 'undefined' && /\n|^\s*#|```|\*\*|\* |\-|>/.test(v)) {
+    // Render as Markdown when the string contains a markdown construct
+    // (heading, bold, list item, blockquote, code fence, or link);
+    // otherwise show it verbatim. Falls back to <pre> if marked throws.
+    const looksLikeMarkdown =
+      /^\s{0,3}#{1,6}\s/m.test(v) ||   // heading
+      /\*\*.+?\*\*/.test(v) ||         // bold
+      /^\s*[-*+]\s/m.test(v) ||        // list item
+      /^\s*>\s/m.test(v) ||            // blockquote
+      /```/.test(v) ||                 // code fence
+      /\[.+?\]\(.+?\)/.test(v);        // link
+    if (looksLikeMarkdown) {
+      try {
         const md = document.createElement('div');
         md.innerHTML = marked.parse(v);
         return out.append(md);
+      } catch (e) {
+        // fall through to plain text
       }
-    } catch (e) {
-      // fall back to plain text
     }
     const pre = document.createElement('pre');
     pre.textContent = v;
@@ -46,7 +54,7 @@ const display = v => {
 display(`
   # Running your own computational notebook
 
-  The small \`display\` function allows to write markdown content, show tables, plots and javascript objects. This is just an example to show how to use this simple skeleton to use JavaScript in a data science workflow, with the penguins data set. The main difficulty is to load local data, since they have to be *served*. The easiest way is to use VSCode, then install the Live Preview extension. While you are there, also install the Live Preview extension. Once installed, open this html file, then Ctrl (Cmd on Mac) + Ctrl + P to open the command palette, and type "Live Preview: Start Server". A new html window should appear, that you can dick asides your coding window, and you are all set. Other options are to serve your html file with a Deno (recommanded), Nodejs or Python server.
+  The small \`display\` function allows to write markdown content, show tables, plots and javascript objects. This is just an example to show how to use this simple skeleton to use JavaScript in a data science workflow, with the penguins data set. The main difficulty is to load local data, since they have to be *served*. This example sidesteps that by fetching the data from a CDN at \`fetch(...)\` below. Swap in a relative path to use your own local file. The easiest way to get started is to use VSCode, then install the Live Preview extension. Once installed, open this html file, then Ctrl (or Cmd on Mac) + Shift + P to open the command palette, and type "Live Preview: Start Server". A new html window should appear, that you can dock alongside your coding window, and you are all set. Other options are to serve your html file with a Deno (recommended), Nodejs or Python server, code in a text editor and preview in your browser.
 
   This html has no css, and you are welcome to style it to your taste.
 `)
@@ -54,7 +62,7 @@ display(`
 display(`
   # Penguins data analysis
 
-  The penguins toy (alhtough real) data set is a json available online. It shows morphology data of penguins per species, island and sex.
+  The penguins toy (although real) data set is a json available online. It shows morphology data of penguins per species, island and sex.
 `)
 
 // Import libraries
