@@ -40,12 +40,16 @@ export class RBF extends Kernel {
   }
 
   compute(x1, x2) {
-    let squaredDistance = 0;
+    // Length scale may be scalar (isotropic) or a per-dimension array (ARD).
+    const l = this.lengthScale;
+    const isArr = Array.isArray(l);
+    let scaledSq = 0;
     for (let i = 0; i < x1.length; i++) {
-      const diff = x1[i] - x2[i];
-      squaredDistance += diff * diff;
+      const li = isArr ? l[i] : l;
+      const s = (x1[i] - x2[i]) / li;
+      scaledSq += s * s;
     }
-    return this.variance * Math.exp(-squaredDistance / (2 * this.lengthScale * this.lengthScale));
+    return this.variance * Math.exp(-scaledSq / 2);
   }
 
   getParams() {

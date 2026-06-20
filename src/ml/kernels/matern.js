@@ -37,18 +37,29 @@ export class Matern extends Kernel {
   }
 
   compute(x1, x2) {
-    let squaredDistance = 0;
+    // Length scale may be a scalar (isotropic) or a per-dimension array (ARD,
+    // Automatic Relevance Determination). With ARD each input dimension gets
+    // its own length scale; large values down-weight irrelevant features.
+    const l = this.lengthScale;
+    const isArr = Array.isArray(l);
+
+    // Distance with the length scale(s) folded in: Σ ((x1_i - x2_i) / l_i)².
+    let scaledSq = 0;
     for (let i = 0; i < x1.length; i++) {
-      const diff = x1[i] - x2[i];
-      squaredDistance += diff * diff;
+      const li = isArr ? l[i] : l;
+      const s = (x1[i] - x2[i]) / li;
+      scaledSq += s * s;
     }
 
-    const r = Math.sqrt(squaredDistance);
-    if (r === 0) {
+    if (scaledSq === 0) {
       return this.variance;
     }
 
-    const scale = Math.sqrt(2 * (this.nu === Infinity ? 1 : this.nu)) * r / this.lengthScale;
+    if (this.nu === Infinity) {
+      return this.variance * Math.exp(-scaledSq / 2);
+    }
+
+    const scale = Math.sqrt(2 * this.nu) * Math.sqrt(scaledSq);
 
     switch (this.nu) {
       case 0.5:
@@ -57,8 +68,6 @@ export class Matern extends Kernel {
         return this.variance * (1 + scale) * Math.exp(-scale);
       case 2.5:
         return this.variance * (1 + scale + (scale * scale) / 3) * Math.exp(-scale);
-      case Infinity:
-        return this.variance * Math.exp(-squaredDistance / (2 * this.lengthScale * this.lengthScale));
       default:
         throw new Error("Unsupported ν for Matérn kernel");
     }
