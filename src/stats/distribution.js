@@ -181,19 +181,23 @@ export const gamma = {
 };
 
 // Helper: incomplete gamma function (lower)
-function incompleteGamma(s, x, maxIter = 100) {
+function incompleteGamma(s, x, maxIter = 200) {
   if (x === 0) return 0;
-  
-  // Series expansion
-  let sum = 1.0;
-  let term = 1.0;
-  
+
+  // Lower incomplete gamma via its series expansion:
+  //   γ(s, x) = x^s e^{-x} · Σ_{n=0}^∞ x^n / [s(s+1)···(s+n)]
+  //          = x^s e^{-x} · (1/s) · (1 + x/(s+1) + x²/((s+1)(s+2)) + ...)
+  // The leading 1/s factor must be included, otherwise the result is γ(s,x)·s
+  // and the regularized CDF (γ/Γ) comes out scaled by `s`.
+  let term = 1.0 / s; // n = 0 term
+  let sum = term;
+
   for (let n = 1; n < maxIter; n++) {
     term *= x / (s + n);
     sum += term;
-    if (Math.abs(term) < 1e-10) break;
+    if (Math.abs(term) < Math.abs(sum) * 1e-13) break;
   }
-  
+
   return Math.exp(-x + s * Math.log(x)) * sum;
 }
 

@@ -2,7 +2,7 @@
  * Stats module exports
  */
 
-import { normal, uniform, gamma, beta } from './distribution.js';
+import { normal, uniform, gamma, beta, chisq, qchisq } from './distribution.js';
 import {
   oneSampleTTest as oneSampleTTestFn,
   twoSampleTTest as twoSampleTTestFn,
@@ -74,6 +74,8 @@ export {
   uniform,
   gamma,
   beta,
+  chisq,
+  qchisq,
 
   // Hypothesis test helper namespace (functional)
   hypothesis,
