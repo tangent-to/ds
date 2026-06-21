@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { imputeMissing, compositionalOutliers, clr } from "../src/mva/composition.js";
+import { imputeMissing, compositionalOutliers, CompositionalOutlierDetector, clr } from "../src/mva/composition.js";
 
 describe("CoDA diagnostics", () => {
   describe("imputeMissing", () => {
@@ -54,6 +54,30 @@ describe("CoDA diagnostics", () => {
       // p-values are valid probabilities
       expect(res.pValues.every((p) => p >= 0 && p <= 1)).toBe(true);
       expect(res.distances[X.length - 1]).toBeGreaterThan(res.distances[0]);
+    });
+
+    it("fits a reference once and tests new points without manual algebra", () => {
+      const ref = Array.from({ length: 24 }, (_, i) => {
+        const a = ((i * 7) % 5) - 2, b = ((i * 3) % 5) - 2, c = ((i * 11) % 5) - 2;
+        return [10 + a * 0.3, 20 + b * 0.3, 30 + c * 0.3, 40 - (a + b + c) * 0.3];
+      });
+      const detector = new CompositionalOutlierDetector({ alpha: 0.05 }).fit(ref);
+      expect(detector.df).toBe(3);
+      // project brand-new points (never seen in fit) through .test()
+      const probe = detector.test([[10, 20, 30, 40], [80, 5, 5, 10]]);
+      expect(probe.outliers).toEqual([false, true]);
+      expect(probe.distances[1]).toBeGreaterThan(probe.distances[0]);
+      // single-point distance + pValue helpers
+      expect(detector.distance([[80, 5, 5, 10]])[0]).toBeCloseTo(probe.distances[1], 9);
+      expect(detector.pValue([[80, 5, 5, 10]])[0]).toBeCloseTo(probe.pValues[1], 9);
+    });
+
+    it("the convenience function matches a hand-fit detector", () => {
+      const X = Array.from({ length: 20 }, (_, i) => [10 + (i % 4), 20 - (i % 3), 30 + (i % 5), 40 - (i % 2)]);
+      const fn = compositionalOutliers(X, { alpha: 0.05 });
+      const det = new CompositionalOutlierDetector({ alpha: 0.05 }).fit(X).test(X);
+      expect(fn.distances).toEqual(det.distances);
+      expect(fn.df).toBe(det.df);
     });
 
     it("uses a reference subpopulation for the centroid/covariance", () => {

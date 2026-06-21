@@ -522,47 +522,112 @@ export function imputeMissing(mat, { maxIter = 100, tol = 1e-9 } = {}) {
  * @returns {{ distances:number[], pValues:number[], outliers:boolean[],
  *   centroid:number[], covInverse:number[][], df:number }}
  */
+export class CompositionalOutlierDetector {
+  /**
+   * @param {Object} [opts]
+   * @param {"clr"|"ilr"} [opts.transform="clr"] - Log-ratio coordinates to use.
+   * @param {number} [opts.alpha=0.05] - Significance level for the outlier flag.
+   */
+  constructor({ transform = "clr", alpha = 0.05 } = {}) {
+    this.transform = transform;
+    this.alpha = alpha;
+    this.fitted = false;
+  }
+
+  /**
+   * Estimate the centroid and (pseudo-inverse) covariance in log-ratio space
+   * from a reference composition — e.g. a healthy / high-yielding subpopulation.
+   * @param {Array<Array<number>>} mat - Strictly-positive reference composition.
+   * @returns {CompositionalOutlierDetector} this
+   */
+  fit(mat) {
+    const { mat: M } = _ensureMatrix(mat);
+    if (M.length < 2) throw new Error("CompositionalOutlierDetector.fit: need at least 2 reference rows");
+    const Y = this.transform === "ilr" ? ilr(M) : clr(M);
+    const d = Y[0].length;
+    this.nParts = M[0].length;
+    this.dim = d;
+    this.df = this.transform === "ilr" ? d : this.nParts - 1;
+
+    const centroid = new Array(d).fill(0);
+    for (const y of Y) for (let j = 0; j < d; j++) centroid[j] += y[j];
+    for (let j = 0; j < d; j++) centroid[j] /= Y.length;
+    this.center = centroid;
+
+    const cov = Array.from({ length: d }, () => new Array(d).fill(0));
+    for (const y of Y) {
+      const dv = y.map((v, j) => v - centroid[j]);
+      for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] += dv[a] * dv[b];
+    }
+    const denom = Math.max(1, Y.length - 1);
+    for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] /= denom;
+    // CLR covariance is singular (rank D−1); use the Moore-Penrose pseudo-inverse.
+    const piv = pseudoInverse(cov);
+    this.covInverse = typeof piv.to2DArray === "function" ? piv.to2DArray() : piv;
+    this.fitted = true;
+    return this;
+  }
+
+  /** Squared Mahalanobis distance in log-ratio space for each row of `mat`. */
+  distance(mat) {
+    if (!this.fitted) throw new Error("CompositionalOutlierDetector: call fit() first");
+    const { mat: M } = _ensureMatrix(mat);
+    const Y = this.transform === "ilr" ? ilr(M) : clr(M);
+    return Y.map((y) => {
+      const dv = y.map((v, j) => v - this.center[j]);
+      let s = 0;
+      for (let a = 0; a < this.dim; a++) {
+        let row = 0;
+        for (let b = 0; b < this.dim; b++) row += this.covInverse[a][b] * dv[b];
+        s += dv[a] * row;
+      }
+      return s;
+    });
+  }
+
+  /** Chi-squared p-value (1 − CDF) for each row's Mahalanobis distance. */
+  pValue(mat) {
+    return this.distance(mat).map((D2) => 1 - chisq.cdf(D2, { df: this.df }));
+  }
+
+  /**
+   * Test rows for compositional outlyingness against the fitted reference.
+   * @param {Array<Array<number>>} mat - Composition(s) to test (e.g. all
+   *   experimental samples, or external standards to project).
+   * @returns {{ distances:number[], pValues:number[], outliers:boolean[], df:number }}
+   */
+  test(mat) {
+    const distances = this.distance(mat);
+    const pValues = distances.map((D2) => 1 - chisq.cdf(D2, { df: this.df }));
+    return { distances, pValues, outliers: pValues.map((p) => p < this.alpha), df: this.df };
+  }
+}
+
+/**
+ * Detect compositional outliers via the Mahalanobis distance in log-ratio
+ * space, tested as a chi-squared variable (Filzmoser & Hron; Parent & Dafir,
+ * 1992). Convenience wrapper around {@link CompositionalOutlierDetector} that
+ * fits on `mat` (or a `reference` subset of it) and tests `mat`.
+ *
+ * For testing *new* points against the fitted reference (e.g. external
+ * standards), fit a detector once and call `.test(newComposition)` — no manual
+ * projection needed.
+ *
+ * @param {Array<Array<number>>} mat - Strictly-positive composition.
+ * @param {Object} [opts]
+ * @param {boolean[]} [opts.reference=null] - Mask selecting the rows that define
+ *   the centroid/covariance (default: all rows).
+ * @param {number} [opts.alpha=0.05]
+ * @param {"clr"|"ilr"} [opts.transform="clr"]
+ * @returns {{ distances:number[], pValues:number[], outliers:boolean[],
+ *   df:number, center:number[], covInverse:number[][],
+ *   detector:CompositionalOutlierDetector }}
+ */
 export function compositionalOutliers(mat, { reference = null, alpha = 0.05, transform = "clr" } = {}) {
   const { mat: M } = _ensureMatrix(mat);
-  const Y = transform === "ilr" ? ilr(M) : clr(M);
-  const n = Y.length;
-  const d = Y[0].length;
-  const D = M[0].length;
-
-  const refIdx = reference ? Y.map((_, i) => i).filter((i) => reference[i]) : Y.map((_, i) => i);
-  if (refIdx.length < 2) throw new Error("compositionalOutliers: need at least 2 reference rows");
-
-  const centroid = new Array(d).fill(0);
-  for (const i of refIdx) for (let j = 0; j < d; j++) centroid[j] += Y[i][j];
-  for (let j = 0; j < d; j++) centroid[j] /= refIdx.length;
-
-  const cov = Array.from({ length: d }, () => new Array(d).fill(0));
-  for (const i of refIdx) {
-    const dv = Y[i].map((v, j) => v - centroid[j]);
-    for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] += dv[a] * dv[b];
-  }
-  const denom = Math.max(1, refIdx.length - 1);
-  for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] /= denom;
-
-  // CLR covariance is singular (rank D−1); use the Moore-Penrose pseudo-inverse.
-  const piv = pseudoInverse(cov);
-  const covInv = typeof piv.to2DArray === "function" ? piv.to2DArray() : piv;
-  const df = transform === "ilr" ? d : D - 1;
-
-  const distances = Y.map((y) => {
-    const dv = y.map((v, j) => v - centroid[j]);
-    let s = 0;
-    for (let a = 0; a < d; a++) {
-      let row = 0;
-      for (let b = 0; b < d; b++) row += covInv[a][b] * dv[b];
-      s += dv[a] * row;
-    }
-    return s;
-  });
-  const pValues = distances.map((D2) => 1 - chisq.cdf(D2, { df }));
-  const outliers = pValues.map((p) => p < alpha);
-
-  return { distances, pValues, outliers, centroid, covInverse: covInv, df };
+  const refMat = reference ? M.filter((_, i) => reference[i]) : M;
+  const detector = new CompositionalOutlierDetector({ transform, alpha }).fit(refMat);
+  return { ...detector.test(M), center: detector.center, covInverse: detector.covInverse, detector };
 }
 
 /**
@@ -584,4 +649,5 @@ export default {
   inner,
   imputeMissing,
   compositionalOutliers,
+  CompositionalOutlierDetector,
 };
