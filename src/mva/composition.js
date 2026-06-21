@@ -436,33 +436,43 @@ export function imputeMissing(mat, { maxIter = 100, tol = 1e-9 } = {}) {
   const { mat: M, was1d } = _ensureMatrix(mat);
   const n = M.length;
   const D = M[0].length;
+  // Only genuinely missing cells (null / NaN) are imputed. Observed zeros are
+  // left in place for multiplicativeReplacement, but they are excluded from the
+  // (geometric) means below so they never poison a log — imputeMissing stays
+  // numerically robust even when the data still contains essential zeros.
   const miss = M.map((row) => row.map((v) => v == null || Number.isNaN(v)));
   const anyMiss = miss.map((r) => r.some(Boolean));
   if (!anyMiss.some(Boolean)) return _restoreShape(M.map((r) => r.slice()), was1d);
+
+  const X = M.map((r) => r.slice());
+  const posLog = (i, j) => Number.isFinite(X[i][j]) && X[i][j] > 0; // usable in a log
+  // Geometric-mean log of a row over its strictly-positive entries.
+  const rowGLog = (i) => {
+    let s = 0, c = 0;
+    for (let j = 0; j < D; j++) if (posLog(i, j)) { s += Math.log(X[i][j]); c++; }
+    return c ? s / c : 0;
+  };
 
   // Initial fill: per-column geometric mean of the observed positive values.
   const colGM = new Array(D);
   for (let j = 0; j < D; j++) {
     let s = 0, c = 0;
-    for (let i = 0; i < n; i++) {
-      const v = M[i][j];
-      if (!miss[i][j] && v > 0) { s += Math.log(v); c++; }
-    }
+    for (let i = 0; i < n; i++) if (!miss[i][j] && Number.isFinite(M[i][j]) && M[i][j] > 0) { s += Math.log(M[i][j]); c++; }
     colGM[j] = c ? Math.exp(s / c) : 1e-6;
   }
-  const X = M.map((row, i) => row.map((v, j) => (miss[i][j] ? colGM[j] : v)));
+  for (let i = 0; i < n; i++) for (let j = 0; j < D; j++) if (miss[i][j]) X[i][j] = colGM[j];
 
-  const complete = [];
-  for (let i = 0; i < n; i++) if (!anyMiss[i]) complete.push(i);
+  // Rows usable for the target CLR mean: no missing cells and all positive.
+  const usable = [];
+  for (let i = 0; i < n; i++) if (!anyMiss[i] && M[i].every((v) => Number.isFinite(v) && v > 0)) usable.push(i);
 
   let prevMean = null;
   for (let iter = 0; iter < maxIter; iter++) {
-    // Target CLR mean from complete rows (or all rows if too few are complete).
-    const ref = complete.length >= 2 ? complete : X.map((_, i) => i);
+    const ref = usable.length >= 2 ? usable : X.map((_, i) => i);
     const meanClr = new Array(D).fill(0);
     for (const i of ref) {
-      const gLog = X[i].reduce((s, x) => s + Math.log(x), 0) / D;
-      for (let j = 0; j < D; j++) meanClr[j] += Math.log(X[i][j]) - gLog;
+      const gLog = rowGLog(i);
+      for (let j = 0; j < D; j++) meanClr[j] += (posLog(i, j) ? Math.log(X[i][j]) : gLog) - gLog;
     }
     for (let j = 0; j < D; j++) meanClr[j] /= ref.length;
 
@@ -470,7 +480,7 @@ export function imputeMissing(mat, { maxIter = 100, tol = 1e-9 } = {}) {
     for (let i = 0; i < n; i++) {
       if (!anyMiss[i]) continue;
       for (let inner = 0; inner < 100; inner++) {
-        const gLog = X[i].reduce((s, x) => s + Math.log(x), 0) / D;
+        const gLog = rowGLog(i);
         let delta = 0;
         for (let j = 0; j < D; j++) {
           if (!miss[i][j]) continue;
