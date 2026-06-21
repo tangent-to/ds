@@ -9,7 +9,11 @@
  * including log-ratio transformations (CLR, ALR, ILR) and related utilities.
  */
 
-// All operations use built-in Math functions, no linalg imports needed
+// Most operations use built-in Math functions; the CoDA diagnostics
+// (compositionalOutliers) additionally use a pseudo-inverse and the chi-squared
+// distribution.
+import { pseudoInverse } from "../core/linalg.js";
+import { chisq } from "../stats/distribution.js";
 
 /**
  * Validates that all values in the array are positive
@@ -410,6 +414,148 @@ export function inner(x, y) {
 }
 
 /**
+ * Impute missing values in compositional data, respecting the simplex.
+ *
+ * Missing cells (`null`, `undefined` or `NaN`) are filled by an EM-style
+ * iteration in centred-log-ratio (CLR) space: each incomplete row is updated so
+ * that its CLR coordinates on the missing parts match the compositional
+ * (CLR) mean of the complete observations, while the observed parts are
+ * preserved. This is the log-ratio analogue of mean imputation and keeps the
+ * imputed values strictly positive and coherent with the observed
+ * sub-composition (cf. Martín-Fernández et al.; Palarea-Albaladejo &
+ * Martín-Fernández, 2008). Combine with {@link multiplicativeReplacement} to
+ * additionally handle essential zeros.
+ *
+ * @param {Array<Array<number>>} mat - Composition with missing entries.
+ * @param {Object} [opts]
+ * @param {number} [opts.maxIter=100] - Maximum EM iterations.
+ * @param {number} [opts.tol=1e-9] - Convergence tolerance on the CLR mean.
+ * @returns {Array<Array<number>>} Completed, strictly-positive composition.
+ */
+export function imputeMissing(mat, { maxIter = 100, tol = 1e-9 } = {}) {
+  const { mat: M, was1d } = _ensureMatrix(mat);
+  const n = M.length;
+  const D = M[0].length;
+  const miss = M.map((row) => row.map((v) => v == null || Number.isNaN(v)));
+  const anyMiss = miss.map((r) => r.some(Boolean));
+  if (!anyMiss.some(Boolean)) return _restoreShape(M.map((r) => r.slice()), was1d);
+
+  // Initial fill: per-column geometric mean of the observed positive values.
+  const colGM = new Array(D);
+  for (let j = 0; j < D; j++) {
+    let s = 0, c = 0;
+    for (let i = 0; i < n; i++) {
+      const v = M[i][j];
+      if (!miss[i][j] && v > 0) { s += Math.log(v); c++; }
+    }
+    colGM[j] = c ? Math.exp(s / c) : 1e-6;
+  }
+  const X = M.map((row, i) => row.map((v, j) => (miss[i][j] ? colGM[j] : v)));
+
+  const complete = [];
+  for (let i = 0; i < n; i++) if (!anyMiss[i]) complete.push(i);
+
+  let prevMean = null;
+  for (let iter = 0; iter < maxIter; iter++) {
+    // Target CLR mean from complete rows (or all rows if too few are complete).
+    const ref = complete.length >= 2 ? complete : X.map((_, i) => i);
+    const meanClr = new Array(D).fill(0);
+    for (const i of ref) {
+      const gLog = X[i].reduce((s, x) => s + Math.log(x), 0) / D;
+      for (let j = 0; j < D; j++) meanClr[j] += Math.log(X[i][j]) - gLog;
+    }
+    for (let j = 0; j < D; j++) meanClr[j] /= ref.length;
+
+    // Update each incomplete row's missing parts to match the target CLR mean.
+    for (let i = 0; i < n; i++) {
+      if (!anyMiss[i]) continue;
+      for (let inner = 0; inner < 100; inner++) {
+        const gLog = X[i].reduce((s, x) => s + Math.log(x), 0) / D;
+        let delta = 0;
+        for (let j = 0; j < D; j++) {
+          if (!miss[i][j]) continue;
+          const nv = Math.exp(meanClr[j] + gLog);
+          delta = Math.max(delta, Math.abs(Math.log(nv) - Math.log(X[i][j])));
+          X[i][j] = nv;
+        }
+        if (delta < 1e-13) break;
+      }
+    }
+
+    if (prevMean) {
+      let md = 0;
+      for (let j = 0; j < D; j++) md = Math.max(md, Math.abs(meanClr[j] - prevMean[j]));
+      if (md < tol) break;
+    }
+    prevMean = meanClr;
+  }
+  return _restoreShape(X, was1d);
+}
+
+/**
+ * Detect compositional outliers via the Mahalanobis distance in log-ratio
+ * space, tested as a chi-squared variable (Filzmoser & Hron; Parent & Dafir,
+ * 1992).
+ *
+ * Each observation's CLR (or ILR) vector is compared to a centroid using the
+ * (pseudo-inverse) covariance; the squared Mahalanobis distance follows a
+ * chi-squared distribution with `D − 1` degrees of freedom under compositional
+ * normality. The centroid and covariance may be estimated from a reference
+ * subpopulation (e.g. a high-yielding group) via `reference`.
+ *
+ * @param {Array<Array<number>>} mat - Strictly-positive composition.
+ * @param {Object} [opts]
+ * @param {boolean[]} [opts.reference=null] - Boolean mask selecting the rows
+ *   that define the centroid/covariance (default: all rows).
+ * @param {number} [opts.alpha=0.05] - Significance level for the outlier flag.
+ * @param {"clr"|"ilr"} [opts.transform="clr"] - Log-ratio coordinates to use.
+ * @returns {{ distances:number[], pValues:number[], outliers:boolean[],
+ *   centroid:number[], covInverse:number[][], df:number }}
+ */
+export function compositionalOutliers(mat, { reference = null, alpha = 0.05, transform = "clr" } = {}) {
+  const { mat: M } = _ensureMatrix(mat);
+  const Y = transform === "ilr" ? ilr(M) : clr(M);
+  const n = Y.length;
+  const d = Y[0].length;
+  const D = M[0].length;
+
+  const refIdx = reference ? Y.map((_, i) => i).filter((i) => reference[i]) : Y.map((_, i) => i);
+  if (refIdx.length < 2) throw new Error("compositionalOutliers: need at least 2 reference rows");
+
+  const centroid = new Array(d).fill(0);
+  for (const i of refIdx) for (let j = 0; j < d; j++) centroid[j] += Y[i][j];
+  for (let j = 0; j < d; j++) centroid[j] /= refIdx.length;
+
+  const cov = Array.from({ length: d }, () => new Array(d).fill(0));
+  for (const i of refIdx) {
+    const dv = Y[i].map((v, j) => v - centroid[j]);
+    for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] += dv[a] * dv[b];
+  }
+  const denom = Math.max(1, refIdx.length - 1);
+  for (let a = 0; a < d; a++) for (let b = 0; b < d; b++) cov[a][b] /= denom;
+
+  // CLR covariance is singular (rank D−1); use the Moore-Penrose pseudo-inverse.
+  const piv = pseudoInverse(cov);
+  const covInv = typeof piv.to2DArray === "function" ? piv.to2DArray() : piv;
+  const df = transform === "ilr" ? d : D - 1;
+
+  const distances = Y.map((y) => {
+    const dv = y.map((v, j) => v - centroid[j]);
+    let s = 0;
+    for (let a = 0; a < d; a++) {
+      let row = 0;
+      for (let b = 0; b < d; b++) row += covInv[a][b] * dv[b];
+      s += dv[a] * row;
+    }
+    return s;
+  });
+  const pValues = distances.map((D2) => 1 - chisq.cdf(D2, { df }));
+  const outliers = pValues.map((p) => p < alpha);
+
+  return { distances, pValues, outliers, centroid, covInverse: covInv, df };
+}
+
+/**
  * Export all functions
  */
 export default {
@@ -426,4 +572,6 @@ export default {
   ilrInv,
   sbpBasis,
   inner,
+  imputeMissing,
+  compositionalOutliers,
 };
