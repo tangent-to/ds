@@ -16,7 +16,7 @@
 
 import { Regressor } from '../../core/estimators/estimator.js';
 import { toMatrix } from '../../core/linalg.js';
-import { prepareXY, prepareX as _prepareX } from '../../core/table.js';
+import { prepareXY } from '../../core/table.js';
 import {
   Kernel,
   RBF,
@@ -91,7 +91,7 @@ function sampleMultivariateNormal(mean, cov, rng = Math.random) {
   
   try {
     L = choleskyDecomposition(cov);
-  } catch (_e) {
+  } catch {
     // Add jitter if not positive definite
     const jitter = 1e-6;
     for (let i = 0; i < n; i++) {
@@ -118,6 +118,87 @@ function sampleMultivariateNormal(mean, cov, rng = Math.random) {
   }
 
   return sample;
+}
+
+/**
+ * Collect the tunable positive hyperparameters of a kernel as get/set/min
+ * handles, descending into SumKernel children. Length-scale arrays (ARD)
+ * contribute one entry per dimension. @private
+ */
+function collectHypers(kernel) {
+  const entries = [];
+  const visit = (k) => {
+    if (!k) return;
+    const name = k.constructor.name;
+    if (name === "SumKernel") {
+      (k.kernels || []).forEach(visit);
+      return;
+    }
+    if (name === "Matern" || name === "RBF") {
+      if (Array.isArray(k.lengthScale)) {
+        k.lengthScale.forEach((_, i) =>
+          entries.push({ get: () => k.lengthScale[i], set: (v) => { k.lengthScale[i] = v; }, min: 1e-5 }),
+        );
+      } else {
+        entries.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
+      }
+      entries.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
+    } else if (name === "RationalQuadratic") {
+      entries.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
+      entries.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
+      if (k.alpha !== undefined) {
+        entries.push({ get: () => k.alpha, set: (v) => { k.alpha = v; }, min: 1e-5 });
+      }
+    } else if (name === "DotProduct") {
+      entries.push({ get: () => k.sigma0, set: (v) => { k.sigma0 = v; }, min: 1e-8 });
+    } else if (name === "ConstantKernel") {
+      const key = k.value !== undefined ? "value" : "variance";
+      entries.push({ get: () => k[key], set: (v) => { k[key] = v; }, min: 1e-8 });
+    }
+    // Other kernels (e.g. Periodic) are left fixed.
+  };
+  visit(kernel);
+  return entries;
+}
+
+/**
+ * Derivative-free coordinate pattern search in log-space. Minimizes `evalNeg`
+ * by stepping each hyperparameter up/down by a shrinking factor. Robust for the
+ * smooth, low-dimensional marginal-likelihood surface. @private
+ *
+ * @returns {{ vals:number[], f:number }} best raw values and objective.
+ */
+function _patternSearch(hypers, evalNeg) {
+  const apply = (logVals) =>
+    hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(logVals[i]))));
+  let x = hypers.map((h) => Math.log(h.get()));
+  apply(x);
+  let f = evalNeg();
+  let step = 1.0; // a factor of e per step
+  const minStep = 0.05;
+  const maxIter = 300;
+  let it = 0;
+  while (step > minStep && it < maxIter) {
+    let improved = false;
+    for (let d = 0; d < x.length; d++) {
+      for (const s of [step, -step]) {
+        const xt = x.slice();
+        xt[d] += s;
+        apply(xt);
+        const ft = evalNeg();
+        if (ft < f - 1e-9) {
+          f = ft;
+          x = xt;
+          improved = true;
+          break;
+        }
+      }
+    }
+    if (!improved) step *= 0.5;
+    it++;
+  }
+  apply(x);
+  return { vals: hypers.map((h) => h.get()), f };
 }
 
 export class GaussianProcessRegressor extends Regressor {
@@ -166,12 +247,23 @@ export class GaussianProcessRegressor extends Regressor {
     
     // Support both alpha and noiseLevel
     this.alpha = opts.alpha ?? opts.noiseLevel ?? 1e-10;
-    
+
+    // Hyperparameter optimization (maximize the log marginal likelihood).
+    // Off by default for backward compatibility; opt in with `optimize: true`
+    // (or sklearn-style `optimizer`/`nRestartsOptimizer`). When enabled, fit()
+    // tunes the kernel length scale(s) + variance and the noise `alpha`.
+    this.optimize =
+      opts.optimize === true ||
+      (opts.optimizer !== undefined && opts.optimizer !== false && opts.optimizer !== null);
+    this.nRestarts = opts.nRestarts ?? opts.nRestartsOptimizer ?? 0;
+    this._seed = opts.randomState ?? opts.seed ?? 42;
+
     // Internal state
     this._XTrain = null;
     this._yTrain = null;
     this._L = null;
     this._alphaVector = null;
+    this.logMarginalLikelihood_ = null;
   }
 
   /**
@@ -201,26 +293,111 @@ export class GaussianProcessRegressor extends Regressor {
     this._XTrain = toMatrix(dataX);
     this._yTrain = Array.isArray(dataY) ? [...dataY] : Array.from(dataY);
 
-    // Compute kernel matrix
+    // Optionally tune hyperparameters by maximizing the log marginal likelihood.
+    if (this.optimize) {
+      this._optimizeHypers();
+    }
+
+    // Factorize with the final hyperparameters.
+    this._refit();
+    this.logMarginalLikelihood_ = -this._negLogML();
+
+    this.fitted = true;
+    return this;
+  }
+
+  /**
+   * Compute K + αI, its Cholesky factor, and the solve vector α = K⁻¹y.
+   * Uses the current kernel hyperparameters and noise. @private
+   */
+  _refit() {
     const K = this.kernel.call(this._XTrain);
-    
-    // Add noise to diagonal
     for (let i = 0; i < K.rows; i++) {
       K.set(i, i, K.get(i, i) + this.alpha);
     }
-
-    // Cholesky decomposition
     try {
       this._L = choleskyDecomposition(K);
     } catch (error) {
       throw new Error(`Failed to fit GP: ${error.message}. Try increasing alpha.`);
     }
-
-    // Solve for alpha: L * L^T * alpha = y
     this._alphaVector = this._solveCholesky(this._L, this._yTrain);
-
-    this.fitted = true;
     return this;
+  }
+
+  /**
+   * Log marginal likelihood of the training data under the current
+   * hyperparameters: log p(y|X) = -½ yᵀK⁻¹y - ½ log|K| - n/2 log(2π).
+   * Requires the model to have seen training data (via fit).
+   * @returns {number}
+   */
+  logMarginalLikelihood() {
+    if (!this._XTrain) {
+      throw new Error("logMarginalLikelihood() requires training data; call fit() first.");
+    }
+    return -this._negLogML();
+  }
+
+  /**
+   * Negative log marginal likelihood for the current kernel + alpha.
+   * Returns a large finite penalty if K is not positive definite. @private
+   */
+  _negLogML() {
+    const K = this.kernel.call(this._XTrain);
+    const n = K.rows;
+    for (let i = 0; i < n; i++) {
+      K.set(i, i, K.get(i, i) + this.alpha);
+    }
+    let L;
+    try {
+      L = choleskyDecomposition(K);
+    } catch {
+      return 1e12; // not PD under these hypers -> heavy penalty
+    }
+    const alphaVec = this._solveCholesky(L, this._yTrain);
+    let yAlpha = 0;
+    for (let i = 0; i < n; i++) yAlpha += this._yTrain[i] * alphaVec[i];
+    let logDet = 0; // ½ log|K| = Σ log L_ii
+    for (let i = 0; i < n; i++) logDet += Math.log(L.get(i, i));
+    const logML = -0.5 * yAlpha - logDet - 0.5 * n * Math.log(2 * Math.PI);
+    return -logML;
+  }
+
+  /**
+   * Maximize the log marginal likelihood over kernel length scale(s),
+   * variance(s) and the noise `alpha`, by a derivative-free log-space pattern
+   * search with optional random restarts. Mutates the kernel and `this.alpha`.
+   * @private
+   */
+  _optimizeHypers() {
+    const hypers = collectHypers(this.kernel);
+    // Treat the observation noise as a (WhiteKernel-like) hyperparameter too.
+    hypers.push({ get: () => this.alpha, set: (v) => { this.alpha = v; }, min: 1e-10 });
+    if (hypers.length === 0) return;
+
+    const initial = hypers.map((h) => h.get());
+    const evalNeg = () => this._negLogML();
+    const rng = mulberry32(this._seed);
+
+    let bestVals = initial.slice();
+    let bestF = evalNeg();
+
+    for (let r = 0; r <= this.nRestarts; r++) {
+      if (r === 0) {
+        hypers.forEach((h, i) => h.set(initial[i]));
+      } else {
+        // Random restart: perturb each hyperparameter in log-space.
+        hypers.forEach((h, i) => {
+          const factor = Math.exp((rng() * 2 - 1) * 2.0); // ×[e⁻², e²]
+          h.set(Math.max(h.min, initial[i] * factor));
+        });
+      }
+      const { vals, f } = _patternSearch(hypers, evalNeg);
+      if (f < bestF) {
+        bestF = f;
+        bestVals = vals;
+      }
+    }
+    hypers.forEach((h, i) => h.set(bestVals[i]));
   }
 
   /**

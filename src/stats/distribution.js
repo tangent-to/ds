@@ -145,9 +145,9 @@ export const gamma = {
     guardPositive(scale, 'scale');
     
     if (x <= 0) return 0;
-    
-    // Use regularized incomplete gamma function approximation
-    return incompleteGamma(shape, x / scale) / gammaFunc(shape);
+
+    // Regularized lower incomplete gamma P(shape, x/scale).
+    return regularizedGammaP(shape, x / scale);
   },
 
   /**
@@ -181,20 +181,55 @@ export const gamma = {
 };
 
 // Helper: incomplete gamma function (lower)
-function incompleteGamma(s, x, maxIter = 100) {
-  if (x === 0) return 0;
-  
-  // Series expansion
-  let sum = 1.0;
-  let term = 1.0;
-  
-  for (let n = 1; n < maxIter; n++) {
-    term *= x / (s + n);
-    sum += term;
-    if (Math.abs(term) < 1e-10) break;
+/**
+ * Regularized lower incomplete gamma function P(s, x) = γ(s, x) / Γ(s) ∈ [0, 1].
+ *
+ * Uses the power series for x < s + 1 and the Lentz continued fraction for the
+ * upper tail (x ≥ s + 1), which keeps it numerically stable for all x — the
+ * bare series alone underflows to NaN when x ≫ s. (Press et al., Numerical
+ * Recipes, §6.2.)
+ *
+ * @param {number} s - Shape parameter (> 0)
+ * @param {number} x - Argument (≥ 0)
+ * @returns {number} P(s, x)
+ */
+function regularizedGammaP(s, x, maxIter = 300) {
+  if (x <= 0) return 0;
+  const logGammaS = logGamma(s);
+
+  if (x < s + 1) {
+    // Series for P.
+    let term = 1 / s;
+    let sum = term;
+    for (let n = 1; n < maxIter; n++) {
+      term *= x / (s + n);
+      sum += term;
+      if (Math.abs(term) < Math.abs(sum) * 1e-15) break;
+    }
+    const p = sum * Math.exp(-x + s * Math.log(x) - logGammaS);
+    return Math.min(1, Math.max(0, p));
   }
-  
-  return Math.exp(-x + s * Math.log(x)) * sum;
+
+  // Continued fraction for Q = 1 - P (modified Lentz).
+  const tiny = 1e-300;
+  let b = x + 1 - s;
+  let c = 1 / tiny;
+  let d = 1 / b;
+  let h = d;
+  for (let i = 1; i < maxIter; i++) {
+    const an = -i * (i - s);
+    b += 2;
+    d = an * d + b;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = b + an / c;
+    if (Math.abs(c) < tiny) c = tiny;
+    d = 1 / d;
+    const del = d * c;
+    h *= del;
+    if (Math.abs(del - 1) < 1e-15) break;
+  }
+  const q = Math.exp(-x + s * Math.log(x) - logGammaS) * h;
+  return Math.min(1, Math.max(0, 1 - q));
 }
 
 // ============= Beta Distribution =============

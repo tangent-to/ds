@@ -15,6 +15,7 @@ import * as distances from "./distances.js";
 import * as criteria from "./criteria.js";
 import * as utils from "./utils.js";
 import * as interpret from "./interpret.js";
+import * as explain from "./explain.js";
 import * as loss from "./loss.js";
 import * as train from "./train.js";
 import * as tuning from "./tuning.js";
@@ -74,6 +75,7 @@ import {
   ConstantKernel,
   SumKernel,
   Matern,
+  DotProduct,
 } from "./kernels/index.js";
 
 export {
@@ -98,6 +100,7 @@ export {
   ConstantKernel,
   SumKernel,
   Matern,
+  DotProduct,
   GridSearchCV,
   HCA,
   hca,
@@ -117,6 +120,8 @@ export {
   mahalanobisDistance,
   // Model interpretation
   interpret,
+  // SHAP explanations (Kernel / Tree / Permutation + plotting helpers)
+  explain,
   KMeans,
   // K-means clustering (functional and class-based)
   kmeans,
