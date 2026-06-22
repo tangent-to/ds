@@ -16,7 +16,7 @@
 
 import { Regressor } from '../../core/estimators/estimator.js';
 import { toMatrix } from '../../core/linalg.js';
-import { prepareXY, prepareX as _prepareX } from '../../core/table.js';
+import { prepareXY } from '../../core/table.js';
 import {
   Kernel,
   RBF,
@@ -91,7 +91,7 @@ function sampleMultivariateNormal(mean, cov, rng = Math.random) {
   
   try {
     L = choleskyDecomposition(cov);
-  } catch (_e) {
+  } catch {
     // Add jitter if not positive definite
     const jitter = 1e-6;
     for (let i = 0; i < n; i++) {
@@ -350,7 +350,7 @@ export class GaussianProcessRegressor extends Regressor {
     let L;
     try {
       L = choleskyDecomposition(K);
-    } catch (e) {
+    } catch {
       return 1e12; // not PD under these hypers -> heavy penalty
     }
     const alphaVec = this._solveCholesky(L, this._yTrain);

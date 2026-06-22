@@ -282,7 +282,6 @@ export function alrInv(mat, denomIdx = null) {
  */
 export function sbpBasis(partition) {
   const numParts = partition.length;
-  const _D = partition[0].length;
   const basis = [];
 
   for (let i = 0; i < numParts; i++) {

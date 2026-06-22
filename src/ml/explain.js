@@ -551,7 +551,7 @@ function _treeShapSingle(root, x, M) {
   }
 
   function recurse(node, path, pathLen, pz, po, pi) {
-    let m = extend(path, pathLen, pz, po, pi);
+    const m = extend(path, pathLen, pz, po, pi);
     const len = pathLen + 1;
     if (node.type === "leaf") {
       for (let i = 1; i < len; i++) {
