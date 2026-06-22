@@ -7,8 +7,8 @@
  * - MahalanobisDistance: Statistical distance-based outlier detection
  */
 
-import { normalize, applyColumns } from "../core/table.js";
-import { random, randomInt, sample as randomSample } from "./utils.js";
+import { normalize, applyColumns as _applyColumns } from "../core/table.js";
+import { random, randomInt, sample as _randomSample } from "./utils.js";
 import { Matrix, SingularValueDecomposition } from "ml-matrix";
 
 /**

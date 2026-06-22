@@ -21,7 +21,7 @@ export function plotCondensedTree(model, {
 } = {}) {
   const hierarchy = model.hierarchy || model.getHierarchy?.();
   const condensedTree = model.condensedTree || model.getCondensedTree?.();
-  const labels = model.labels;
+  const _labels = model.labels;
 
   if (!hierarchy || !hierarchy.dendrogram) {
     throw new Error('plotCondensedTree requires a fitted HDBSCAN model with hierarchy');
@@ -34,7 +34,7 @@ export function plotCondensedTree(model, {
   const links = [];
 
   // Process dendrogram to create visualization data
-  dendrogram.forEach((node, idx) => {
+  dendrogram.forEach((node, _idx) => {
     const lambda = 1 / (node.distance || 1e-10);
 
     nodes.push({
@@ -94,7 +94,7 @@ export function plotHDBSCANDendrogram(model, {
     throw new Error('plotHDBSCANDendrogram requires a fitted HDBSCAN model with hierarchy');
   }
 
-  const { dendrogram, linkageMatrix } = hierarchy;
+  const { dendrogram, _linkageMatrix } = hierarchy;
   const n = dendrogram.length > 0 ? dendrogram[0].size : 0;
 
   // Create initial leaf nodes
@@ -109,7 +109,7 @@ export function plotHDBSCANDendrogram(model, {
   // Build tree from merges
   const tree = { nodes: [...nodes], merges: [] };
 
-  dendrogram.forEach((merge, idx) => {
+  dendrogram.forEach((merge, _idx) => {
     tree.merges.push({
       id: merge.id,
       cluster1: [merge.left],

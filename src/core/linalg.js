@@ -35,7 +35,7 @@ export function solveLeastSquares(A, b) {
   
   try {
     return mlSolve(AtA, Atb);
-  } catch (e) {
+  } catch (_e) {
     // If singular, use pseudoinverse via SVD
     const svd = new SingularValueDecomposition(matA);
     return svd.solve(matB);

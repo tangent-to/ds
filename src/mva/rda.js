@@ -3,7 +3,7 @@
  * Constrained ordination - PCA on fitted values from multiple regression
  */
 
-import { Matrix, solveLeastSquares, toMatrix } from '../core/linalg.js';
+import { Matrix, solveLeastSquares, toMatrix as _toMatrix } from '../core/linalg.js';
 import * as pca from './pca.js';
 import { mean } from '../core/math.js';
 import { prepareX } from '../core/table.js';
@@ -324,7 +324,7 @@ export function transform(model, Y, X) {
   const p = explData[0].length;
 
   // Center data
-  const YCentered = responseData.map((row) => row.map((val, j) => val - YMeans[j]));
+  const _YCentered = responseData.map((row) => row.map((val, j) => val - YMeans[j]));
 
   const XCentered = explData.map((row) => row.map((val, j) => val - XMeans[j]));
 

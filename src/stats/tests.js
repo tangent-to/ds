@@ -385,7 +385,7 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
 
   const k = groupsArray.length;
   const groupSizes = groupsArray.map(g => g.length);
-  const n = groupSizes.reduce((a, b) => a + b, 0);
+  const _n = groupSizes.reduce((a, b) => a + b, 0);
 
   // Compute or reuse ANOVA results
   let MSwithin, dfWithin;
@@ -706,7 +706,7 @@ export function omegaSquared(anovaResult) {
   const SSbetween = MSbetween * dfBetween;
   const SSwithin = MSwithin * dfWithin;
   const SStotal = SSbetween + SSwithin;
-  const n = dfBetween + dfWithin + 1;
+  const _n = dfBetween + dfWithin + 1;
 
   return (SSbetween - dfBetween * MSwithin) / (SStotal + MSwithin);
 }
@@ -725,9 +725,9 @@ export function leveneTest(groups, { center = 'median', trim = 0.1 } = {}) {
     throw new Error('Need at least 2 groups');
   }
 
-  const k = groups.length;
+  const _k = groups.length;
   const groupSizes = groups.map(g => g.length);
-  const n = groupSizes.reduce((a, b) => a + b, 0);
+  const _n = groupSizes.reduce((a, b) => a + b, 0);
 
   // Compute center for each group
   const centers = groups.map(g => {

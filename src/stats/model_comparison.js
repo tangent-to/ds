@@ -89,7 +89,7 @@ function computeAICWeight(deltaAIC) {
 /**
  * Format comparison results as a table object for Observable
  */
-function formatComparisonTable(comparison, criterion) {
+function formatComparisonTable(comparison, _criterion) {
   return comparison.map(m => ({
     Model: m.name,
     Formula: m.formula,
@@ -112,7 +112,7 @@ function formatComparisonTable(comparison, criterion) {
  * @param {Object} options - Test options
  * @returns {Object} Test results
  */
-export function likelihoodRatioTest(model1, model2, options = {}) {
+export function likelihoodRatioTest(model1, model2, _options = {}) {
   if (!model1.fitted || !model2.fitted) {
     throw new Error('Both models must be fitted before comparison');
   }
@@ -174,7 +174,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
  * @param {Object} options - Options
  * @returns {Object} Matrix of pairwise comparisons
  */
-export function pairwiseLRT(models, options = {}) {
+export function pairwiseLRT(models, _options = {}) {
   if (!Array.isArray(models) || models.length < 2) {
     throw new Error('pairwiseLRT requires at least 2 models');
   }
@@ -209,7 +209,7 @@ export function pairwiseLRT(models, options = {}) {
           full: full === m1 ? i : j,
           ...test
         });
-      } catch (e) {
+      } catch (_e) {
         // Models not nested, skip
         continue;
       }
@@ -599,7 +599,7 @@ function lowerIncompleteGamma(s, x) {
  */
 function shuffleArray(array, seed = null) {
   const arr = [...array];
-  let random = seed !== null ? seededRandom(seed) : Math.random;
+  const random = seed !== null ? seededRandom(seed) : Math.random;
 
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));

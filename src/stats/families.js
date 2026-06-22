@@ -43,7 +43,7 @@ export class IdentityLink {
     return Array(eta.length).fill(1);
   }
 
-  valideta(eta) {
+  valideta(_eta) {
     return true; // always valid
   }
 
@@ -324,7 +324,7 @@ export class Gaussian {
   }
 
   initialize(y, weights = null) {
-    const w = weights || Array(y.length).fill(1);
+    const _w = weights || Array(y.length).fill(1);
     const mu = [...y]; // start with observed values
     const eta = this.link.linkfun(mu);
     return { mu, eta };
@@ -394,7 +394,7 @@ export class Binomial {
   }
 
   initialize(y, weights = null) {
-    const w = weights || Array(y.length).fill(1);
+    const _w = weights || Array(y.length).fill(1);
     // Initialize mu as (y + 0.5) / (n + 1) to avoid 0 and 1
     const mu = y.map((yi) => (yi + 0.5) / 2);
     const eta = this.link.linkfun(mu);
@@ -466,7 +466,7 @@ export class Poisson {
   }
 
   initialize(y, weights = null) {
-    const w = weights || Array(y.length).fill(1);
+    const _w = weights || Array(y.length).fill(1);
     // Initialize mu as y + 0.1 to avoid log(0)
     const mu = y.map((yi) => Math.max(yi + 0.1, 0.1));
     const eta = this.link.linkfun(mu);
@@ -537,7 +537,7 @@ export class Gamma {
   }
 
   initialize(y, weights = null) {
-    const w = weights || Array(y.length).fill(1);
+    const _w = weights || Array(y.length).fill(1);
     // Initialize mu as max(y, 0.1) to ensure positive values
     const mu = y.map((yi) => Math.max(yi, 0.1));
     const eta = this.link.linkfun(mu);
@@ -613,7 +613,7 @@ export class InverseGaussian {
   }
 
   initialize(y, weights = null) {
-    const w = weights || Array(y.length).fill(1);
+    const _w = weights || Array(y.length).fill(1);
     const mu = y.map((yi) => Math.max(yi, 0.1));
     const eta = this.link.linkfun(mu);
     return { mu, eta };
@@ -694,7 +694,7 @@ export class NegativeBinomial {
   }
 
   initialize(y, weights = null) {
-    const w = weights || Array(y.length).fill(1);
+    const _w = weights || Array(y.length).fill(1);
     const mu = y.map((yi) => Math.max(yi + 0.1, 0.1));
     const eta = this.link.linkfun(mu);
     return { mu, eta };

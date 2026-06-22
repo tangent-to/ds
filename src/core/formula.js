@@ -16,7 +16,7 @@
  * @param {Array<Object>|Object} data - Data array or table
  * @returns {Object} Parsed formula specification
  */
-export function parseFormula(formula, data = null) {
+export function parseFormula(formula, _data = null) {
   // Split on ~ to get response and predictors
   const parts = formula.split('~').map(s => s.trim());
 
@@ -590,7 +590,7 @@ function evaluateExpression(expr, row) {
   // Evaluate safely (note: eval is generally unsafe, but we're in a controlled context)
   try {
     return Function('"use strict"; return (' + evalExpr + ')')();
-  } catch (e) {
+  } catch (_e) {
     throw new Error(`Failed to evaluate expression: ${expr}`);
   }
 }
@@ -598,7 +598,7 @@ function evaluateExpression(expr, row) {
 /**
  * Extract random effects grouping variables
  */
-function extractRandomEffects(random, data, X) {
+function extractRandomEffects(random, data, _X) {
   const result = {};
 
   if (random.intercept) {

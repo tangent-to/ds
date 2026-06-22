@@ -400,7 +400,7 @@ export function transform(model, X) {
 }
 
 export function predict(model, X) {
-  const { classes, classMeanScores, featureNames } = model;
+  const { classes, classMeanScores, _featureNames } = model;
 
   // Handle declarative table-style input
   let dataToTransform = X;

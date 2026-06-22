@@ -85,7 +85,7 @@ export class Estimator {
       const json = this.toJSON();
       const jsonStr = JSON.stringify(json);
       return (jsonStr.length * 2) / (1024 * 1024);
-    } catch (e) {
+    } catch (_e) {
       return -1;
     }
   }
@@ -156,7 +156,7 @@ export class Estimator {
    * @param {Object} options - Warning options
    * @private
    */
-  _checkDatasetSize(X, y, options = {}) {
+  _checkDatasetSize(X, _y, options = {}) {
     const {
       warnLargeDataset = true,
       largeSampleThreshold = 10000,
@@ -216,7 +216,7 @@ export class Estimator {
       `;
     }
 
-    const state = this.getState();
+    const _state = this.getState();
     let html = `
       <div style="font-family: sans-serif; border: 1px solid #dee2e6; border-radius: 4px; overflow: hidden;">
         <div style="padding: 0.75em 1em; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
@@ -445,7 +445,7 @@ export class Regressor extends Estimator {
    * Predict - subclasses must override
    * Ensures model is fitted before prediction
    */
-  predict(X, options = {}) {
+  predict(_X, _options = {}) {
     this._ensureFitted('predict');
     throw new Error("predict() not implemented for this regressor");
   }
@@ -458,7 +458,7 @@ export class Regressor extends Estimator {
    *  - arrays: score(yTrue, yPred)
    *  - table-style: score({ X, y, data }) where predict will be called internally
    */
-  score(yTrueOrOpts, yPred = null, opts = {}) {
+  score(yTrueOrOpts, yPred = null, _opts = {}) {
     this._ensureFitted('score');
 
     // If first argument is an options object assume we need to predict
@@ -519,7 +519,7 @@ export class Classifier extends Estimator {
    * Predict - subclasses must override
    * Ensures model is fitted before prediction
    */
-  predict(X, options = {}) {
+  predict(_X, _options = {}) {
     this._ensureFitted('predict');
     throw new Error("predict() not implemented for this classifier");
   }
@@ -528,7 +528,7 @@ export class Classifier extends Estimator {
    * Predict probabilities - subclasses should override
    * Ensures model is fitted before prediction
    */
-  predictProba(X) {
+  predictProba(_X) {
     this._ensureFitted('predictProba');
     throw new Error("predictProba() not implemented for this classifier");
   }
@@ -619,7 +619,7 @@ export class Classifier extends Estimator {
    *  - score(yTrue, yPred)
    *  - or score({ X, y, data }) which predicts internally
    */
-  score(yTrueOrOpts, yPred = null, opts = {}) {
+  score(yTrueOrOpts, yPred = null, _opts = {}) {
     this._ensureFitted('score');
 
     if (
@@ -671,7 +671,7 @@ export class Transformer extends Estimator {
    * Transform - subclasses must override
    * Ensures model is fitted before transformation
    */
-  transform(X, options = {}) {
+  transform(_X, _options = {}) {
     this._ensureFitted('transform');
     throw new Error("transform() not implemented for this transformer");
   }

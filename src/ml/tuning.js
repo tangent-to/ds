@@ -283,17 +283,19 @@ function sampleFromDistribution(distribution) {
     case 'uniform':
       return distribution.low + seededRandom() * (distribution.high - distribution.low);
 
-    case 'loguniform':
+    case 'loguniform': {
       const logLow = Math.log(distribution.low);
       const logHigh = Math.log(distribution.high);
       return Math.exp(logLow + seededRandom() * (logHigh - logLow));
+    }
 
     case 'randint':
       return distribution.low + Math.floor(seededRandom() * (distribution.high - distribution.low));
 
-    case 'choice':
+    case 'choice': {
       const idx = Math.floor(seededRandom() * distribution.options.length);
       return distribution.options[idx];
+    }
 
     default:
       throw new Error(`Unknown distribution type: ${type}`);

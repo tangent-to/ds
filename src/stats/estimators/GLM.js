@@ -12,7 +12,7 @@ import { Estimator } from '../../core/estimators/estimator.js';
 import { prepareX, prepareXY } from '../../core/table.js';
 import { fitGLM, fitGLMM, predictGLM, predictGLMM } from '../glm.js';
 import { fitMultinomial, predictMultinomial } from '../multinomial.js';
-import { createFamily, getCanonicalLink } from '../families.js';
+import { createFamily as _createFamily, getCanonicalLink } from '../families.js';
 import { mean } from '../../core/math.js';
 import { applyFormula } from '../../core/formula.js';
 
@@ -106,7 +106,7 @@ export class GLM extends Estimator {
    * - fit({ formula: 'y ~ x1 + x2', data }) - formula in object
    */
   fit(...args) {
-    let X, y, weights, offset, groups, randomEffectsData;
+    let X, y, weights, offset, _groups, randomEffectsData;
 
     // Check for formula-based input
     if (args.length >= 1 && typeof args[0] === 'string') {
@@ -364,7 +364,7 @@ export class GLM extends Estimator {
     );
 
     // Use first class as reference category (coded as all zeros)
-    const referenceClass = this._classes[0];
+    const _referenceClass = this._classes[0];
     const nonReferenceClasses = this._classes.slice(1);
 
     // Create binary indicator columns for K-1 classes
@@ -710,7 +710,7 @@ export class GLM extends Estimator {
   /**
    * Extract a column from table data
    */
-  _extractColumn(columnName, data, rows) {
+  _extractColumn(columnName, _data, rows) {
     // rows is array of row objects, not indices
     return rows.map((row) => row[columnName]);
   }
@@ -1223,7 +1223,7 @@ export class GLM extends Estimator {
    * Format multiclass GLM summary
    */
   _summaryMulticlass(alpha = 0.05) {
-    const confidence = ((1 - alpha) * 100).toFixed(0);
+    const _confidence = ((1 - alpha) * 100).toFixed(0);
 
     let output = `\nMulticlass GLM (One-vs-Rest)\n`;
     output += `Family: ${this.params.family}, Link: ${this.params.link}\n`;
@@ -1246,7 +1246,7 @@ export class GLM extends Estimator {
    * Format multi-output GLM summary
    */
   _summaryMultiOutput(alpha = 0.05) {
-    const confidence = ((1 - alpha) * 100).toFixed(0);
+    const _confidence = ((1 - alpha) * 100).toFixed(0);
 
     let output = `\nMulti-Output GLM\n`;
     output += `Family: ${this.params.family}, Link: ${this.params.link}\n`;

@@ -13,12 +13,12 @@ import { prepareX, prepareXY } from '../../core/table.js';
 import { fitGLM, predictGLM } from '../../stats/glm.js';
 import { Matrix } from 'ml-matrix';
 import {
-  bsplineBasis,
+  bsplineBasis as _bsplineBasis,
   buildSmoothMatrix,
   computeKnots,
-  cubicRegressionSplineBasis,
+  cubicRegressionSplineBasis as _cubicRegressionSplineBasis,
   penaltyMatrix,
-  truncatedPowerBasis,
+  truncatedPowerBasis as _truncatedPowerBasis,
 } from '../splines.js';
 import {
   computeConfidenceIntervals,
@@ -32,7 +32,7 @@ import {
 } from '../gam_utils.js';
 
 // Minimal lm/logit namespaces for compatibility
-const lm = {
+const _lm = {
   fit: (X, y, opts) => fitGLM(X, y, { ...opts, family: 'gaussian' }),
   predict: (coefficients, X, opts) => {
     const model = {
@@ -51,7 +51,7 @@ const lm = {
   }),
 };
 
-const logit = {
+const _logit = {
   fit: (X, y, opts) => fitGLM(X, y, { ...opts, family: 'binomial', link: 'logit' }),
   predict: (coefficients, X, opts) => {
     const model = {
@@ -221,7 +221,7 @@ export class GAMRegressor extends Regressor {
     const design = this.gam._designMatrix(prepared.X);
     const designMatrix = new Matrix(design);
     const n = designMatrix.rows;
-    const p = designMatrix.columns;
+    const _p = designMatrix.columns;
     this.gam.n = n; // Store training sample size
 
     // Build penalty matrix for all smooths
@@ -531,9 +531,7 @@ export class GAMClassifier extends Classifier {
   }
 
   summary() {
-    this._ensureFitted('predictProba'); {
-      throw new Error('GAMClassifier: estimator not fitted.');
-    }
+    this._ensureFitted('summary');
 
     // Compute training predictions (returns decoded class names if labelEncoder exists)
     const trainPredictions = this.predict(this.gam.X_train);

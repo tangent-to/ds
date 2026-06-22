@@ -47,7 +47,7 @@ import { IsolationForest, LocalOutlierFactor, MahalanobisDistance } from './outl
 import * as pca from '../mva/pca.js';
 import * as lda from '../mva/lda.js';
 import * as rda from '../mva/rda.js';
-import { mean, std } from '../core/math.js';
+import { mean as _mean, std as _std } from '../core/math.js';
 
 /**
  * Create a preprocessing recipe
@@ -1435,7 +1435,7 @@ export class Recipe {
           const columnsToRemove = new Set();
           for (const [pair, corr] of Object.entries(correlations)) {
             if (corr > threshold) {
-              const [col1, col2] = pair.split('_');
+              const [_col1, col2] = pair.split('_');
               // Remove col2 (arbitrary choice)
               columnsToRemove.add(col2);
             }

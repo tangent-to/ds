@@ -3,7 +3,7 @@
  * Extends linear regression with polynomial features
  */
 
-import { Matrix, toMatrix } from '../core/linalg.js';
+import { Matrix as _Matrix, toMatrix } from '../core/linalg.js';
 import { fitGLM as lmFit, predictGLM as lmPredict } from '../stats/glm.js';
 
 // Minimal lm namespace for compatibility

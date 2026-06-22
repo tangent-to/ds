@@ -322,7 +322,7 @@ function baseStratifiedKFold(y, k = 5) {
 }
 
 function baseGroupKFold(groups, k = 5) {
-  const n = groups.length;
+  const _n = groups.length;
   const uniqueGroups = [...new Set(groups)];
   const nGroups = uniqueGroups.length;
 
@@ -498,7 +498,7 @@ export function groupKFold(X, y, groups, k = 5) {
  * @param {Array} y - Target values
  * @returns {Array<Object>} Array of fold objects
  */
-export function leaveOneOut(X, y) {
+export function leaveOneOut(X, _y) {
   if (isTableSplitInput(X)) {
     const dataset = prepareDescriptorDataset(X, { requireY: !!X.y });
     const folds = baseLeaveOneOut(dataset.X.length);
