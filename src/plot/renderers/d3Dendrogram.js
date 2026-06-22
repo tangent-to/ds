@@ -109,7 +109,7 @@ export function createD3DendrogramRenderer(
     const leaves = data.nodes;
     const leafCount = leaves.length;
 
-    leaves.forEach((leaf, index) => {
+    leaves.forEach((leaf, _index) => {
       const node = {
         id: leaf.id,
         x: 0,

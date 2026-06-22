@@ -79,7 +79,7 @@ export class StandardScaler {
     }
 
     // Standard array API
-    const n = X.length;
+    const _n = X.length;
     this.nFeatures = X[0].length;
 
     this.means = [];

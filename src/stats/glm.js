@@ -10,7 +10,7 @@
 
 import { inverse, Matrix, SingularValueDecomposition, solve } from 'ml-matrix';
 import { createFamily } from './families.js';
-import { mean, sum } from '../core/math.js';
+import { mean as _mean, sum } from '../core/math.js';
 
 // ============================================================================
 // GLM Fitting (Fixed Effects Only)
@@ -38,13 +38,13 @@ export function fitGLM(X, y, options = {}) {
   } = options;
 
   const n = X.length;
-  const p = X[0].length;
+  const _p = X[0].length;
 
   // Create family object
   const familyObj = createFamily({ family, link });
 
   // Add intercept if requested
-  let Xmat = intercept ? addIntercept(X) : X.map((row) => [...row]);
+  const Xmat = intercept ? addIntercept(X) : X.map((row) => [...row]);
   const ncoef = Xmat[0].length;
 
   // Initialize weights and offset
@@ -87,7 +87,7 @@ export function fitGLM(X, y, options = {}) {
   }
 
   // Compute fitted values and residuals
-  const fitted = mu.map((m, i) => m);
+  const fitted = mu.map((m, _i) => m);
   const residuals = y.map((yi, i) => yi - fitted[i]);
   const pearsonResiduals = computePearsonResiduals(y, mu, w, familyObj);
   const devianceResiduals = computeDevianceResiduals(y, mu, w, familyObj);
@@ -200,7 +200,7 @@ function computeWorkingWeights(y, mu, eta, offset, weights, family) {
  * Weighted least squares with optional regularization
  */
 function weightedLeastSquares(X, y, weights, regularization = null) {
-  const n = X.length;
+  const _n = X.length;
   const p = X[0].length;
 
   // Create weighted design matrix: W^(1/2) * X
@@ -235,7 +235,7 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
   try {
     const beta = solve(XtX, Xty);
     return Array.from(beta.getColumn(0));
-  } catch (e) {
+  } catch (_e) {
     // Singular normal equations: solve the original weighted least-squares
     // problem with an SVD-based pseudoinverse (minimum-norm solution)
     const WXmat = new Matrix(WX);
@@ -274,7 +274,7 @@ function computeStandardErrors(X, mu, eta, weights, phi, family) {
   let covMatrix;
   try {
     covMatrix = inverse(XtWX).mul(phi);
-  } catch (e) {
+  } catch (_e) {
     // If singular, use SVD-based pseudoinverse
     const svd = new SingularValueDecomposition(XtWX);
     const s = svd.diagonal;
@@ -377,7 +377,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
     intercept = true,
     maxIter = 100,
     tol = 1e-6,
-    dispersion = 'estimate',
+    _dispersion = 'estimate',
   } = options;
 
   const n = X.length;
@@ -398,7 +398,7 @@ export function fitGLMM(X, y, randomEffects, options = {}) {
   const familyObj = createFamily({ family, link });
 
   // Add intercept if requested
-  let Xmat = intercept ? addIntercept(X) : X.map((row) => [...row]);
+  const Xmat = intercept ? addIntercept(X) : X.map((row) => [...row]);
   const nFixedCoef = Xmat[0].length;
 
   // Initialize weights and offset
@@ -632,9 +632,9 @@ function initializeVarianceComponents(groupInfo) {
 /**
  * Update fixed effects given random effects
  */
-function updateFixedEffects(X, Z, y, weights, u, theta) {
+function updateFixedEffects(X, Z, y, weights, u, _theta) {
   const n = X.length;
-  const p = X[0].length;
+  const _p = X[0].length;
 
   // Compute residuals: y - Zu
   const Zu = new Array(n);
@@ -651,7 +651,7 @@ function updateFixedEffects(X, Z, y, weights, u, theta) {
  * Update random effects given fixed effects
  */
 function updateRandomEffects(X, Z, y, weights, beta, theta) {
-  const n = X.length;
+  const _n = X.length;
   const q = Z[0].length;
 
   // Compute residuals: y - Xβ
@@ -714,7 +714,7 @@ function updateRandomEffects(X, Z, y, weights, beta, theta) {
  * Update variance components
  */
 function updateVarianceComponents(u, groupInfo) {
-  return groupInfo.map((info, idx) => {
+  return groupInfo.map((info, _idx) => {
     const startIdx = info.startIdx;
     const nGroups = info.nGroups;
 
@@ -775,7 +775,7 @@ function computeMarginalLogLikelihood(y, mu, u, theta, weights, family, groupInf
  * of the marginal likelihood, as in lme4), so they are typically somewhat
  * anti-conservative, especially with few groups.
  */
-function computeGLMMStandardErrors(X, Z, mu, eta, beta, u, theta, weights, family, groupInfo) {
+function computeGLMMStandardErrors(X, _Z, mu, eta, _beta, _u, _theta, weights, family, _groupInfo) {
   const n = X.length;
   const p = X[0].length;
 
@@ -798,7 +798,7 @@ function computeGLMMStandardErrors(X, Z, mu, eta, beta, u, theta, weights, famil
   let covMatrix;
   try {
     covMatrix = inverse(XtWX);
-  } catch (e) {
+  } catch (_e) {
     // If singular, use SVD-based pseudoinverse
     const svd = new SingularValueDecomposition(XtWX);
     const s = svd.diagonal;
@@ -956,9 +956,9 @@ function buildRandomEffectsMatrixForPrediction(n, randomEffectsData, groupInfo, 
 /**
  * Compute prediction intervals
  */
-function computeIntervals(predictions, X, model, level, scale, familyObj = null) {
+function computeIntervals(predictions, X, model, _level, scale, familyObj = null) {
   const n = predictions.length;
-  const p = model.p;
+  const _p = model.p;
   const z = 1.96; // approximation for 95% CI
 
   const covMatrix = new Matrix(model.covarianceMatrix);

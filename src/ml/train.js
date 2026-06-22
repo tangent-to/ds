@@ -66,7 +66,7 @@ export function train(model, X, y, options = {}) {
     let batchCount = 0;
 
     // Shuffle data if requested
-    let indices = Array.from({ length: nSamples }, (_, i) => i);
+    const indices = Array.from({ length: nSamples }, (_, i) => i);
     if (shuffle) {
       for (let i = indices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -238,7 +238,7 @@ export function learningRateScheduler(scheduleFn, optimizer) {
  */
 export function modelCheckpoint(metric = 'valLoss') {
   let bestMetric = Infinity;
-  let bestParams = null;
+  const bestParams = null;
 
   return {
     onEpochEnd: (epoch, logs) => {

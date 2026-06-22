@@ -10,7 +10,7 @@
  */
 
 import { Matrix, inverse, SingularValueDecomposition, EigenvalueDecomposition, solve } from 'ml-matrix';
-import { qchisq } from '../stats/distribution.js';
+import { qchisq as _qchisq } from '../stats/distribution.js';
 
 /**
  * Fit penalized regression with fixed smoothing parameter
@@ -42,7 +42,7 @@ export function fitPenalizedRegression(X, y, S, lambda) {
   let beta;
   try {
     beta = solve(penalized, Xty);
-  } catch (e) {
+  } catch (_e) {
     // Use pseudoinverse if singular
     const svd = new SingularValueDecomposition(penalized);
     beta = svd.solve(Xty);
@@ -54,7 +54,7 @@ export function fitPenalizedRegression(X, y, S, lambda) {
   let XtXinv;
   try {
     XtXinv = inverse(penalized);
-  } catch (e) {
+  } catch (_e) {
     const svd = new SingularValueDecomposition(penalized);
     XtXinv = svd.inverse();
   }
@@ -121,7 +121,7 @@ export function computeREML(y, fitted, X, S, lambda) {
     rss += resid * resid;
   }
 
-  const sigma2 = rss / n;
+  const _sigma2 = rss / n;
 
   // Compute log determinants
   const XtX = X.transpose().mmul(X);
@@ -242,9 +242,9 @@ export function computeSmoothPValues(edfs, residualDf, rss, covMatrix, smoothCon
     const edf = edfs[k];
 
     // Compute test statistic: sum of squared standardized coefficients
-    let testStat = 0;
+    const _testStat = 0;
     for (let i = offset; i < offset + nBasis; i++) {
-      const seSquared = covMatrix.get(i, i) * sigma2;
+      const _seSquared = covMatrix.get(i, i) * sigma2;
       // For now, approximate with chi-squared test
       // This is a rough approximation
     }
@@ -354,7 +354,7 @@ function determinant(A) {
       det *= Math.max(val, 1e-10); // Avoid log(0)
     }
     return det;
-  } catch (e) {
+  } catch (_e) {
     // Fallback: use SVD
     const svd = new SingularValueDecomposition(A);
     let det = 1;
@@ -379,8 +379,8 @@ function determinant(A) {
 export function fitMultinomialGAM(X, y, S, lambda, options = {}) {
   const { maxIter = 100, tol = 1e-6 } = options;
 
-  const n = X.rows;
-  const p = X.columns;
+  const _n = X.rows;
+  const _p = X.columns;
   const K = Math.max(...y) + 1; // Number of classes
 
   if (K === 2) {
@@ -417,7 +417,7 @@ export function fitMultinomialGAM(X, y, S, lambda, options = {}) {
  * @param {Object} options - Fitting options
  * @returns {Object} { coefficients }
  */
-function fitMultinomialIRLS(X, y, S, lambda, K, options = {}) {
+function fitMultinomialIRLS(X, y, S, lambda, _K, options = {}) {
   const { maxIter = 100, tol = 1e-6 } = options;
 
   const n = X.rows;
@@ -473,7 +473,7 @@ function fitMultinomialIRLS(X, y, S, lambda, K, options = {}) {
     let betaMat;
     try {
       betaMat = solve(penalized, XtWz);
-    } catch (e) {
+    } catch (_e) {
       const svd = new SingularValueDecomposition(penalized);
       betaMat = svd.solve(XtWz);
     }
@@ -507,7 +507,7 @@ export function createGAMSummary(model) {
     smoothPValues,
     rss,
     n,
-    p,
+    _p,
     r2,
     smoothConfigs,
     smoothMethod

@@ -141,7 +141,7 @@ function computeCCA(X, Y, {
   const Sxx = covarianceMatrix(XMat, false);
   const Syy = covarianceMatrix(YMat, false);
   const Sxy = XMat.transpose().mmul(YMat).div(n - 1);
-  const Syx = Sxy.transpose();
+  const _Syx = Sxy.transpose();
 
   const invSqrtSxx = symmetricInverseSqrt(Sxx);
   const invSqrtSyy = symmetricInverseSqrt(Syy);
@@ -321,7 +321,7 @@ function loadingsMatrix(loadings, rows, cols, prefix) {
   return new Matrix(data);
 }
 
-function prepareNewData(raw, columns, means, sds, center, scale, options) {
+function prepareNewData(raw, columns, means, sds, center, scale, _options) {
   if (
     raw &&
     typeof raw === 'object' &&

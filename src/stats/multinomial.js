@@ -139,14 +139,14 @@ export function fitMultinomial(X, y, options = {}) {
     intercept = true,
     maxIter = 100,
     tol = 1e-6,
-    weights = null,
+    _weights = null,
   } = options;
 
   const n = X.length;
   let p = X[0].length;
 
   // Add intercept if requested
-  let Xmat = intercept ? X.map((row) => [1, ...row]) : X.map((row) => [...row]);
+  const Xmat = intercept ? X.map((row) => [1, ...row]) : X.map((row) => [...row]);
 
   if (intercept) p++;
 
@@ -161,7 +161,7 @@ export function fitMultinomial(X, y, options = {}) {
 
   // Initialize coefficients: (K-1) × p matrix
   // Start with zeros
-  let coefficients = Array(K - 1).fill(null).map(() => Array(p).fill(0));
+  const coefficients = Array(K - 1).fill(null).map(() => Array(p).fill(0));
 
   let converged = false;
   let iteration = 0;
@@ -190,7 +190,7 @@ export function fitMultinomial(X, y, options = {}) {
           coefficients[k][j] += delta.get(idx, 0);
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // If Hessian is singular, try gradient ascent with small step
       const msg = `Iteration ${iteration}: Hessian singular, using gradient ascent. ` +
         'Coefficient estimates may be unreliable; check model.warnings and model.converged.';
@@ -217,7 +217,7 @@ export function fitMultinomial(X, y, options = {}) {
 
   // Compute standard errors from Hessian
   const { hessian: finalHessian } = computeGradientHessian(Xmat, y, coefficients, K);
-  let standardErrors = Array(K - 1).fill(null).map(() => Array(p).fill(NaN));
+  const standardErrors = Array(K - 1).fill(null).map(() => Array(p).fill(NaN));
 
   try {
     const H = new Matrix(finalHessian);
@@ -229,7 +229,7 @@ export function fitMultinomial(X, y, options = {}) {
         standardErrors[k][j] = Math.sqrt(Math.max(0, covMatrix.get(idx, idx)));
       }
     }
-  } catch (e) {
+  } catch (_e) {
     const msg = 'Could not compute standard errors (Hessian not invertible)';
     warnings.push(msg);
     console.warn(msg);
@@ -311,7 +311,7 @@ export function predictMultinomial(model, X, options = {}) {
   const p = model.p;
 
   // Add intercept if needed
-  let Xmat = model.intercept ? X.map((row) => [1, ...row]) : X.map((row) => [...row]);
+  const Xmat = model.intercept ? X.map((row) => [1, ...row]) : X.map((row) => [...row]);
 
   // Compute probabilities
   const probabilities = Array(n).fill(null).map(() => Array(K).fill(0));

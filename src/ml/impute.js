@@ -98,7 +98,7 @@ function getMissingIndices(arr) {
 /**
  * Helper: Get non-missing values from array
  */
-function getNonMissing(arr) {
+function _getNonMissing(arr) {
   return arr.filter((val) => !isMissing(val));
 }
 
@@ -968,7 +968,7 @@ export class IterativeImputer {
     const nFeatures = this.nFeatures_;
 
     // Initial imputation
-    let X_filled = this.initial_imputer_.transform(X);
+    const X_filled = this.initial_imputer_.transform(X);
 
     // Store which values were originally missing
     const missing_mask = [];

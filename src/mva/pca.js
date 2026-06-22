@@ -23,7 +23,7 @@ import {
  * @returns {Object} {standardized, means, sds}
  */
 function standardize(data, scale = false) {
-  const n = data.length;
+  const _n = data.length;
   const p = data[0].length;
 
   // Compute means
@@ -249,7 +249,7 @@ export function transform(model, X) {
     components,
     singularValues,
     scaling,
-    nSamples,
+    _nSamples,
     means,
     sds,
     scale,

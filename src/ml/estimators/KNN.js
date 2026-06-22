@@ -9,9 +9,9 @@
  */
 
 import { Classifier, Regressor, Estimator } from '../../core/estimators/estimator.js';
-import { LabelEncoder, prepareX, prepareXY } from '../../core/table.js';
+import { LabelEncoder as _LabelEncoder, prepareX, prepareXY } from '../../core/table.js';
 import { mean } from '../../core/math.js';
-import { euclidean, manhattan, minkowski, chebyshev, cosine, getDistanceFunction } from '../distances.js';
+import { euclidean, manhattan as _manhattan, minkowski, chebyshev as _chebyshev, cosine as _cosine, getDistanceFunction } from '../distances.js';
 
 // ============= KD-Tree for fast nearest neighbor search =============
 
@@ -124,7 +124,7 @@ class KDTree {
 
 // ============= Helper Functions =============
 
-function buildDataset(X, y, opts = {}) {
+function buildDataset(X, y, _opts = {}) {
   if (
     X &&
     typeof X === 'object' &&
@@ -153,7 +153,7 @@ function buildDataset(X, y, opts = {}) {
   return { X, y, columns: null, encoders: null };
 }
 
-function preparePredictInput(X, storedColumns, opts = {}) {
+function preparePredictInput(X, storedColumns, _opts = {}) {
   if (
     X &&
     typeof X === 'object' &&
@@ -239,7 +239,7 @@ class KNNBase extends Estimator {
     if (useKDTree) {
       try {
         this.kdtree = new KDTree(this.X);
-      } catch (e) {
+      } catch (_e) {
         // Fall back to brute force
         this.kdtree = null;
       }

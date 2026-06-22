@@ -3,7 +3,7 @@
  * Supports: Gradient Descent, Adam, Momentum, RMSProp
  */
 
-import { mean } from './math.js';
+import { mean as _mean } from './math.js';
 
 /**
  * Base Optimizer class
@@ -23,7 +23,7 @@ class Optimizer {
    * @param {Object} options - Additional options
    * @returns {Object} {x, history}
    */
-  minimize(lossFn, x0, options = {}) {
+  minimize(_lossFn, _x0, _options = {}) {
     throw new Error('minimize() must be implemented by subclass');
   }
 
@@ -53,7 +53,7 @@ export class GradientDescent extends Optimizer {
     const maxIter = options.maxIter || this.maxIter;
     const tol = options.tol || this.tol;
     
-    let x = [...x0];
+    const x = [...x0];
     const history = {
       loss: [],
       gradNorm: [],
@@ -146,8 +146,8 @@ export class MomentumOptimizer extends Optimizer {
     const maxIter = options.maxIter || this.maxIter;
     const tol = options.tol || this.tol;
     
-    let x = [...x0];
-    let velocity = new Array(x.length).fill(0);
+    const x = [...x0];
+    const velocity = new Array(x.length).fill(0);
     
     const history = {
       loss: [],
@@ -197,8 +197,8 @@ export class RMSProp extends Optimizer {
     const maxIter = options.maxIter || this.maxIter;
     const tol = options.tol || this.tol;
     
-    let x = [...x0];
-    let cache = new Array(x.length).fill(0);
+    const x = [...x0];
+    const cache = new Array(x.length).fill(0);
     
     const history = {
       loss: [],
@@ -249,9 +249,9 @@ export class AdamOptimizer extends Optimizer {
     const maxIter = options.maxIter || this.maxIter;
     const tol = options.tol || this.tol;
     
-    let x = [...x0];
-    let m = new Array(x.length).fill(0); // First moment estimate
-    let v = new Array(x.length).fill(0); // Second moment estimate
+    const x = [...x0];
+    const m = new Array(x.length).fill(0); // First moment estimate
+    const v = new Array(x.length).fill(0); // Second moment estimate
     
     const history = {
       loss: [],

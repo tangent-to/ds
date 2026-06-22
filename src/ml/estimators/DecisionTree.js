@@ -5,11 +5,11 @@
 import { Classifier, Regressor, Estimator } from "../../core/estimators/estimator.js";
 import { prepareXY, prepareX } from "../../core/table.js";
 import {
-  gini,
-  entropy,
-  variance,
-  mse,
-  mae,
+  gini as _gini,
+  entropy as _entropy,
+  variance as _variance,
+  mse as _mse,
+  mae as _mae,
   getCriterionFunction,
 } from "../criteria.js";
 

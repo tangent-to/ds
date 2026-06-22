@@ -16,7 +16,7 @@
 
 import { Regressor } from '../../core/estimators/estimator.js';
 import { toMatrix } from '../../core/linalg.js';
-import { prepareXY, prepareX } from '../../core/table.js';
+import { prepareXY, prepareX as _prepareX } from '../../core/table.js';
 import {
   Kernel,
   RBF,
@@ -91,7 +91,7 @@ function sampleMultivariateNormal(mean, cov, rng = Math.random) {
   
   try {
     L = choleskyDecomposition(cov);
-  } catch (e) {
+  } catch (_e) {
     // Add jitter if not positive definite
     const jitter = 1e-6;
     for (let i = 0; i < n; i++) {

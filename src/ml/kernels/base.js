@@ -17,7 +17,7 @@ export class Kernel {
    * @param {Array<number>} x2 - Second point
    * @returns {number} Covariance value
    */
-  compute(x1, x2) {
+  compute(_x1, _x2) {
     throw new Error('Kernel.compute() must be implemented by subclass');
   }
 
@@ -65,7 +65,7 @@ export class Kernel {
    * Set kernel hyperparameters
    * @param {Object} params - New parameters
    */
-  setParams(params) {
+  setParams(_params) {
     // Override in subclasses
   }
 

@@ -3,8 +3,8 @@
  * Simple feedforward neural network with backpropagation
  */
 
-import { Matrix, toMatrix } from '../core/linalg.js';
-import { mean } from '../core/math.js';
+import { Matrix as _Matrix, toMatrix as _toMatrix } from '../core/linalg.js';
+import { mean as _mean } from '../core/math.js';
 
 // ============= Activation Functions =============
 
@@ -32,7 +32,7 @@ const activations = {
 
   linear: {
     fn: (x) => x,
-    derivative: (x) => 1,
+    derivative: (_x) => 1,
   },
 };
 
@@ -198,7 +198,7 @@ export function fit(X, y, {
   verbose = false,
 } = {}) {
   // Convert data
-  let data = Array.isArray(X[0]) ? X : X.map((x) => [x]);
+  const data = Array.isArray(X[0]) ? X : X.map((x) => [x]);
   let targets;
 
   if (Array.isArray(y[0])) {
@@ -296,13 +296,13 @@ export function fit(X, y, {
       batchGradients.forEach((grad, l) => {
         // Update weights
         layers[l].weights.forEach((row, i) => {
-          row.forEach((val, j) => {
+          row.forEach((_val, j) => {
             layers[l].weights[i][j] -= (learningRate / batchCount) * grad.weightGrad[i][j];
           });
         });
 
         // Update biases
-        layers[l].bias.forEach((val, i) => {
+        layers[l].bias.forEach((_val, i) => {
           layers[l].bias[i] -= (learningRate / batchCount) * grad.biasGrad[i];
         });
       });

@@ -105,7 +105,7 @@ export class BranchPipeline extends Estimator {
    * @returns {Array} Combined predictions
    */
   _combine(branchPredictions, n) {
-    const combined = new Array(n);
+    const _combined = new Array(n);
 
     switch (this.combiner) {
       case 'vote':

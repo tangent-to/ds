@@ -59,7 +59,7 @@ export function plotHCA(result) {
 export function dendrogramLayout(dendrogramData, { 
   width = 640, 
   height = 400,
-  orientation = 'vertical'
+  _orientation = 'vertical'
 } = {}) {
   const { data } = dendrogramData;
   const { nodes, merges } = data;

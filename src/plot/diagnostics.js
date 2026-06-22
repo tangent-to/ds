@@ -52,7 +52,7 @@ export function scaleLocationPlot(model, options = {}) {
   const m = model._model;
 
   // Compute standardized residuals
-  const stdResiduals = m.residuals.map((r, i) => {
+  const stdResiduals = m.residuals.map((r, _i) => {
     const se = Math.sqrt(m.dispersion || 1);
     return r / se;
   });
@@ -91,7 +91,7 @@ export function qqPlot(model, options = {}) {
   const m = model._model;
 
   // Compute standardized residuals
-  const stdResiduals = m.residuals.map((r, i) => {
+  const stdResiduals = m.residuals.map((r, _i) => {
     const se = Math.sqrt(m.dispersion || 1);
     return r / se;
   }).sort((a, b) => a - b);
@@ -211,7 +211,7 @@ export function effectPlot(model, variable, data, options = {}) {
     throw new Error('Model must be fitted before creating effect plots');
   }
 
-  const { grid = 50, confidence = 0.95 } = options;
+  const { grid = 50, _confidence = 0.95 } = options;
 
   // Find the column index for this variable
   const colIdx = model._columnsX ? model._columnsX.indexOf(variable) : -1;
@@ -233,13 +233,13 @@ export function effectPlot(model, variable, data, options = {}) {
   // Generate predictions holding other variables at their means
   const otherMeans = model._columnsX
     .filter((_, i) => i !== colIdx)
-    .map((col, i) => {
+    .map((col, _i) => {
       const vals = data.map(d => d[col]);
       return vals.reduce((sum, v) => sum + v, 0) / vals.length;
     });
 
   const predictions = gridValues.map(val => {
-    const X = model._columnsX.map((col, i) =>
+    const X = model._columnsX.map((_col, i) =>
       i === colIdx ? val : otherMeans[i < colIdx ? i : i - 1]
     );
     return { [variable]: val, prediction: model.predict([X])[0] };
