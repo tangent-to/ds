@@ -660,4 +660,73 @@ describe('Outlier Detection (compared with sklearn)', () => {
       expect(scores[31]).toBeLessThan(scores[30]);
     });
   });
+
+  describe('Table-input API parity (transform / fit_transform)', () => {
+    // A table with an obvious outlier plus two rows carrying missing values.
+    const tableData = () => [
+      { a: 1, b: 2, c: 3 },
+      { a: 2, b: 3, c: 4 },
+      { a: null, b: 3, c: 4 }, // missing -> must default to inlier
+      { a: 3, b: 4, c: 5 },
+      { a: 50, b: 60, c: 70 }, // obvious outlier
+      { a: 2, b: NaN, c: 4 }, // missing -> must default to inlier
+      { a: 1, b: 2, c: 3 },
+      { a: 2, b: 3, c: 4 },
+      { a: 1, b: 2, c: 3 },
+      { a: 2, b: 3, c: 4 },
+    ];
+
+    const detectors = [
+      ['IsolationForest', () => new IsolationForest({ contamination: 0.1 })],
+      ['LocalOutlierFactor', () => new LocalOutlierFactor({ n_neighbors: 3, contamination: 0.1 })],
+      ['MahalanobisDistance', () => new MahalanobisDistance({ contamination: 0.1 })],
+    ];
+
+    for (const [name, make] of detectors) {
+      describe(name, () => {
+        it('fit_transform on a table returns rows augmented and realigned to ALL original rows', () => {
+          setSeed(42);
+          const data = tableData();
+          const out = make().fit_transform({ data });
+
+          // Same length and order as the input (not just the complete cases)
+          expect(out).toHaveLength(data.length);
+          expect(out[0]).toMatchObject({ a: 1, b: 2, c: 3 });
+          expect(out[4]).toMatchObject({ a: 50 });
+
+          // Augmented with an outlier column of -1/1 labels
+          expect(out[0]).toHaveProperty('outlier');
+          for (const row of out) expect([-1, 1]).toContain(row.outlier);
+
+          // Rows dropped for missing values default to inlier (1)
+          expect(out[2].outlier).toBe(1);
+          expect(out[5].outlier).toBe(1);
+
+          // The obvious outlier is flagged
+          expect(out[4].outlier).toBe(-1);
+        });
+
+        it('transform on a 2D array still returns a bare -1/1 label array', () => {
+          setSeed(42);
+          const X = tableData()
+            .map((r) => [r.a, r.b, r.c])
+            .filter((row) => row.every((v) => v != null && !Number.isNaN(v)));
+          const det = make();
+          const out = det.fit(X).transform(X);
+          expect(Array.isArray(out)).toBe(true);
+          expect(typeof out[0]).toBe('number');
+          expect(out).toHaveLength(X.length);
+        });
+      });
+    }
+
+    it('honours a custom label_column', () => {
+      setSeed(42);
+      const data = tableData();
+      const det = new MahalanobisDistance({ contamination: 0.1, label_column: 'is_anomaly' });
+      const out = det.fit_transform({ data });
+      expect(out[0]).toHaveProperty('is_anomaly');
+      expect(out[0]).not.toHaveProperty('outlier');
+    });
+  });
 });

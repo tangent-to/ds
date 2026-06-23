@@ -7,7 +7,7 @@
  * - MahalanobisDistance: Statistical distance-based outlier detection
  */
 
-import { normalize, applyColumns as _applyColumns } from "../core/table.js";
+import { normalize, prepareX, applyColumns as _applyColumns } from "../core/table.js";
 import { random, randomInt, sample as _randomSample } from "./utils.js";
 import { Matrix, SingularValueDecomposition } from "ml-matrix";
 
@@ -72,6 +72,56 @@ function tableToMatrixFiltered({ data, columns, omit_missing = true }) {
   );
 
   return { X, columns: selectedColumns, rows: validRows, validIndices };
+}
+
+/**
+ * Shared table-augmenting transform for outlier detectors.
+ *
+ * Returns the ORIGINAL rows (full length, original order), each augmented with
+ * `labelColumn`. Rows dropped for missing values default to inlier (1), exactly
+ * like IsolationForest. `self.predict(matrix)` supplies the -1/1 labels for the
+ * rows that survived missing-value filtering.
+ *
+ * @param {Object} self - Fitted detector exposing predict(matrix) and _tableColumns
+ * @param {Object|Array<Object>} X - {data, columns?, omit_missing?} or array of row objects
+ * @param {string} labelColumn - Name of the output label column
+ * @returns {Array<Object>} Original rows augmented with the label column
+ */
+function augmentRowsFromTable(self, X, labelColumn) {
+  const data = Array.isArray(X) ? X : X.data;
+  const columns = (Array.isArray(X) ? null : X.columns) || self._tableColumns;
+  const omit_missing = !Array.isArray(X) && X.omit_missing !== undefined
+    ? X.omit_missing
+    : true;
+
+  const rows = normalize(data);
+  const result = tableToMatrixFiltered({ data, columns, omit_missing });
+  const validLabels = self.predict(result.X);
+
+  const labels = new Array(rows.length).fill(1); // default to inlier
+  result.validIndices.forEach((originalIdx, i) => {
+    labels[originalIdx] = validLabels[i];
+  });
+
+  return rows.map((row, idx) => ({ ...row, [labelColumn]: labels[idx] }));
+}
+
+/**
+ * Detect whether an input is table-shaped (descriptor or array of row objects)
+ * rather than a bare 2D numeric array.
+ * @param {*} X
+ * @returns {boolean}
+ */
+function isTableInput(X) {
+  if (X && typeof X === "object" && !Array.isArray(X) && (X.data || X.columns)) {
+    return true;
+  }
+  return (
+    Array.isArray(X) &&
+    X.length > 0 &&
+    typeof X[0] === "object" &&
+    !Array.isArray(X[0])
+  );
 }
 
 // ============= IsolationForest =============
@@ -625,6 +675,7 @@ export class LocalOutlierFactor {
     metric = null,
     contamination = 0.1,
     novelty = false,
+    label_column = "outlier",
   } = {}) {
     if (n_neighbors <= 0) {
       throw new Error("n_neighbors must be positive");
@@ -635,6 +686,7 @@ export class LocalOutlierFactor {
     this.metric = metric || euclideanDistance;
     this.contamination = contamination;
     this.novelty = novelty;
+    this.label_column = label_column;
 
     this.X_ = null;
     this.negative_outlier_factor_ = null;
@@ -826,12 +878,36 @@ export class LocalOutlierFactor {
   }
 
   /**
+   * Transform data by adding outlier labels (parity with IsolationForest).
+   * Table or array-of-objects input -> original rows augmented with the label
+   * column, realigned to every original row (rows dropped for missing values
+   * default to inlier). 2D-array input -> bare -1/1 label array (sklearn-style).
+   * @param {Array<Array<number>>|Object|Array<Object>} X - Data
+   * @returns {Array<number>|Array<Object>} Labels or table with outlier column
+   */
+  transform(X) {
+    if (isTableInput(X)) {
+      return augmentRowsFromTable(this, X, this.label_column);
+    }
+    return this.predict(X);
+  }
+
+  /**
    * Fit and predict in one step
    * @param {Array<Array<number>>|Object} X - Data
    * @returns {Array<number>} Predictions: -1 for outliers, 1 for inliers
    */
   fit_predict(X) {
     return this.fit(X).predict(X);
+  }
+
+  /**
+   * Fit and transform in one step (parity with IsolationForest).
+   * @param {Array<Array<number>>|Object|Array<Object>} X - Data
+   * @returns {Array<number>|Array<Object>} Labels or table with outlier column
+   */
+  fit_transform(X) {
+    return this.fit(X).transform(X);
   }
 
   /**
@@ -864,13 +940,14 @@ export class MahalanobisDistance {
    * @param {number} options.contamination - Expected proportion of outliers (default: 0.1)
    * @param {boolean} options.use_chi2 - Use chi-squared distribution for threshold (default: true)
    */
-  constructor({ contamination = 0.1, use_chi2 = true } = {}) {
+  constructor({ contamination = 0.1, use_chi2 = true, label_column = "outlier" } = {}) {
     if (contamination < 0 || contamination > 0.5) {
       throw new Error("contamination must be in [0, 0.5]");
     }
 
     this.contamination = contamination;
     this.use_chi2 = use_chi2;
+    this.label_column = label_column;
     this.mean_ = null;
     this.precision_ = null; // Inverse covariance matrix
     this.threshold_ = null;
@@ -1081,6 +1158,30 @@ export class MahalanobisDistance {
    */
   fit_predict(X) {
     return this.fit(X).predict(X);
+  }
+
+  /**
+   * Transform data by adding outlier labels (parity with IsolationForest).
+   * Table or array-of-objects input -> original rows augmented with the label
+   * column, realigned to every original row (rows dropped for missing values
+   * default to inlier). 2D-array input -> bare -1/1 label array (sklearn-style).
+   * @param {Array<Array<number>>|Object|Array<Object>} X - Data
+   * @returns {Array<number>|Array<Object>} Labels or table with outlier column
+   */
+  transform(X) {
+    if (isTableInput(X)) {
+      return augmentRowsFromTable(this, X, this.label_column);
+    }
+    return this.predict(X);
+  }
+
+  /**
+   * Fit and transform in one step (parity with IsolationForest).
+   * @param {Array<Array<number>>|Object|Array<Object>} X - Data
+   * @returns {Array<number>|Array<Object>} Labels or table with outlier column
+   */
+  fit_transform(X) {
+    return this.fit(X).transform(X);
   }
 
   /**
