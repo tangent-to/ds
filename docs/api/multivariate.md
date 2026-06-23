@@ -3,298 +3,3834 @@ layout: default
 title: Multivariate Analysis
 parent: API Reference
 nav_order: 3
+has_children: true
 permalink: /api/multivariate
 ---
+# mva
 
-# Multivariate Analysis API
-{: .no_toc }
+## Namespaces
 
-Ordination, canonical correlation, and clustering utilities.
-{: .fs-6 .fw-300 }
+- [cca](/api/multivariate/cca)
+- [composition](/api/multivariate/composition)
+- [lda](/api/multivariate/lda)
+- [pca](/api/multivariate/pca)
+- [rda](/api/multivariate/rda)
 
-## Table of Contents
-{: .no_toc .text-delta }
+## Classes
 
-1. TOC
-{:toc}
+### CCA
 
----
+Defined in: [src/mva/estimators/CCA.js:10](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L10)
 
-## Overview
+#### Extends
 
-The `ds.mva` namespace covers techniques that explain structure in multiple variables at once:
+- `Transformer`
 
-- **PCA** - project data onto orthogonal axes that maximize total variance.
-- **LDA** - find discriminant axes that maximize between-class separation relative to within-class scatter.
-- **RDA** - regress multivariate responses onto predictors and perform PCA in the fitted space.
-- **CCA** - maximize correlation between two multivariate blocks (`X` and `Y`).
+#### Constructors
 
-These estimators understand both the numeric **Array API** (`Array<Array<number>>`) and the declarative **Table API** (`{ data, X, y }`). Use `ds.plot.ordiplot(model).show(Plot)` to render biplots from any fitted ordination.
+##### Constructor
 
-### Supported Estimators
-
-| Estimator | Type | Goal |
-|-----------|------|------|
-| `ds.mva.PCA` | Transformer | Maximize variance |
-| `ds.mva.LDA` | Classifier | Maximize between-class separation |
-| `ds.mva.RDA` | Transformer | Explain responses via predictors |
-| `ds.mva.CCA` | Transformer | Maximize cross-block correlation |
-
----
-
-## Data Inputs
-
-### Array API
-
-Pass numeric matrices directly:
-
-```javascript
-const scores = pca.fit(X).transform(Xnew);
+```ts
+new CCA(params?): CCA;
 ```
 
-- `X` and `Y` are `Array<Array<number>>`.
-- Optional `opts` allow `center`, `scale`, `linkage`, etc.
+Defined in: [src/mva/estimators/CCA.js:11](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L11)
 
-### Declarative Table API
+###### Parameters
 
-Provide structured data with column selectors:
+###### params?
 
-```javascript
-pca.fit({
-  data: penguins,
-  columns: ['bill_length_mm', 'bill_depth_mm'],
-  center: true,
-  scale: true
-});
+###### Returns
+
+[`CCA`](#cca)
+
+###### Overrides
+
+```ts
+Transformer.constructor
 ```
 
-- Automatically handles column lookup, missing-value filtering, and metadata.
-- Use `response` + `predictors` for RDA, `X` + `y` for LDA, `X` + `Y` for CCA.
+#### Properties
 
----
+##### params
 
-## Principal Component Analysis (PCA)
-
-PCA finds orthogonal directions that maximize variance. Components are eigenvectors of the covariance (or correlation) matrix.
-
-### Constructor
-
-```javascript
-const pca = new ds.mva.PCA({
-  center: true,
-  scale: false,
-  columns: null,
-  omit_missing: true,
-  scaling: 2
-});
+```ts
+params: object;
 ```
 
-**Options:**
-- `center` (boolean): Subtract column means (default: `true`)
-- `scale` (boolean): Divide by standard deviation for correlation PCA (default: `false`)
-- `columns` (string[]): Table API column selectors
-- `omit_missing` (boolean): Drop rows containing `NaN` (default: `true`)
-- `scaling` (1 or 2): Score/loading scaling (default: `2`)
+Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L24)
 
-### Methods
+###### constructor
 
-| Method | Description |
-|--------|-------------|
-| `.fit(X)` or `.fit({ data, columns })` | Fit the PCA model |
-| `.transform(X)` | Project new data onto PCs |
-| `.cumulativeVariance()` | Running sum of variance explained |
-| `.getScores(type, scaled)` | `'sites'` or `'variables'` scores |
-| `.summary()` | Eigenvalues, variance explained |
-| `.toJSON()` / `PCA.fromJSON()` | Model persistence |
-
-### Examples
-
-```javascript
-// Declarative workflow
-const pca = new ds.mva.PCA({ center: true, scale: true });
-pca.fit({
-  data: penguins,
-  columns: ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm']
-});
-
-const scores = pca.getScores('sites');
-const loadings = pca.getScores('variables');
-ds.plot.ordiplot(pca.model).show(Plot);
+```ts
+constructor: Function;
 ```
 
-```javascript
-// Numeric matrices
-const X = [[5.1, 3.5], [4.9, 3.0], [4.7, 3.2]];
-pca.fit(X);
-const projected = pca.transform(X);
+The initial value of Object.prototype.constructor is the standard built-in Object constructor.
+
+###### toString()
+
+```ts
+toString(): string;
 ```
 
----
+Returns a string representation of an object.
 
-## Linear Discriminant Analysis (LDA)
+###### Returns
 
-LDA finds projection vectors that maximize the Fisher criterion: between-class scatter vs within-class scatter. Provides dimensionality reduction and supervised classification.
+`string`
 
-### Constructor
+###### toLocaleString()
 
-```javascript
-const lda = new ds.mva.LDA({ scale: false, scaling: 2 });
+```ts
+toLocaleString(): string;
 ```
 
-**Options:**
-- `scale` (boolean): Standardize features before solving
-- `scaling` (1 or 2): Score scaling
+Returns a date converted to a string using the current locale.
 
-### Methods
+###### Returns
 
-| Method | Description |
-|--------|-------------|
-| `.fit(X, y)` or `.fit({ X, y, data })` | Fit discriminant axes |
-| `.transform(X)` | Discriminant scores for visualization |
-| `.predict(X)` | Class predictions |
-| `.getScores(type, scaled)` | `'sites'` vs `'variables'` |
-| `.summary()` | Classes, eigenvalues, components |
-| `.toJSON()` / `LDA.fromJSON()` | Persistence |
+`string`
 
-### Example
+###### valueOf()
 
-```javascript
-const lda = new ds.mva.LDA({ scale: true });
-lda.fit({
-  data: iris,
-  X: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
-  y: 'species'
-});
-
-const preds = lda.predict({
-  data: iris,
-  X: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
-});
-const axes = lda.getScores('variables');
+```ts
+valueOf(): Object;
 ```
 
----
+Returns the primitive value of the specified object.
 
-## Redundancy Analysis (RDA)
+###### Returns
 
-RDA combines multivariate regression with PCA: regress responses `Y` onto predictors `X`, then perform PCA on fitted values. Constrained axes maximize variance explained by `X`.
+`Object`
 
-### Constructor
+###### hasOwnProperty()
 
-```javascript
-const rda = new ds.mva.RDA({
-  scale: false,
-  omit_missing: true,
-  scaling: 2,
-  constrained: true
-});
+```ts
+hasOwnProperty(v): boolean;
 ```
 
-**Options:**
-- `scale` (boolean): Standardize responses and predictors
-- `omit_missing` (boolean): Drop rows with NaN
-- `scaling` (1 or 2): Score scaling for biplots
-- `constrained` (boolean): Use constrained ordination
+Determines whether an object has a property with the specified name.
 
-### Methods
+###### Parameters
 
-| Method | Description |
-|--------|-------------|
-| `.fit(Y, X)` or `.fit({ data, response, predictors })` | Fit the RDA model |
-| `.transform(Y, X)` | Project new rows |
-| `.getScores(type, scaled)` | `'sites'`, `'responses'`, or `'constraints'` |
-| `.summary()` | Constrained variance, eigenvalues |
-| `.toJSON()` / `RDA.fromJSON()` | Persistence |
+###### v
 
-### Example
+`PropertyKey`
 
-```javascript
-const rda = new ds.mva.RDA({ scale: true });
-rda.fit({
-  data: drought,
-  response: ['soil_moisture', 'soil_temp'],
-  predictors: ['precip', 'evap', 'wind']
-});
+A property name.
 
-const siteScores = rda.getScores('sites');
-const envVectors = rda.getScores('constraints');
+###### Returns
+
+`boolean`
+
+###### isPrototypeOf()
+
+```ts
+isPrototypeOf(v): boolean;
 ```
 
----
+Determines whether an object exists in another object's prototype chain.
 
-## Canonical Correlation Analysis (CCA)
+###### Parameters
 
-CCA finds weight vectors that maximize the correlation between projected blocks `X` and `Y`.
+###### v
 
-### Constructor
+`Object`
 
-```javascript
-const cca = new ds.mva.CCA({
-  center: true,
-  scale: false
-});
+Another object whose prototype chain is to be checked.
+
+###### Returns
+
+`boolean`
+
+###### propertyIsEnumerable()
+
+```ts
+propertyIsEnumerable(v): boolean;
 ```
 
-### Methods
+Determines whether a specified property is enumerable.
 
-| Method | Description |
-|--------|-------------|
-| `.fit(X, Y)` or `.fit({ data, X, Y })` | Fit canonical variates |
-| `.transformX(X)` / `.transformY(Y)` | Canonical scores per block |
-| `.transform(X, Y)` | Project both simultaneously |
-| `.summary()` | Canonical correlations |
-| `.toJSON()` / `CCA.fromJSON()` | Persistence |
+###### Parameters
 
-### Example
+###### v
 
-```javascript
-const cca = new ds.mva.CCA();
-cca.fit({
-  data: study,
-  X: ['blood_pressure', 'cholesterol'],
-  Y: ['vo2max', 'time_to_exhaustion']
-});
+`PropertyKey`
 
-const serumScores = cca.transformX({
-  data: study,
-  X: ['blood_pressure', 'cholesterol']
-});
+A property name.
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.params
 ```
 
----
+##### fitted
 
-## Composition Analysis
-
-The `ds.mva.composition` namespace provides tools for compositional data (e.g., proportions that sum to 1).
-
----
-
-## Functional APIs
-
-In addition to the class-based estimators, lower-level functional namespaces are available:
-
-```javascript
-ds.mva.pca   // functional PCA
-ds.mva.lda   // functional LDA
-ds.mva.rda   // functional RDA
-ds.mva.cca   // functional CCA
+```ts
+fitted: boolean;
 ```
 
-These return raw result objects and are useful for advanced workflows.
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L25)
 
----
+###### Inherited from
 
-## Workflow Tips
+```ts
+Transformer.fitted
+```
 
-- Combine ordination scores with clustering labels to annotate biplots.
-- Use `ds.plot.ordiplot(model).show(Plot)` for quick visual diagnostics.
-- Persist fitted ordinations with `.toJSON()` and reload with `.fromJSON()`.
-- `omit_missing` defaults to `true` so ordinations operate on complete cases.
+##### \_state
 
----
+```ts
+_state: object;
+```
 
-## See Also
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L27)
 
-- [Statistics API](statistics) - GLM, hypothesis tests
-- [Machine Learning API](machine-learning) - Clustering (KMeans, HCA)
-- [Visualization API](visualization) - Ordination plots, dendrograms
+###### Inherited from
+
+```ts
+Transformer._state
+```
+
+##### \_warnings
+
+```ts
+_warnings: any[];
+```
+
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L29)
+
+###### Inherited from
+
+```ts
+Transformer._warnings
+```
+
+##### model
+
+```ts
+model: 
+  | {
+  type: string;
+  nSamples: any;
+  nFeaturesX: any;
+  nFeaturesY: any;
+  nComponents: number;
+  correlations: any;
+  xWeights: object[];
+  yWeights: object[];
+  xScores: object[];
+  yScores: object[];
+  xMeans: any[];
+  xSds: any[];
+  yMeans: any[];
+  ySds: any[];
+  center: boolean;
+  scale: boolean;
+  columnsX: string[];
+  columnsY: string[];
+}
+  | null;
+```
+
+Defined in: [src/mva/estimators/CCA.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L13)
+
+#### Methods
+
+##### isFitted()
+
+```ts
+isFitted(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L36)
+
+Check if model is fitted
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.isFitted
+```
+
+##### getState()
+
+```ts
+getState(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L65)
+
+Get comprehensive model state
+
+###### Returns
+
+`Object`
+
+State information including fitted status, memory estimate, warnings
+
+###### Inherited from
+
+```ts
+Transformer.getState
+```
+
+##### getMemoryUsage()
+
+```ts
+getMemoryUsage(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L97)
+
+Get memory usage in human-readable format
+
+###### Returns
+
+`string`
+
+Memory usage string (e.g., "2.3 MB" or "145 KB")
+
+###### Inherited from
+
+```ts
+Transformer.getMemoryUsage
+```
+
+##### getWarnings()
+
+```ts
+getWarnings(): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L124)
+
+Get all warnings
+
+###### Returns
+
+`Object`[]
+
+Array of warning objects
+
+###### Inherited from
+
+```ts
+Transformer.getWarnings
+```
+
+##### hasWarnings()
+
+```ts
+hasWarnings(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L132)
+
+Check if model has warnings
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.hasWarnings
+```
+
+##### clearWarnings()
+
+```ts
+clearWarnings(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L139)
+
+Clear all warnings
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.clearWarnings
+```
+
+##### getWarningsByType()
+
+```ts
+getWarningsByType(type): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L148)
+
+Get warnings of a specific type
+
+###### Parameters
+
+###### type
+
+`string`
+
+Warning type
+
+###### Returns
+
+`Object`[]
+
+Filtered warnings
+
+###### Inherited from
+
+```ts
+Transformer.getWarningsByType
+```
+
+##### \_repr\_html\_()
+
+```ts
+_repr_html_(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L201)
+
+Observable/Jupyter HTML representation
+
+###### Returns
+
+`string`
+
+HTML representation
+
+###### Inherited from
+
+```ts
+Transformer._repr_html_
+```
+
+##### setParams()
+
+```ts
+setParams(params?): CCA;
+```
+
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L285)
+
+Set parameters (mutates instance).
+
+###### Parameters
+
+###### params?
+
+`Object` = `{}`
+
+###### Returns
+
+[`CCA`](#cca)
+
+###### Inherited from
+
+```ts
+Transformer.setParams
+```
+
+##### getParams()
+
+```ts
+getParams(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L294)
+
+Get a shallow copy of parameters.
+
+###### Returns
+
+`Object`
+
+###### Inherited from
+
+```ts
+Transformer.getParams
+```
+
+##### save()
+
+```ts
+save(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L329)
+
+Save model to JSON string
+
+###### Returns
+
+`string`
+
+JSON representation of the model
+
+###### Inherited from
+
+```ts
+Transformer.save
+```
+
+##### load()
+
+```ts
+static load(jsonString): Estimator;
+```
+
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L346)
+
+Load model from JSON string
+
+###### Parameters
+
+###### jsonString
+
+`string`
+
+JSON representation
+
+###### Returns
+
+`Estimator`
+
+Reconstructed estimator instance
+
+###### Inherited from
+
+```ts
+Transformer.load
+```
+
+##### \_prepareArgsForFit()
+
+```ts
+_prepareArgsForFit(args?): 
+  | {
+  X: any[][];
+  y: any[];
+  columnsX: any[];
+  rows: Object[];
+  prepared: boolean;
+  columns?: undefined;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X: any[][];
+  columns: any[];
+  rows: Object[];
+  prepared: boolean;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X?: undefined;
+  columns?: undefined;
+  rows?: undefined;
+  prepared?: undefined;
+  raw: any[];
+};
+```
+
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L367)
+
+Convenience helper: parse arguments passed to fit/predict/transform.
+
+Supports declarative table-style inputs:
+ - fit({ X, y, data, omit_missing })
+ - fit({ data, columns, ... })
+
+Returns an object { X, y, prepared, rows } where X/y are numeric arrays
+if preparation was required, otherwise returns the original values.
+
+Note: this helper only prepares numeric matrices/vectors using core table utilities;
+it does not perform encoding of categorical predictors.
+
+###### Parameters
+
+###### args?
+
+`any`[] = `[]`
+
+###### Returns
+
+  \| \{
+  `X`: `any`[][];
+  `y`: `any`[];
+  `columnsX`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `columns?`: `undefined`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X`: `any`[][];
+  `columns`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X?`: `undefined`;
+  `columns?`: `undefined`;
+  `rows?`: `undefined`;
+  `prepared?`: `undefined`;
+  `raw`: `any`[];
+\}
+
+###### Inherited from
+
+```ts
+Transformer._prepareArgsForFit
+```
+
+##### predict()
+
+```ts
+predict(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L424)
+
+Predict should be implemented by supervised estimators.
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.predict
+```
+
+##### fitTransform()
+
+```ts
+fitTransform(...args): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:683](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L683)
+
+Convenience: fit then transform
+Returns transformed data.
+
+###### Parameters
+
+###### args
+
+...`any`[]
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.fitTransform
+```
+
+##### fit()
+
+```ts
+fit(
+   X, 
+   Y?, 
+   opts?): CCA;
+```
+
+Defined in: [src/mva/estimators/CCA.js:16](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L16)
+
+Fit should be implemented by subclasses.
+Return `this` for chaining.
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### Y?
+
+`null` = `null`
+
+###### opts?
+
+###### Returns
+
+[`CCA`](#cca)
+
+###### Overrides
+
+```ts
+Transformer.fit
+```
+
+##### transformX()
+
+```ts
+transformX(X, opts?): object[];
+```
+
+Defined in: [src/mva/estimators/CCA.js:37](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L37)
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### opts?
+
+###### Returns
+
+`object`[]
+
+##### transformY()
+
+```ts
+transformY(Y, opts?): object[];
+```
+
+Defined in: [src/mva/estimators/CCA.js:44](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L44)
+
+###### Parameters
+
+###### Y
+
+`any`
+
+###### opts?
+
+###### Returns
+
+`object`[]
+
+##### transform()
+
+```ts
+transform(
+   X, 
+   Y, 
+   opts?): object;
+```
+
+Defined in: [src/mva/estimators/CCA.js:51](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L51)
+
+Transform - subclasses must override
+Ensures model is fitted before transformation
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### Y
+
+`any`
+
+###### opts?
+
+###### Returns
+
+`object`
+
+###### xScores
+
+```ts
+xScores: object[];
+```
+
+###### yScores
+
+```ts
+yScores: object[];
+```
+
+###### Overrides
+
+```ts
+Transformer.transform
+```
+
+##### summary()
+
+```ts
+summary(): object;
+```
+
+Defined in: [src/mva/estimators/CCA.js:58](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L58)
+
+###### Returns
+
+`object`
+
+###### nSamples
+
+```ts
+nSamples: any;
+```
+
+###### nComponents
+
+```ts
+nComponents: number;
+```
+
+###### correlations
+
+```ts
+correlations: any;
+```
+
+##### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+Defined in: [src/mva/estimators/CCA.js:69](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L69)
+
+Serialize minimal model metadata.
+Subclasses may override to include learned parameters.
+
+###### Returns
+
+`object`
+
+###### \_\_class\_\_
+
+```ts
+__class__: string = 'CCA';
+```
+
+###### params
+
+```ts
+params: Object;
+```
+
+###### fitted
+
+```ts
+fitted: boolean;
+```
+
+###### model
+
+```ts
+model: 
+  | {
+  type: string;
+  nSamples: any;
+  nFeaturesX: any;
+  nFeaturesY: any;
+  nComponents: number;
+  correlations: any;
+  xWeights: object[];
+  yWeights: object[];
+  xScores: object[];
+  yScores: object[];
+  xMeans: any[];
+  xSds: any[];
+  yMeans: any[];
+  ySds: any[];
+  center: boolean;
+  scale: boolean;
+  columnsX: string[];
+  columnsY: string[];
+}
+  | null;
+```
+
+###### Overrides
+
+```ts
+Transformer.toJSON
+```
+
+##### fromJSON()
+
+```ts
+static fromJSON(obj?): CCA;
+```
+
+Defined in: [src/mva/estimators/CCA.js:78](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/CCA.js#L78)
+
+Basic deserialization. Subclasses should override if they need
+to restore learned arrays / matrices.
+
+###### Parameters
+
+###### obj?
+
+###### Returns
+
+[`CCA`](#cca)
+
+###### Overrides
+
+```ts
+Transformer.fromJSON
+```
+
+***
+
+### LDA
+
+Defined in: [src/mva/estimators/LDA.js:29](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L29)
+
+#### Extends
+
+- `Classifier`
+
+#### Constructors
+
+##### Constructor
+
+```ts
+new LDA(params?): LDA;
+```
+
+Defined in: [src/mva/estimators/LDA.js:33](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L33)
+
+###### Parameters
+
+###### params?
+
+`Object` = `{}`
+
+optional hyperparameters (none required for basic LDA)
+
+###### Returns
+
+[`LDA`](#lda)
+
+###### Overrides
+
+```ts
+Classifier.constructor
+```
+
+#### Properties
+
+##### \_state
+
+```ts
+_state: object;
+```
+
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L27)
+
+###### Inherited from
+
+```ts
+Classifier._state
+```
+
+##### \_warnings
+
+```ts
+_warnings: any[];
+```
+
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L29)
+
+###### Inherited from
+
+```ts
+Classifier._warnings
+```
+
+##### labelEncoder\_
+
+```ts
+labelEncoder_: any;
+```
+
+Defined in: [src/core/estimators/estimator.js:514](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L514)
+
+###### Inherited from
+
+```ts
+Classifier.labelEncoder_
+```
+
+##### classes\_
+
+```ts
+classes_: any;
+```
+
+Defined in: [src/core/estimators/estimator.js:515](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L515)
+
+###### Inherited from
+
+```ts
+Classifier.classes_
+```
+
+##### params
+
+```ts
+params: object;
+```
+
+Defined in: [src/mva/estimators/LDA.js:36](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L36)
+
+###### scale
+
+```ts
+scale: boolean = false;
+```
+
+###### scaling
+
+```ts
+scaling: number = 2;
+```
+
+###### constructor
+
+```ts
+constructor: Function;
+```
+
+The initial value of Object.prototype.constructor is the standard built-in Object constructor.
+
+###### toString()
+
+```ts
+toString(): string;
+```
+
+Returns a string representation of an object.
+
+###### Returns
+
+`string`
+
+###### toLocaleString()
+
+```ts
+toLocaleString(): string;
+```
+
+Returns a date converted to a string using the current locale.
+
+###### Returns
+
+`string`
+
+###### valueOf()
+
+```ts
+valueOf(): Object;
+```
+
+Returns the primitive value of the specified object.
+
+###### Returns
+
+`Object`
+
+###### hasOwnProperty()
+
+```ts
+hasOwnProperty(v): boolean;
+```
+
+Determines whether an object has a property with the specified name.
+
+###### Parameters
+
+###### v
+
+`PropertyKey`
+
+A property name.
+
+###### Returns
+
+`boolean`
+
+###### isPrototypeOf()
+
+```ts
+isPrototypeOf(v): boolean;
+```
+
+Determines whether an object exists in another object's prototype chain.
+
+###### Parameters
+
+###### v
+
+`Object`
+
+Another object whose prototype chain is to be checked.
+
+###### Returns
+
+`boolean`
+
+###### propertyIsEnumerable()
+
+```ts
+propertyIsEnumerable(v): boolean;
+```
+
+Determines whether a specified property is enumerable.
+
+###### Parameters
+
+###### v
+
+`PropertyKey`
+
+A property name.
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Classifier.params
+```
+
+##### model
+
+```ts
+model: 
+  | {
+  scores: Object[];
+  loadings: Object[];
+  eigenvalues: any;
+  rawScores: number[][];
+  rawLoadings: number[][];
+  siteFactors: any;
+  loadingFactors: any;
+  scaling: number;
+  axisSigns: number[];
+  exponent: any;
+  discriminantAxes: number[][];
+  sampleClasses: any;
+  classMeans: any[][];
+  classes: any[];
+  overallMean: number[];
+  projector: number[][];
+  invScales: any[];
+  eigenvectors: number[][];
+  classMeanScores: any[][];
+  classStdScores: any[][];
+  featureNames: any;
+  labelEncoder: any;
+}
+  | null;
+```
+
+Defined in: [src/mva/estimators/LDA.js:37](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L37)
+
+##### fitted
+
+```ts
+fitted: boolean;
+```
+
+Defined in: [src/mva/estimators/LDA.js:38](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L38)
+
+###### Inherited from
+
+```ts
+Classifier.fitted
+```
+
+#### Methods
+
+##### isFitted()
+
+```ts
+isFitted(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L36)
+
+Check if model is fitted
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Classifier.isFitted
+```
+
+##### getState()
+
+```ts
+getState(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L65)
+
+Get comprehensive model state
+
+###### Returns
+
+`Object`
+
+State information including fitted status, memory estimate, warnings
+
+###### Inherited from
+
+```ts
+Classifier.getState
+```
+
+##### getMemoryUsage()
+
+```ts
+getMemoryUsage(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L97)
+
+Get memory usage in human-readable format
+
+###### Returns
+
+`string`
+
+Memory usage string (e.g., "2.3 MB" or "145 KB")
+
+###### Inherited from
+
+```ts
+Classifier.getMemoryUsage
+```
+
+##### getWarnings()
+
+```ts
+getWarnings(): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L124)
+
+Get all warnings
+
+###### Returns
+
+`Object`[]
+
+Array of warning objects
+
+###### Inherited from
+
+```ts
+Classifier.getWarnings
+```
+
+##### hasWarnings()
+
+```ts
+hasWarnings(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L132)
+
+Check if model has warnings
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Classifier.hasWarnings
+```
+
+##### clearWarnings()
+
+```ts
+clearWarnings(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L139)
+
+Clear all warnings
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Classifier.clearWarnings
+```
+
+##### getWarningsByType()
+
+```ts
+getWarningsByType(type): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L148)
+
+Get warnings of a specific type
+
+###### Parameters
+
+###### type
+
+`string`
+
+Warning type
+
+###### Returns
+
+`Object`[]
+
+Filtered warnings
+
+###### Inherited from
+
+```ts
+Classifier.getWarningsByType
+```
+
+##### \_repr\_html\_()
+
+```ts
+_repr_html_(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L201)
+
+Observable/Jupyter HTML representation
+
+###### Returns
+
+`string`
+
+HTML representation
+
+###### Inherited from
+
+```ts
+Classifier._repr_html_
+```
+
+##### setParams()
+
+```ts
+setParams(params?): LDA;
+```
+
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L285)
+
+Set parameters (mutates instance).
+
+###### Parameters
+
+###### params?
+
+`Object` = `{}`
+
+###### Returns
+
+[`LDA`](#lda)
+
+###### Inherited from
+
+```ts
+Classifier.setParams
+```
+
+##### getParams()
+
+```ts
+getParams(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L294)
+
+Get a shallow copy of parameters.
+
+###### Returns
+
+`Object`
+
+###### Inherited from
+
+```ts
+Classifier.getParams
+```
+
+##### save()
+
+```ts
+save(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L329)
+
+Save model to JSON string
+
+###### Returns
+
+`string`
+
+JSON representation of the model
+
+###### Inherited from
+
+```ts
+Classifier.save
+```
+
+##### load()
+
+```ts
+static load(jsonString): Estimator;
+```
+
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L346)
+
+Load model from JSON string
+
+###### Parameters
+
+###### jsonString
+
+`string`
+
+JSON representation
+
+###### Returns
+
+`Estimator`
+
+Reconstructed estimator instance
+
+###### Inherited from
+
+```ts
+Classifier.load
+```
+
+##### \_prepareArgsForFit()
+
+```ts
+_prepareArgsForFit(args?): 
+  | {
+  X: any[][];
+  y: any[];
+  columnsX: any[];
+  rows: Object[];
+  prepared: boolean;
+  columns?: undefined;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X: any[][];
+  columns: any[];
+  rows: Object[];
+  prepared: boolean;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X?: undefined;
+  columns?: undefined;
+  rows?: undefined;
+  prepared?: undefined;
+  raw: any[];
+};
+```
+
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L367)
+
+Convenience helper: parse arguments passed to fit/predict/transform.
+
+Supports declarative table-style inputs:
+ - fit({ X, y, data, omit_missing })
+ - fit({ data, columns, ... })
+
+Returns an object { X, y, prepared, rows } where X/y are numeric arrays
+if preparation was required, otherwise returns the original values.
+
+Note: this helper only prepares numeric matrices/vectors using core table utilities;
+it does not perform encoding of categorical predictors.
+
+###### Parameters
+
+###### args?
+
+`any`[] = `[]`
+
+###### Returns
+
+  \| \{
+  `X`: `any`[][];
+  `y`: `any`[];
+  `columnsX`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `columns?`: `undefined`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X`: `any`[][];
+  `columns`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X?`: `undefined`;
+  `columns?`: `undefined`;
+  `rows?`: `undefined`;
+  `prepared?`: `undefined`;
+  `raw`: `any`[];
+\}
+
+###### Inherited from
+
+```ts
+Classifier._prepareArgsForFit
+```
+
+##### predictProba()
+
+```ts
+predictProba(_X): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:531](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L531)
+
+Predict probabilities - subclasses should override
+Ensures model is fitted before prediction
+
+###### Parameters
+
+###### \_X
+
+`any`
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Classifier.predictProba
+```
+
+##### \_extractLabelEncoder()
+
+```ts
+_extractLabelEncoder(prepared): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:541](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L541)
+
+Extract and store label encoder from prepared data
+
+###### Parameters
+
+###### prepared
+
+`Object`
+
+Result from prepareXY/prepareDataset
+
+###### Returns
+
+`boolean`
+
+True if encoder was found and stored
+
+###### Inherited from
+
+```ts
+Classifier._extractLabelEncoder
+```
+
+##### \_getClasses()
+
+```ts
+_getClasses(preparedY, onlyPresentClasses?): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:563](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L563)
+
+Get unique classes from labels (encoded or raw)
+If labelEncoder exists, preparedY is assumed to be numeric indices [0, 1, 2, ...]
+Otherwise, creates classes from unique values in preparedY
+
+###### Parameters
+
+###### preparedY
+
+`any`[]
+
+Label array (numeric if encoded, or raw labels)
+
+###### onlyPresentClasses?
+
+`boolean` = `true`
+
+If true, only return classes present in preparedY
+
+###### Returns
+
+`Object`
+
+{ numericY, classes }
+
+###### Inherited from
+
+```ts
+Classifier._getClasses
+```
+
+##### \_decodeLabels()
+
+```ts
+_decodeLabels(predictions): any[];
+```
+
+Defined in: [src/core/estimators/estimator.js:606](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L606)
+
+Decode numeric predictions to original labels
+
+###### Parameters
+
+###### predictions
+
+`any`[]
+
+Numeric predictions or label strings
+
+###### Returns
+
+`any`[]
+
+Decoded labels (or original if no encoder)
+
+###### Inherited from
+
+```ts
+Classifier._decodeLabels
+```
+
+##### score()
+
+```ts
+score(
+   yTrueOrOpts, 
+   yPred, 
+   _opts?, ...
+   args?): number;
+```
+
+Defined in: [src/core/estimators/estimator.js:622](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L622)
+
+Default accuracy scoring:
+ - score(yTrue, yPred)
+ - or score({ X, y, data }) which predicts internally
+
+###### Parameters
+
+###### yTrueOrOpts
+
+`any`
+
+###### yPred
+
+`null`
+
+###### \_opts?
+
+###### args?
+
+...`any`[] = `{}`
+
+###### Returns
+
+`number`
+
+###### Inherited from
+
+```ts
+Classifier.score
+```
+
+##### \_accuracy()
+
+```ts
+_accuracy(yTrue, yPred): number;
+```
+
+Defined in: [src/core/estimators/estimator.js:644](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L644)
+
+###### Parameters
+
+###### yTrue
+
+`any`
+
+###### yPred
+
+`any`
+
+###### Returns
+
+`number`
+
+###### Inherited from
+
+```ts
+Classifier._accuracy
+```
+
+##### fit()
+
+```ts
+fit(
+   X, 
+   y?, 
+   opts?): LDA;
+```
+
+Defined in: [src/mva/estimators/LDA.js:50](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L50)
+
+Fit the LDA model.
+
+Supports:
+ - fit(Xarray, yarray)
+ - fit({ X: 'col'|'[cols]', y: 'label', data: tableLike, omit_missing, encoders })
+
+Returns: this
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### y?
+
+`null` = `null`
+
+###### opts?
+
+###### Returns
+
+[`LDA`](#lda)
+
+###### Overrides
+
+```ts
+Classifier.fit
+```
+
+##### transform()
+
+```ts
+transform(X): Object[];
+```
+
+Defined in: [src/mva/estimators/LDA.js:97](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L97)
+
+Transform input X to discriminant scores (delegates to functional transform).
+
+Accepts:
+ - numeric array X
+ - declarative object { X: cols, data: tableLike }
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### Returns
+
+`Object`[]
+
+###### Overrides
+
+```ts
+Classifier.transform
+```
+
+##### predict()
+
+```ts
+predict(X): any[];
+```
+
+Defined in: [src/mva/estimators/LDA.js:114](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L114)
+
+Predict class labels for X.
+
+Accepts:
+ - numeric array X
+ - declarative object { X: cols, data: tableLike }
+
+Returns decoded labels if label encoder is present, otherwise numeric predictions
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### Returns
+
+`any`[]
+
+###### Overrides
+
+```ts
+Classifier.predict
+```
+
+##### summary()
+
+```ts
+summary(): object;
+```
+
+Defined in: [src/mva/estimators/LDA.js:128](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L128)
+
+Return a small summary of the fitted model.
+
+###### Returns
+
+`object`
+
+###### classes
+
+```ts
+classes: any[];
+```
+
+###### nComponents
+
+```ts
+nComponents: number;
+```
+
+###### eigenvalues
+
+```ts
+eigenvalues: any;
+```
+
+###### scaling
+
+```ts
+scaling: number;
+```
+
+##### getScores()
+
+```ts
+getScores(type?, scaled?): Object[];
+```
+
+Defined in: [src/mva/estimators/LDA.js:147](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L147)
+
+Retrieve site or variable scores (scaled or raw).
+
+###### Parameters
+
+###### type?
+
+`"sites"` \| `"samples"` \| `"variables"` \| `"loadings"`
+
+###### scaled?
+
+`boolean` = `true`
+
+###### Returns
+
+`Object`[]
+
+##### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+Defined in: [src/mva/estimators/LDA.js:173](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L173)
+
+JSON serialization helper.
+
+###### Returns
+
+`object`
+
+###### \_\_class\_\_
+
+```ts
+__class__: string = 'LDA';
+```
+
+###### params
+
+```ts
+params: Object;
+```
+
+###### fitted
+
+```ts
+fitted: boolean;
+```
+
+###### model
+
+```ts
+model: 
+  | {
+  scores: Object[];
+  loadings: Object[];
+  eigenvalues: any;
+  rawScores: number[][];
+  rawLoadings: number[][];
+  siteFactors: any;
+  loadingFactors: any;
+  scaling: number;
+  axisSigns: number[];
+  exponent: any;
+  discriminantAxes: number[][];
+  sampleClasses: any;
+  classMeans: any[][];
+  classes: any[];
+  overallMean: number[];
+  projector: number[][];
+  invScales: any[];
+  eigenvectors: number[][];
+  classMeanScores: any[][];
+  classStdScores: any[][];
+  featureNames: any;
+  labelEncoder: any;
+}
+  | null;
+```
+
+###### Overrides
+
+```ts
+Classifier.toJSON
+```
+
+##### fromJSON()
+
+```ts
+static fromJSON(obj?): LDA;
+```
+
+Defined in: [src/mva/estimators/LDA.js:185](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/LDA.js#L185)
+
+Restore an instance from JSON produced by toJSON().
+
+###### Parameters
+
+###### obj?
+
+###### Returns
+
+[`LDA`](#lda)
+
+###### Overrides
+
+```ts
+Classifier.fromJSON
+```
+
+***
+
+### PCA
+
+Defined in: [src/mva/estimators/PCA.js:30](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L30)
+
+#### Extends
+
+- `Transformer`
+
+#### Constructors
+
+##### Constructor
+
+```ts
+new PCA(params?): PCA;
+```
+
+Defined in: [src/mva/estimators/PCA.js:31](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L31)
+
+###### Parameters
+
+###### params?
+
+###### Returns
+
+[`PCA`](#pca)
+
+###### Overrides
+
+```ts
+Transformer.constructor
+```
+
+#### Properties
+
+##### fitted
+
+```ts
+fitted: boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L25)
+
+###### Inherited from
+
+```ts
+Transformer.fitted
+```
+
+##### \_state
+
+```ts
+_state: object;
+```
+
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L27)
+
+###### Inherited from
+
+```ts
+Transformer._state
+```
+
+##### \_warnings
+
+```ts
+_warnings: any[];
+```
+
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L29)
+
+###### Inherited from
+
+```ts
+Transformer._warnings
+```
+
+##### params
+
+```ts
+params: object;
+```
+
+Defined in: [src/mva/estimators/PCA.js:34](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L34)
+
+###### center
+
+```ts
+center: boolean = true;
+```
+
+###### scale
+
+```ts
+scale: boolean = false;
+```
+
+###### columns
+
+```ts
+columns: null = null;
+```
+
+###### omit\_missing
+
+```ts
+omit_missing: boolean = true;
+```
+
+###### scaling
+
+```ts
+scaling: number = 2;
+```
+
+###### Inherited from
+
+```ts
+Transformer.params
+```
+
+##### model
+
+```ts
+model: Object | null;
+```
+
+Defined in: [src/mva/estimators/PCA.js:35](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L35)
+
+#### Methods
+
+##### isFitted()
+
+```ts
+isFitted(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L36)
+
+Check if model is fitted
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.isFitted
+```
+
+##### getState()
+
+```ts
+getState(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L65)
+
+Get comprehensive model state
+
+###### Returns
+
+`Object`
+
+State information including fitted status, memory estimate, warnings
+
+###### Inherited from
+
+```ts
+Transformer.getState
+```
+
+##### getMemoryUsage()
+
+```ts
+getMemoryUsage(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L97)
+
+Get memory usage in human-readable format
+
+###### Returns
+
+`string`
+
+Memory usage string (e.g., "2.3 MB" or "145 KB")
+
+###### Inherited from
+
+```ts
+Transformer.getMemoryUsage
+```
+
+##### getWarnings()
+
+```ts
+getWarnings(): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L124)
+
+Get all warnings
+
+###### Returns
+
+`Object`[]
+
+Array of warning objects
+
+###### Inherited from
+
+```ts
+Transformer.getWarnings
+```
+
+##### hasWarnings()
+
+```ts
+hasWarnings(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L132)
+
+Check if model has warnings
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.hasWarnings
+```
+
+##### clearWarnings()
+
+```ts
+clearWarnings(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L139)
+
+Clear all warnings
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.clearWarnings
+```
+
+##### getWarningsByType()
+
+```ts
+getWarningsByType(type): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L148)
+
+Get warnings of a specific type
+
+###### Parameters
+
+###### type
+
+`string`
+
+Warning type
+
+###### Returns
+
+`Object`[]
+
+Filtered warnings
+
+###### Inherited from
+
+```ts
+Transformer.getWarningsByType
+```
+
+##### \_repr\_html\_()
+
+```ts
+_repr_html_(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L201)
+
+Observable/Jupyter HTML representation
+
+###### Returns
+
+`string`
+
+HTML representation
+
+###### Inherited from
+
+```ts
+Transformer._repr_html_
+```
+
+##### setParams()
+
+```ts
+setParams(params?): PCA;
+```
+
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L285)
+
+Set parameters (mutates instance).
+
+###### Parameters
+
+###### params?
+
+`Object` = `{}`
+
+###### Returns
+
+[`PCA`](#pca)
+
+###### Inherited from
+
+```ts
+Transformer.setParams
+```
+
+##### getParams()
+
+```ts
+getParams(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L294)
+
+Get a shallow copy of parameters.
+
+###### Returns
+
+`Object`
+
+###### Inherited from
+
+```ts
+Transformer.getParams
+```
+
+##### save()
+
+```ts
+save(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L329)
+
+Save model to JSON string
+
+###### Returns
+
+`string`
+
+JSON representation of the model
+
+###### Inherited from
+
+```ts
+Transformer.save
+```
+
+##### load()
+
+```ts
+static load(jsonString): Estimator;
+```
+
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L346)
+
+Load model from JSON string
+
+###### Parameters
+
+###### jsonString
+
+`string`
+
+JSON representation
+
+###### Returns
+
+`Estimator`
+
+Reconstructed estimator instance
+
+###### Inherited from
+
+```ts
+Transformer.load
+```
+
+##### \_prepareArgsForFit()
+
+```ts
+_prepareArgsForFit(args?): 
+  | {
+  X: any[][];
+  y: any[];
+  columnsX: any[];
+  rows: Object[];
+  prepared: boolean;
+  columns?: undefined;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X: any[][];
+  columns: any[];
+  rows: Object[];
+  prepared: boolean;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X?: undefined;
+  columns?: undefined;
+  rows?: undefined;
+  prepared?: undefined;
+  raw: any[];
+};
+```
+
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L367)
+
+Convenience helper: parse arguments passed to fit/predict/transform.
+
+Supports declarative table-style inputs:
+ - fit({ X, y, data, omit_missing })
+ - fit({ data, columns, ... })
+
+Returns an object { X, y, prepared, rows } where X/y are numeric arrays
+if preparation was required, otherwise returns the original values.
+
+Note: this helper only prepares numeric matrices/vectors using core table utilities;
+it does not perform encoding of categorical predictors.
+
+###### Parameters
+
+###### args?
+
+`any`[] = `[]`
+
+###### Returns
+
+  \| \{
+  `X`: `any`[][];
+  `y`: `any`[];
+  `columnsX`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `columns?`: `undefined`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X`: `any`[][];
+  `columns`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X?`: `undefined`;
+  `columns?`: `undefined`;
+  `rows?`: `undefined`;
+  `prepared?`: `undefined`;
+  `raw`: `any`[];
+\}
+
+###### Inherited from
+
+```ts
+Transformer._prepareArgsForFit
+```
+
+##### predict()
+
+```ts
+predict(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L424)
+
+Predict should be implemented by supervised estimators.
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.predict
+```
+
+##### fitTransform()
+
+```ts
+fitTransform(...args): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:683](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L683)
+
+Convenience: fit then transform
+Returns transformed data.
+
+###### Parameters
+
+###### args
+
+...`any`[]
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.fitTransform
+```
+
+##### fit()
+
+```ts
+fit(X, opts?): PCA;
+```
+
+Defined in: [src/mva/estimators/PCA.js:47](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L47)
+
+Fit PCA on the provided data.
+
+Accepts either:
+ - fit(X[, opts]) where X is an array-of-arrays numeric matrix
+ - fit({ data, columns, center, scale, omit_missing })
+
+Returns `this` for chaining.
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### opts?
+
+###### Returns
+
+[`PCA`](#pca)
+
+###### Overrides
+
+```ts
+Transformer.fit
+```
+
+##### transform()
+
+```ts
+transform(X): Object[];
+```
+
+Defined in: [src/mva/estimators/PCA.js:92](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L92)
+
+Transform new data using fitted PCA model.
+
+Accepts numeric arrays or declarative table objects { data, columns }.
+
+###### Parameters
+
+###### X
+
+`any`
+
+###### Returns
+
+`Object`[]
+
+###### Overrides
+
+```ts
+Transformer.transform
+```
+
+##### cumulativeVariance()
+
+```ts
+cumulativeVariance(): number[];
+```
+
+Defined in: [src/mva/estimators/PCA.js:118](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L118)
+
+Helper to expose functional cumulative variance.
+
+###### Returns
+
+`number`[]
+
+##### summary()
+
+```ts
+summary(): object;
+```
+
+Defined in: [src/mva/estimators/PCA.js:126](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L126)
+
+Provide lightweight summary of the fitted model.
+
+###### Returns
+
+`object`
+
+###### nComponents
+
+```ts
+nComponents: any;
+```
+
+###### eigenvalues
+
+```ts
+eigenvalues: any;
+```
+
+###### varianceExplained
+
+```ts
+varianceExplained: any;
+```
+
+###### cumulativeVariance
+
+```ts
+cumulativeVariance: number[];
+```
+
+###### centered
+
+```ts
+centered: boolean;
+```
+
+###### scaled
+
+```ts
+scaled: boolean;
+```
+
+###### scaling
+
+```ts
+scaling: number;
+```
+
+###### means
+
+```ts
+means: any;
+```
+
+###### sds
+
+```ts
+sds: any;
+```
+
+##### getScores()
+
+```ts
+getScores(type?, scaled?): any;
+```
+
+Defined in: [src/mva/estimators/PCA.js:149](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L149)
+
+Retrieve site or variable scores with optional scaling.
+
+###### Parameters
+
+###### type?
+
+`"sites"` \| `"samples"` \| `"variables"` \| `"loadings"`
+
+###### scaled?
+
+`boolean` = `true`
+
+return scaled or raw coordinates
+
+###### Returns
+
+`any`
+
+##### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+Defined in: [src/mva/estimators/PCA.js:169](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L169)
+
+Serialization helper for saving estimator state.
+
+###### Returns
+
+`object`
+
+###### \_\_class\_\_
+
+```ts
+__class__: string = 'PCA';
+```
+
+###### params
+
+```ts
+params: Object;
+```
+
+###### fitted
+
+```ts
+fitted: boolean;
+```
+
+###### model
+
+```ts
+model: Object | null;
+```
+
+###### Overrides
+
+```ts
+Transformer.toJSON
+```
+
+##### fromJSON()
+
+```ts
+static fromJSON(obj?): PCA;
+```
+
+Defined in: [src/mva/estimators/PCA.js:181](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/PCA.js#L181)
+
+Restore PCA instance from JSON produced by toJSON().
+
+###### Parameters
+
+###### obj?
+
+###### Returns
+
+[`PCA`](#pca)
+
+###### Overrides
+
+```ts
+Transformer.fromJSON
+```
+
+***
+
+### RDA
+
+Defined in: [src/mva/estimators/RDA.js:57](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L57)
+
+#### Extends
+
+- `Transformer`
+
+#### Constructors
+
+##### Constructor
+
+```ts
+new RDA(params?): RDA;
+```
+
+Defined in: [src/mva/estimators/RDA.js:58](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L58)
+
+###### Parameters
+
+###### params?
+
+###### Returns
+
+[`RDA`](#rda)
+
+###### Overrides
+
+```ts
+Transformer.constructor
+```
+
+#### Properties
+
+##### fitted
+
+```ts
+fitted: boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L25)
+
+###### Inherited from
+
+```ts
+Transformer.fitted
+```
+
+##### \_state
+
+```ts
+_state: object;
+```
+
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L27)
+
+###### Inherited from
+
+```ts
+Transformer._state
+```
+
+##### \_warnings
+
+```ts
+_warnings: any[];
+```
+
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L29)
+
+###### Inherited from
+
+```ts
+Transformer._warnings
+```
+
+##### params
+
+```ts
+params: object;
+```
+
+Defined in: [src/mva/estimators/RDA.js:61](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L61)
+
+###### scale
+
+```ts
+scale: boolean = false;
+```
+
+###### omit\_missing
+
+```ts
+omit_missing: boolean = true;
+```
+
+###### scaling
+
+```ts
+scaling: number = 2;
+```
+
+###### constrained
+
+```ts
+constrained: boolean = true;
+```
+
+###### Inherited from
+
+```ts
+Transformer.params
+```
+
+##### model
+
+```ts
+model: 
+  | {
+  omit_missing: any;
+  constructor: Function;
+  toString: string;
+  toLocaleString: string;
+  valueOf: Object;
+  hasOwnProperty: boolean;
+  isPrototypeOf: boolean;
+  propertyIsEnumerable: boolean;
+}
+  | null;
+```
+
+Defined in: [src/mva/estimators/RDA.js:62](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L62)
+
+###### Union Members
+
+###### Type Literal
+
+```ts
+{
+  omit_missing: any;
+  constructor: Function;
+  toString: string;
+  toLocaleString: string;
+  valueOf: Object;
+  hasOwnProperty: boolean;
+  isPrototypeOf: boolean;
+  propertyIsEnumerable: boolean;
+}
+```
+
+###### omit\_missing
+
+```ts
+omit_missing: any = omitMissing;
+```
+
+###### constructor
+
+```ts
+constructor: Function;
+```
+
+The initial value of Object.prototype.constructor is the standard built-in Object constructor.
+
+###### toString()
+
+```ts
+toString(): string;
+```
+
+Returns a string representation of an object.
+
+###### Returns
+
+`string`
+
+###### toLocaleString()
+
+```ts
+toLocaleString(): string;
+```
+
+Returns a date converted to a string using the current locale.
+
+###### Returns
+
+`string`
+
+###### valueOf()
+
+```ts
+valueOf(): Object;
+```
+
+Returns the primitive value of the specified object.
+
+###### Returns
+
+`Object`
+
+###### hasOwnProperty()
+
+```ts
+hasOwnProperty(v): boolean;
+```
+
+Determines whether an object has a property with the specified name.
+
+###### Parameters
+
+###### v
+
+`PropertyKey`
+
+A property name.
+
+###### Returns
+
+`boolean`
+
+###### isPrototypeOf()
+
+```ts
+isPrototypeOf(v): boolean;
+```
+
+Determines whether an object exists in another object's prototype chain.
+
+###### Parameters
+
+###### v
+
+`Object`
+
+Another object whose prototype chain is to be checked.
+
+###### Returns
+
+`boolean`
+
+###### propertyIsEnumerable()
+
+```ts
+propertyIsEnumerable(v): boolean;
+```
+
+Determines whether a specified property is enumerable.
+
+###### Parameters
+
+###### v
+
+`PropertyKey`
+
+A property name.
+
+###### Returns
+
+`boolean`
+
+***
+
+`null`
+
+#### Methods
+
+##### isFitted()
+
+```ts
+isFitted(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L36)
+
+Check if model is fitted
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.isFitted
+```
+
+##### getState()
+
+```ts
+getState(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L65)
+
+Get comprehensive model state
+
+###### Returns
+
+`Object`
+
+State information including fitted status, memory estimate, warnings
+
+###### Inherited from
+
+```ts
+Transformer.getState
+```
+
+##### getMemoryUsage()
+
+```ts
+getMemoryUsage(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L97)
+
+Get memory usage in human-readable format
+
+###### Returns
+
+`string`
+
+Memory usage string (e.g., "2.3 MB" or "145 KB")
+
+###### Inherited from
+
+```ts
+Transformer.getMemoryUsage
+```
+
+##### getWarnings()
+
+```ts
+getWarnings(): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L124)
+
+Get all warnings
+
+###### Returns
+
+`Object`[]
+
+Array of warning objects
+
+###### Inherited from
+
+```ts
+Transformer.getWarnings
+```
+
+##### hasWarnings()
+
+```ts
+hasWarnings(): boolean;
+```
+
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L132)
+
+Check if model has warnings
+
+###### Returns
+
+`boolean`
+
+###### Inherited from
+
+```ts
+Transformer.hasWarnings
+```
+
+##### clearWarnings()
+
+```ts
+clearWarnings(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L139)
+
+Clear all warnings
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.clearWarnings
+```
+
+##### getWarningsByType()
+
+```ts
+getWarningsByType(type): Object[];
+```
+
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L148)
+
+Get warnings of a specific type
+
+###### Parameters
+
+###### type
+
+`string`
+
+Warning type
+
+###### Returns
+
+`Object`[]
+
+Filtered warnings
+
+###### Inherited from
+
+```ts
+Transformer.getWarningsByType
+```
+
+##### \_repr\_html\_()
+
+```ts
+_repr_html_(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L201)
+
+Observable/Jupyter HTML representation
+
+###### Returns
+
+`string`
+
+HTML representation
+
+###### Inherited from
+
+```ts
+Transformer._repr_html_
+```
+
+##### setParams()
+
+```ts
+setParams(params?): RDA;
+```
+
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L285)
+
+Set parameters (mutates instance).
+
+###### Parameters
+
+###### params?
+
+`Object` = `{}`
+
+###### Returns
+
+[`RDA`](#rda)
+
+###### Inherited from
+
+```ts
+Transformer.setParams
+```
+
+##### getParams()
+
+```ts
+getParams(): Object;
+```
+
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L294)
+
+Get a shallow copy of parameters.
+
+###### Returns
+
+`Object`
+
+###### Inherited from
+
+```ts
+Transformer.getParams
+```
+
+##### save()
+
+```ts
+save(): string;
+```
+
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L329)
+
+Save model to JSON string
+
+###### Returns
+
+`string`
+
+JSON representation of the model
+
+###### Inherited from
+
+```ts
+Transformer.save
+```
+
+##### load()
+
+```ts
+static load(jsonString): Estimator;
+```
+
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L346)
+
+Load model from JSON string
+
+###### Parameters
+
+###### jsonString
+
+`string`
+
+JSON representation
+
+###### Returns
+
+`Estimator`
+
+Reconstructed estimator instance
+
+###### Inherited from
+
+```ts
+Transformer.load
+```
+
+##### \_prepareArgsForFit()
+
+```ts
+_prepareArgsForFit(args?): 
+  | {
+  X: any[][];
+  y: any[];
+  columnsX: any[];
+  rows: Object[];
+  prepared: boolean;
+  columns?: undefined;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X: any[][];
+  columns: any[];
+  rows: Object[];
+  prepared: boolean;
+  raw?: undefined;
+}
+  | {
+  y?: undefined;
+  columnsX?: undefined;
+  X?: undefined;
+  columns?: undefined;
+  rows?: undefined;
+  prepared?: undefined;
+  raw: any[];
+};
+```
+
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L367)
+
+Convenience helper: parse arguments passed to fit/predict/transform.
+
+Supports declarative table-style inputs:
+ - fit({ X, y, data, omit_missing })
+ - fit({ data, columns, ... })
+
+Returns an object { X, y, prepared, rows } where X/y are numeric arrays
+if preparation was required, otherwise returns the original values.
+
+Note: this helper only prepares numeric matrices/vectors using core table utilities;
+it does not perform encoding of categorical predictors.
+
+###### Parameters
+
+###### args?
+
+`any`[] = `[]`
+
+###### Returns
+
+  \| \{
+  `X`: `any`[][];
+  `y`: `any`[];
+  `columnsX`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `columns?`: `undefined`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X`: `any`[][];
+  `columns`: `any`[];
+  `rows`: `Object`[];
+  `prepared`: `boolean`;
+  `raw?`: `undefined`;
+\}
+  \| \{
+  `y?`: `undefined`;
+  `columnsX?`: `undefined`;
+  `X?`: `undefined`;
+  `columns?`: `undefined`;
+  `rows?`: `undefined`;
+  `prepared?`: `undefined`;
+  `raw`: `any`[];
+\}
+
+###### Inherited from
+
+```ts
+Transformer._prepareArgsForFit
+```
+
+##### predict()
+
+```ts
+predict(): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L424)
+
+Predict should be implemented by supervised estimators.
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.predict
+```
+
+##### fitTransform()
+
+```ts
+fitTransform(...args): void;
+```
+
+Defined in: [src/core/estimators/estimator.js:683](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/estimators/estimator.js#L683)
+
+Convenience: fit then transform
+Returns transformed data.
+
+###### Parameters
+
+###### args
+
+...`any`[]
+
+###### Returns
+
+`void`
+
+###### Inherited from
+
+```ts
+Transformer.fitTransform
+```
+
+##### fit()
+
+```ts
+fit(
+   Y, 
+   X?, 
+   opts?): RDA;
+```
+
+Defined in: [src/mva/estimators/RDA.js:65](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L65)
+
+Fit should be implemented by subclasses.
+Return `this` for chaining.
+
+###### Parameters
+
+###### Y
+
+`any`
+
+###### X?
+
+`null` = `null`
+
+###### opts?
+
+###### Returns
+
+[`RDA`](#rda)
+
+###### Overrides
+
+```ts
+Transformer.fit
+```
+
+##### transform()
+
+```ts
+transform(
+   Y, 
+   X, 
+   opts?): Object[];
+```
+
+Defined in: [src/mva/estimators/RDA.js:122](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L122)
+
+Transform - subclasses must override
+Ensures model is fitted before transformation
+
+###### Parameters
+
+###### Y
+
+`any`
+
+###### X
+
+`any`
+
+###### opts?
+
+###### Returns
+
+`Object`[]
+
+###### Overrides
+
+```ts
+Transformer.transform
+```
+
+##### summary()
+
+```ts
+summary(): object;
+```
+
+Defined in: [src/mva/estimators/RDA.js:148](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L148)
+
+###### Returns
+
+`object`
+
+###### constrainedVariance
+
+```ts
+constrainedVariance: any;
+```
+
+###### eigenvalues
+
+```ts
+eigenvalues: any;
+```
+
+###### varianceExplained
+
+```ts
+varianceExplained: any;
+```
+
+###### samples
+
+```ts
+samples: any = n;
+```
+
+###### predictors
+
+```ts
+predictors: any = p;
+```
+
+###### responses
+
+```ts
+responses: any = q;
+```
+
+###### scaling
+
+```ts
+scaling: any;
+```
+
+###### constrained
+
+```ts
+constrained: any;
+```
+
+##### getScores()
+
+```ts
+getScores(type?, scaled?): any;
+```
+
+Defined in: [src/mva/estimators/RDA.js:179](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L179)
+
+Retrieve site (scores), response loadings, or predictor constraint scores.
+
+###### Parameters
+
+###### type?
+
+  \| `"sites"`
+  \| `"samples"`
+  \| `"variables"`
+  \| `"loadings"`
+  \| `"predictors"`
+  \| `"responses"`
+  \| `"constraints"`
+
+###### scaled?
+
+`boolean` = `true`
+
+###### Returns
+
+`any`
+
+##### toJSON()
+
+```ts
+toJSON(): object;
+```
+
+Defined in: [src/mva/estimators/RDA.js:214](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L214)
+
+Serialize minimal model metadata.
+Subclasses may override to include learned parameters.
+
+###### Returns
+
+`object`
+
+###### \_\_class\_\_
+
+```ts
+__class__: string = 'RDA';
+```
+
+###### params
+
+```ts
+params: Object;
+```
+
+###### fitted
+
+```ts
+fitted: boolean;
+```
+
+###### model
+
+```ts
+model: 
+  | {
+  omit_missing: any;
+  constructor: Function;
+  toString: string;
+  toLocaleString: string;
+  valueOf: Object;
+  hasOwnProperty: boolean;
+  isPrototypeOf: boolean;
+  propertyIsEnumerable: boolean;
+}
+  | null;
+```
+
+###### Union Members
+
+###### Type Literal
+
+```ts
+{
+  omit_missing: any;
+  constructor: Function;
+  toString: string;
+  toLocaleString: string;
+  valueOf: Object;
+  hasOwnProperty: boolean;
+  isPrototypeOf: boolean;
+  propertyIsEnumerable: boolean;
+}
+```
+
+###### omit\_missing
+
+```ts
+omit_missing: any = omitMissing;
+```
+
+###### constructor
+
+```ts
+constructor: Function;
+```
+
+The initial value of Object.prototype.constructor is the standard built-in Object constructor.
+
+###### toString()
+
+```ts
+toString(): string;
+```
+
+Returns a string representation of an object.
+
+###### Returns
+
+`string`
+
+###### toLocaleString()
+
+```ts
+toLocaleString(): string;
+```
+
+Returns a date converted to a string using the current locale.
+
+###### Returns
+
+`string`
+
+###### valueOf()
+
+```ts
+valueOf(): Object;
+```
+
+Returns the primitive value of the specified object.
+
+###### Returns
+
+`Object`
+
+###### hasOwnProperty()
+
+```ts
+hasOwnProperty(v): boolean;
+```
+
+Determines whether an object has a property with the specified name.
+
+###### Parameters
+
+###### v
+
+`PropertyKey`
+
+A property name.
+
+###### Returns
+
+`boolean`
+
+###### isPrototypeOf()
+
+```ts
+isPrototypeOf(v): boolean;
+```
+
+Determines whether an object exists in another object's prototype chain.
+
+###### Parameters
+
+###### v
+
+`Object`
+
+Another object whose prototype chain is to be checked.
+
+###### Returns
+
+`boolean`
+
+###### propertyIsEnumerable()
+
+```ts
+propertyIsEnumerable(v): boolean;
+```
+
+Determines whether a specified property is enumerable.
+
+###### Parameters
+
+###### v
+
+`PropertyKey`
+
+A property name.
+
+###### Returns
+
+`boolean`
+
+***
+
+`null`
+
+###### Overrides
+
+```ts
+Transformer.toJSON
+```
+
+##### fromJSON()
+
+```ts
+static fromJSON(obj?): RDA;
+```
+
+Defined in: [src/mva/estimators/RDA.js:223](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/estimators/RDA.js#L223)
+
+Basic deserialization. Subclasses should override if they need
+to restore learned arrays / matrices.
+
+###### Parameters
+
+###### obj?
+
+###### Returns
+
+[`RDA`](#rda)
+
+###### Overrides
+
+```ts
+Transformer.fromJSON
+```
+
+## References
+
+### CompositionalOutlierDetector
+
+Re-exports [CompositionalOutlierDetector](/api/multivariate/composition#compositionaloutlierdetector)

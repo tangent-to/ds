@@ -35,7 +35,8 @@
     "jsr:publish:dry-run": "deno publish --dry-run --allow-dirty",
     "deno:lint": "deno lint src/",
     "deno:fmt": "deno fmt src/",
-    "deno:check": "deno check src/index.js"
+    "deno:check": "deno check src/index.js",
+    "docs:api": "node scripts/build-api-docs.mjs"
   },
   "keywords": [
     "data-science",
@@ -75,6 +76,8 @@
     "@vitest/coverage-v8": "^1.6.0",
     "@vitest/ui": "^1.6.0",
     "esbuild": "^0.25.11",
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.12.0",
     "vitest": "^1.6.0"
   }
 }

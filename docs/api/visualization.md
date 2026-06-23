@@ -3,449 +3,1255 @@ layout: default
 title: Visualization
 parent: API Reference
 nav_order: 4
+has_children: true
 permalink: /api/visualization
 ---
+# plot
 
-# Visualization API
-{: .no_toc }
+## Functions
 
-Publication-ready plots powered by Observable Plot.
-{: .fs-6 .fw-300 }
+### plotROC()
 
-## Table of Contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
-
-## Overview
-
-The `ds.plot` module generates **Observable Plot configuration objects**. Each function returns a config object with a `.show(Plot)` method that renders the visualization.
-
-```javascript
-import * as Plot from '@observablehq/plot';
-
-const config = ds.plot.ordiplot(pca.model);
-document.body.appendChild(config.show(Plot));
+```ts
+function plotROC(
+   yTrue, 
+   yProb, 
+   options?): Object;
 ```
 
-**Categories:**
-- **Ordination** - Biplots for PCA, LDA, RDA
-- **Clustering** - Dendrograms, silhouette plots
-- **Classification** - ROC, precision-recall, confusion matrix, calibration
-- **Diagnostics** - Residual plots, Q-Q plots for GLMs
-- **Interpretation** - Feature importance, partial dependence, learning curves
+Defined in: [src/plot/classification.js:15](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/classification.js#L15)
 
----
+Generate ROC curve plot configuration
 
-## Ordination Plots
+#### Parameters
 
-### ordiplot
+##### yTrue
 
-Unified ordination plot for PCA, LDA, and RDA results.
+`number`[]
 
-```javascript
-ds.plot.ordiplot(result, options)
+True binary labels (0 or 1)
+
+##### yProb
+
+`number`[]
+
+Predicted probabilities for positive class
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, showDiagonal}
+
+#### Returns
+
+`Object`
+
+Plot configuration with ROC curve data and AUC
+
+***
+
+### plotPrecisionRecall()
+
+```ts
+function plotPrecisionRecall(
+   yTrue, 
+   yProb, 
+   options?): Object;
 ```
 
-**Parameters:**
-- `result` (Object): Ordination result from PCA, LDA, or RDA `.model`
-- `options` (Object):
-  - `type` (string): `'pca'`, `'lda'`, `'rda'` (auto-detected if omitted)
-  - `colorBy` (Array): Group labels for coloring points
-  - `labels` (Array&lt;string&gt;): Point labels
-  - `showLoadings` (boolean): Show loading vectors (PCA/RDA)
-  - `showCentroids` (boolean): Show class centroids (LDA)
-  - `showConvexHulls` (boolean): Show convex hulls around groups
-  - `axis1` (number): First axis (default: 1)
-  - `axis2` (number): Second axis (default: 2)
-  - `width` (number): Plot width (default: 640)
-  - `height` (number): Plot height (default: 400)
-  - `loadingFactor` (number): Multiplier for loading vectors (default: 1; set 0 for auto)
-  - `predictorFactor` (number): Multiplier for predictor arrows in RDA
+Defined in: [src/plot/classification.js:125](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/classification.js#L125)
 
-**Returns:** Plot configuration with `.show(Plot)` method
+Generate precision-recall curve plot configuration
 
-**Example:**
-```javascript
-import * as Plot from '@observablehq/plot';
+#### Parameters
 
-const pca = new ds.mva.PCA({ center: true, scale: true });
-pca.fit({ data: penguins, columns: numericCols });
+##### yTrue
 
-const biplot = ds.plot.ordiplot(pca.model, {
-  colorBy: penguins.map(d => d.Species),
-  showLoadings: true
-});
+`number`[]
 
-document.body.appendChild(biplot.show(Plot));
+True binary labels (0 or 1)
+
+##### yProb
+
+`number`[]
+
+Predicted probabilities for positive class
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, showBaseline}
+
+#### Returns
+
+`Object`
+
+Plot configuration with precision-recall curve and average precision
+
+***
+
+### plotConfusionMatrix()
+
+```ts
+function plotConfusionMatrix(
+   yTrue, 
+   yPred, 
+   options?): Object;
 ```
 
----
+Defined in: [src/plot/classification.js:230](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/classification.js#L230)
 
-### plotScree
+Generate confusion matrix plot configuration
 
-Scree plot showing variance explained by each component.
+#### Parameters
 
-```javascript
-ds.plot.plotScree(result, options)
+##### yTrue
+
+`any`[]
+
+True labels
+
+##### yPred
+
+`any`[]
+
+Predicted labels
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, normalize, labels}
+
+#### Returns
+
+`Object`
+
+Plot configuration with confusion matrix
+
+***
+
+### plotCalibration()
+
+```ts
+function plotCalibration(
+   yTrue, 
+   yProb, 
+   options?): Object;
 ```
 
-**Parameters:**
-- `result` (Object): PCA/ordination result with `varianceExplained`
-- `options` (Object):
-  - `width` (number): Plot width (default: 640)
-  - `height` (number): Plot height (default: 300)
-  - `cumulative` (boolean): Show cumulative variance (default: false)
+Defined in: [src/plot/classification.js:337](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/classification.js#L337)
 
----
+Generate calibration curve plot configuration
+Shows how well predicted probabilities match actual frequencies
 
-## Clustering Plots
+#### Parameters
 
-### plotHCA
+##### yTrue
 
-Generate dendrogram data from hierarchical clustering results.
+`number`[]
 
-```javascript
-ds.plot.plotHCA(result)
+True binary labels (0 or 1)
+
+##### yProb
+
+`number`[]
+
+Predicted probabilities
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, nBins}
+
+#### Returns
+
+`Object`
+
+Plot configuration with calibration curve
+
+***
+
+### residualPlot()
+
+```ts
+function residualPlot(model, options?): Object;
 ```
 
-**Parameters:**
-- `result` (Object): HCA result from `ds.ml.HCA`
+Defined in: [src/plot/diagnostics.js:14](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L14)
 
-**Returns:** Dendrogram tree structure
+Generate residual vs fitted plot
 
----
+#### Parameters
 
-### dendrogramLayout
+##### model
 
-Convert dendrogram data to layout coordinates for rendering.
+`Object`
 
-```javascript
-ds.plot.dendrogramLayout(dendrogramData, options)
+Fitted GLM model
+
+##### options?
+
+`Object` = `{}`
+
+Plot options
+
+#### Returns
+
+`Object`
+
+Observable Plot specification
+
+***
+
+### scaleLocationPlot()
+
+```ts
+function scaleLocationPlot(model, options?): Object;
 ```
 
-**Parameters:**
-- `dendrogramData` (Object): Result from `plotHCA`
-- `options` (Object):
-  - `width` (number): default 640
-  - `height` (number): default 400
-  - `orientation` (string): `'vertical'` (default)
+Defined in: [src/plot/diagnostics.js:47](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L47)
 
-**Returns:** Layout with nodes and links coordinates
+Generate scale-location plot (sqrt of standardized residuals vs fitted)
 
----
+#### Parameters
 
-### plotSilhouette
+##### model
 
-Silhouette plot displaying per-sample cluster quality scores.
+`Object`
 
-```javascript
-ds.plot.plotSilhouette(options, plotOptions)
+Fitted GLM model
+
+##### options?
+
+`Object` = `{}`
+
+Plot options
+
+#### Returns
+
+`Object`
+
+Observable Plot specification
+
+***
+
+### qqPlot()
+
+```ts
+function qqPlot(model, options?): Object;
 ```
 
-**Parameters:**
-- `options` (Object):
-  - `samples` (Array): Precomputed from `ds.ml.silhouette.silhouetteSamples()`
-  - `data` (Array): Data matrix (alternative to `samples`)
-  - `labels` (Array): Cluster labels (used with `data`)
-  - `sorted` (boolean): Sort by silhouette score (default: true)
-- `plotOptions` (Object):
-  - `width` (number): default 720
-  - `height` (number): default 420
-  - `showAverageLines` (boolean): default true
+Defined in: [src/plot/diagnostics.js:86](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L86)
 
-**Returns:** Plot configuration with `.show(Plot)` method
+Generate Q-Q plot for normality check
 
----
+#### Parameters
 
-### HDBSCAN Visualizations
+##### model
 
-```javascript
-ds.plot.plotHDBSCAN(model, options)           // Condensed tree (default)
-ds.plot.plotCondensedTree(model, options)      // Condensed cluster tree
-ds.plot.plotHDBSCANDendrogram(model, options)  // HDBSCAN dendrogram
-ds.plot.plotClusterMembership(model, data, options)  // Membership probabilities
-ds.plot.plotClusterStability(model, options)    // Cluster stability
-ds.plot.plotHDBSCANDashboard(model, data, options)  // All-in-one dashboard
+`Object`
+
+Fitted GLM model
+
+##### options?
+
+`Object` = `{}`
+
+Plot options
+
+#### Returns
+
+`Object`
+
+Observable Plot specification
+
+***
+
+### residualsLeveragePlot()
+
+```ts
+function residualsLeveragePlot(model, options?): Object;
 ```
 
----
+Defined in: [src/plot/diagnostics.js:143](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L143)
 
-## Classification Metrics
+Generate residuals vs leverage plot (Cook's distance)
 
-### plotROC
+#### Parameters
 
-ROC curve with AUC.
+##### model
 
-```javascript
-ds.plot.plotROC(yTrue, yProb, options)
+`Object`
+
+Fitted GLM model
+
+##### options?
+
+`Object` = `{}`
+
+Plot options
+
+#### Returns
+
+`Object`
+
+Observable Plot specification
+
+***
+
+### diagnosticDashboard()
+
+```ts
+function diagnosticDashboard(model, options?): Object[];
 ```
 
-**Parameters:**
-- `yTrue` (Array&lt;number&gt;): True binary labels (0 or 1)
-- `yProb` (Array&lt;number&gt;): Predicted probabilities for positive class
-- `options` (Object):
-  - `width` (number): default 500
-  - `height` (number): default 500
-  - `showDiagonal` (boolean): Show random baseline (default: true)
+Defined in: [src/plot/diagnostics.js:192](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L192)
 
-**Returns:** Plot configuration with AUC value
+Generate all diagnostic plots in a dashboard
 
-**Example:**
-```javascript
-const roc = ds.plot.plotROC(yTrue, model.predictProba(XTest).map(p => p[1]));
-document.body.appendChild(roc.show(Plot));
+#### Parameters
+
+##### model
+
+`Object`
+
+Fitted GLM model
+
+##### options?
+
+`Object` = `{}`
+
+Options for individual plots
+
+#### Returns
+
+`Object`[]
+
+Array of Plot specifications
+
+***
+
+### effectPlot()
+
+```ts
+function effectPlot(
+   model, 
+   variable, 
+   data, 
+   options?): Object;
 ```
 
----
+Defined in: [src/plot/diagnostics.js:209](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L209)
 
-### plotPrecisionRecall
+Generate effect plot for a specific predictor
 
-Precision-recall curve with average precision.
+#### Parameters
 
-```javascript
-ds.plot.plotPrecisionRecall(yTrue, yProb, options)
+##### model
+
+`Object`
+
+Fitted GLM model
+
+##### variable
+
+`string`
+
+Variable name
+
+##### data
+
+`Object`
+
+Original data
+
+##### options?
+
+`Object` = `{}`
+
+Plot options
+
+#### Returns
+
+`Object`
+
+Observable Plot specification
+
+***
+
+### partialResidualPlot()
+
+```ts
+function partialResidualPlot(
+   model, 
+   variable, 
+   X, 
+   options?): Object;
 ```
 
-**Parameters:**
-- `yTrue` (Array&lt;number&gt;): True binary labels
-- `yProb` (Array&lt;number&gt;): Predicted probabilities
-- `options` (Object):
-  - `width`, `height`: default 500
-  - `showBaseline` (boolean): default true
+Defined in: [src/plot/diagnostics.js:276](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/diagnostics.js#L276)
 
----
+Generate partial residual plot (component + residual plot)
 
-### plotConfusionMatrix
+#### Parameters
 
-Confusion matrix heatmap.
+##### model
 
-```javascript
-ds.plot.plotConfusionMatrix(yTrue, yPred, options)
+`Object`
+
+Fitted GLM model
+
+##### variable
+
+`string`
+
+Variable name
+
+##### X
+
+`any`[]
+
+Original predictor matrix
+
+##### options?
+
+`Object` = `{}`
+
+Plot options
+
+#### Returns
+
+`Object`
+
+Observable Plot specification
+
+***
+
+### ordiplot()
+
+```ts
+function ordiplot(result, options?): Object;
 ```
 
-**Parameters:**
-- `yTrue` (Array): True labels
-- `yPred` (Array): Predicted labels
-- `options` (Object):
-  - `width`, `height`: default 500
-  - `normalize` (boolean): Normalize values (default: false)
-  - `labels` (Array): Custom class labels
+Defined in: [src/plot/ordiplot.js:32](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/ordiplot.js#L32)
 
-**Example:**
-```javascript
-const cm = ds.plot.plotConfusionMatrix(yTrue, predictions, { normalize: true });
-document.body.appendChild(cm.show(Plot));
+Generate unified ordination plot configuration
+Works with PCA, LDA, and RDA results
+
+#### Parameters
+
+##### result
+
+`Object`
+
+Ordination result (from PCA, LDA, or RDA)
+
+##### options?
+
+Configuration options
+
+###### type
+
+`string` = `null`
+
+Type of ordination ('pca', 'lda', 'rda') - auto-detected if not specified
+
+###### colorBy
+
+`string` \| `Object` \| `any`[] \| `Iterable`\<`any`, `any`, `any`\> \| `null` = `null`
+
+Group values for points: an array,
+  any iterable (e.g. an Arquero column), a { data, column } descriptor, or the name of a
+  column in the data the model was fit on (requires a declarative fit({ data, ... }))
+
+###### labels
+
+`string` \| `Object` \| `any`[] \| `Iterable`\<`any`, `any`, `any`\> \| `null` = `null`
+
+Labels for points (same accepted forms as colorBy)
+
+###### showLoadings
+
+`boolean` = `true`
+
+Show loading vectors (PCA/RDA only)
+
+###### showCentroids
+
+`boolean` = `false`
+
+Show class centroids (LDA only)
+
+###### showConvexHulls
+
+`boolean` = `false`
+
+Show convex hulls around groups (optional)
+
+###### axis1
+
+`number` = `1`
+
+First axis to plot (default: 1)
+
+###### axis2
+
+`number` = `2`
+
+Second axis to plot (default: 2)
+
+###### width
+
+`number` = `640`
+
+Plot width (default: 640)
+
+###### height
+
+`number` = `400`
+
+Plot height (default: 400)
+
+###### loadingScale
+
+`number` = `3`
+
+Scale factor for loading vectors (default: 3)
+
+###### loadingFactor
+
+`number` = `1`
+
+Multiplier applied to loading vectors (default: 1, set 0 for auto)
+
+###### predictorFactor
+
+`number` \| `null` = `null`
+
+Multiplier for predictor arrows (RDA only, default: inherits loadingFactor; set 0 for auto)
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotHCA()
+
+```ts
+function plotHCA(result): Object;
 ```
 
----
+Defined in: [src/plot/plotHCA.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHCA.js#L13)
 
-### plotCalibration
+Generate dendrogram data structure
 
-Calibration curve showing how well predicted probabilities match actual frequencies.
+#### Parameters
 
-```javascript
-ds.plot.plotCalibration(yTrue, yProb, options)
+##### result
+
+`Object`
+
+HCA result from ml.hca.fit()
+
+#### Returns
+
+`Object`
+
+Dendrogram tree structure
+
+***
+
+### dendrogramLayout()
+
+```ts
+function dendrogramLayout(dendrogramData, options?): Object;
 ```
 
-**Parameters:**
-- `yTrue` (Array&lt;number&gt;): True binary labels
-- `yProb` (Array&lt;number&gt;): Predicted probabilities
-- `options.nBins` (number): Number of bins (default: 10)
+Defined in: [src/plot/plotHCA.js:59](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHCA.js#L59)
 
----
+Convert dendrogram to layout coordinates
 
-## GLM Diagnostics
+#### Parameters
 
-### diagnosticDashboard
+##### dendrogramData
 
-Generate all four diagnostic plots for a fitted GLM.
+`Object`
 
-```javascript
-const plots = ds.plot.diagnosticDashboard(model, options)
-// Returns array of 4 plot specifications
+Result from plotHCA
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, orientation}
+
+#### Returns
+
+`Object`
+
+Layout with coordinates
+
+***
+
+### plotCondensedTree()
+
+```ts
+function plotCondensedTree(model, options?): Object;
 ```
 
-**Includes:** Residual plot, Q-Q plot, scale-location plot, residuals-leverage plot.
+Defined in: [src/plot/plotHDBSCAN.js:17](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHDBSCAN.js#L17)
 
----
+Generate condensed cluster tree visualization configuration
 
-### residualPlot
+#### Parameters
 
-Residuals vs fitted values.
+##### model
 
-```javascript
-ds.plot.residualPlot(model, options)
+`Object`
+
+HDBSCAN model or result from hdbscan.fit()
+
+##### options?
+
+Visualization options
+
+###### width?
+
+`number` = `800`
+
+Plot width
+
+###### height?
+
+`number` = `600`
+
+Plot height
+
+###### showStability?
+
+`boolean` = `true`
+
+Show cluster stability scores
+
+#### Returns
+
+`Object`
+
+Observable Plot-compatible configuration
+
+***
+
+### plotHDBSCANDendrogram()
+
+```ts
+function plotHDBSCANDendrogram(model, options?): Object;
 ```
 
-### scaleLocationPlot
+Defined in: [src/plot/plotHDBSCAN.js:86](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHDBSCAN.js#L86)
 
-Scale-location plot (sqrt of standardized residuals vs fitted).
+Generate dendrogram visualization from HDBSCAN hierarchy
+Similar to HCA dendrogram but for HDBSCAN
 
-```javascript
-ds.plot.scaleLocationPlot(model, options)
+#### Parameters
+
+##### model
+
+`Object`
+
+HDBSCAN model or result from hdbscan.fit()
+
+##### options?
+
+`Object` = `{}`
+
+Visualization options
+
+#### Returns
+
+`Object`
+
+Dendrogram configuration
+
+***
+
+### plotClusterMembership()
+
+```ts
+function plotClusterMembership(
+   model, 
+   data?, 
+   options?): Object;
 ```
 
-### qqPlot
+Defined in: [src/plot/plotHDBSCAN.js:146](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHDBSCAN.js#L146)
 
-Q-Q plot for normality check of residuals.
+Visualize cluster membership probabilities
 
-```javascript
-ds.plot.qqPlot(model, options)
+#### Parameters
+
+##### model
+
+`Object`
+
+HDBSCAN model or result from hdbscan.fit()
+
+##### data?
+
+`number`[][] = `null`
+
+Original data for scatter plot (optional)
+
+##### options?
+
+Visualization options
+
+###### width?
+
+`number` = `720`
+
+Plot width
+
+###### height?
+
+`number` = `480`
+
+Plot height
+
+###### showNoise?
+
+`boolean` = `true`
+
+Show noise points
+
+###### columns?
+
+`string`[] = `...`
+
+Column names for 2D projection
+
+#### Returns
+
+`Object`
+
+Observable Plot-compatible configuration
+
+***
+
+### plotClusterStability()
+
+```ts
+function plotClusterStability(model, options?): Object;
 ```
 
-### residualsLeveragePlot
+Defined in: [src/plot/plotHDBSCAN.js:242](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHDBSCAN.js#L242)
 
-Residuals vs leverage with Cook's distance.
+Visualize cluster stability and persistence
 
-```javascript
-ds.plot.residualsLeveragePlot(model, options)
+#### Parameters
+
+##### model
+
+`Object`
+
+HDBSCAN model or result from hdbscan.fit()
+
+##### options?
+
+Visualization options
+
+###### width?
+
+`number` = `600`
+
+Plot width
+
+###### height?
+
+`number` = `400`
+
+Plot height
+
+#### Returns
+
+`Object`
+
+Observable Plot-compatible configuration
+
+***
+
+### plotHDBSCANDashboard()
+
+```ts
+function plotHDBSCANDashboard(
+   model, 
+   data, 
+   options?): Object;
 ```
 
----
+Defined in: [src/plot/plotHDBSCAN.js:301](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHDBSCAN.js#L301)
 
-### effectPlot
+Create a comprehensive HDBSCAN visualization dashboard
 
-Effect plot for a specific predictor variable.
+#### Parameters
 
-```javascript
-ds.plot.effectPlot(model, variable, data, options)
+##### model
+
+`Object`
+
+HDBSCAN model
+
+##### data
+
+`number`[][]
+
+Original data
+
+##### options?
+
+`Object` = `{}`
+
+Visualization options
+
+#### Returns
+
+`Object`
+
+Dashboard configuration with multiple plots
+
+***
+
+### plotHDBSCAN()
+
+```ts
+function plotHDBSCAN(model, options?): Object;
 ```
 
-**Parameters:**
-- `model` (Object): Fitted GLM
-- `variable` (string): Variable name
-- `data` (Object): Original data
-- `options.grid` (number): Grid points (default: 50)
-- `options.confidence` (number): Confidence level (default: 0.95)
+Defined in: [src/plot/plotHDBSCAN.js:313](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotHDBSCAN.js#L313)
 
----
+#### Parameters
 
-### partialResidualPlot
+##### model
 
-Component + residual plot for a specific predictor.
+`any`
 
-```javascript
-ds.plot.partialResidualPlot(model, variable, X, options)
+##### options?
+
+#### Returns
+
+`Object`
+
+***
+
+### plotScree()
+
+```ts
+function plotScree(result, options?): Object;
 ```
 
----
+Defined in: [src/plot/plotScree.js:11](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotScree.js#L11)
 
-## Model Interpretation
+Generate scree plot configuration for PCA/ordination results
+Shows variance explained by each component
 
-### plotFeatureImportance
+#### Parameters
 
-Feature importance bar plot.
+##### result
 
-```javascript
-ds.plot.plotFeatureImportance(importances, options)
+`Object`
+
+PCA/LDA/RDA result with varianceExplained
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, cumulative}
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotSilhouette()
+
+```ts
+function plotSilhouette(options?, __namedParameters?): Object;
 ```
 
-**Parameters:**
-- `importances` (Array&lt;Object&gt;): `[{ feature, importance }, ...]`
-- `options.topN` (number): Top N features to display (default: 10)
+Defined in: [src/plot/plotSilhouette.js:73](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/plotSilhouette.js#L73)
 
----
+Generate silhouette plot configuration displaying per-sample scores.
+Accepts either precomputed samples or raw data/labels for convenience.
 
-### plotPartialDependence
+#### Parameters
 
-Partial dependence plot.
+##### options?
 
-```javascript
-ds.plot.plotPartialDependence(pdResult, options)
+###### samples?
+
+`any`[]
+
+Output from ml.silhouette.silhouetteSamples()
+
+###### data?
+
+`any`[]
+
+Data matrix used to compute silhouette scores
+
+###### labels?
+
+`any`[]
+
+Cluster labels for each observation
+
+###### sorted?
+
+`boolean`
+
+Whether to sort samples by silhouette desc
+
+###### minSilhouette?
+
+`number`
+
+Minimum silhouette value displayed
+
+###### maxSilhouette?
+
+`number`
+
+Maximum silhouette value displayed
+
+###### clusterOptions?
+
+`Object`
+
+Options for cluster summary inset
+
+##### \_\_namedParameters?
+
+###### width?
+
+`number` = `720`
+
+###### height?
+
+`number` = `420`
+
+###### minSilhouette?
+
+`number` = `-1`
+
+###### maxSilhouette?
+
+`number` = `1`
+
+###### clusterInsetWidth?
+
+`number` = `160`
+
+###### clusterInsetHeight?
+
+`number` = `160`
+
+###### showAverageLines?
+
+`boolean` = `true`
+
+#### Returns
+
+`Object`
+
+Observable Plot-compatible configuration with `.show()`
+
+***
+
+### createD3DendrogramRenderer()
+
+```ts
+function createD3DendrogramRenderer(d3, options?): Function;
 ```
 
-**Parameters:**
-- `pdResult` (Object): `{ values, predictions, feature }`
+Defined in: [src/plot/renderers/d3Dendrogram.js:52](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/renderers/d3Dendrogram.js#L52)
 
----
+Build a dendrogram renderer that relies on user-supplied D3 modules for scaling.
+The returned function is compatible with the `.show(renderer)` helper emitted by plotHCA.
 
-### plotCorrelationMatrix
+Usage:
+  import { plotHCA } from '@tangent.to/ds/plot';
+  import { createD3DendrogramRenderer } from '@tangent.to/ds/plot/renderers/d3Dendrogram.js';
+  const spec = plotHCA(model);
+  const svg = spec.show(createD3DendrogramRenderer(d3));
 
-Correlation matrix heatmap.
+#### Parameters
 
-```javascript
-ds.plot.plotCorrelationMatrix(corrResult, options)
+##### d3
+
+`Object`
+
+D3 namespace (only `scaleLinear` is used if available)
+
+##### options?
+
+`Object` = `{}`
+
+Renderer options
+
+#### Returns
+
+`Function`
+
+Renderer function accepted by config.show()
+
+***
+
+### resolveGroupValues()
+
+```ts
+function resolveGroupValues(
+   spec, 
+   result?, 
+   name?): any[] | null;
 ```
 
-**Parameters:**
-- `corrResult` (Object): `{ matrix, features }`
+Defined in: [src/plot/utils.js:26](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L26)
 
----
+Normalize a colorBy (or labels) specification into a plain array of
+per-observation values.
 
-### plotResiduals
+Accepted forms:
+- an array (used as-is)
+- any iterable, e.g. an Arquero column or a typed array (converted)
+- a { data, column } descriptor (column extracted from table-like data)
+- a column-name string, resolved against the source rows the model kept
+  from a declarative fit (e.g. pca.fit({ data, columns }) stores the
+  naOmit-filtered rows so values stay aligned with the scores)
 
-Generic residual plot from precomputed data.
+#### Parameters
 
-```javascript
-ds.plot.plotResiduals(residualData, options)
+##### spec
+
+`any`
+
+colorBy specification
+
+##### result?
+
+`Object` \| `null`
+
+Fitted model (for string column lookup)
+
+##### name?
+
+`string` = `'colorBy'`
+
+Option name used in error messages
+
+#### Returns
+
+`any`[] \| `null`
+
+Array of values, or null when spec is null
+
+***
+
+### plotFeatureImportance()
+
+```ts
+function plotFeatureImportance(importances, options?): Object;
 ```
 
-**Parameters:**
-- `residualData` (Object): `{ fitted, residuals, standardized }`
-- `options.standardized` (boolean): Use standardized residuals (default: false)
+Defined in: [src/plot/utils.js:68](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L68)
 
----
+Generate feature importance bar plot configuration
 
-### plotQQ
+#### Parameters
 
-Generic Q-Q plot from precomputed data.
+##### importances
 
-```javascript
-ds.plot.plotQQ(residualData, options)
+`Object`[]
+
+Feature importance array
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, topN}
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotPartialDependence()
+
+```ts
+function plotPartialDependence(pdResult, options?): Object;
 ```
 
----
+Defined in: [src/plot/utils.js:111](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L111)
 
-### plotLearningCurve
+Generate partial dependence plot configuration
 
-Learning curve showing train/test scores vs training size.
+#### Parameters
 
-```javascript
-ds.plot.plotLearningCurve(lcResult, options)
+##### pdResult
+
+`Object`
+
+Result from partialDependence()
+
+##### options?
+
+`Object` = `{}`
+
+{width, height, featureName}
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotCorrelationMatrix()
+
+```ts
+function plotCorrelationMatrix(corrResult, options?): Object;
 ```
 
-**Parameters:**
-- `lcResult` (Object): `{ trainSizes, trainScores, testScores }`
+Defined in: [src/plot/utils.js:161](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L161)
 
----
+Generate correlation matrix heatmap configuration
 
-## Renderers
+#### Parameters
 
-### createD3DendrogramRenderer
+##### corrResult
 
-Create a D3-based dendrogram renderer for environments without Observable Plot.
+`Object`
 
-```javascript
-ds.plot.createD3DendrogramRenderer(options)
+Result from correlationMatrix()
+
+##### options?
+
+`Object` = `{}`
+
+{width, height}
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotResiduals()
+
+```ts
+function plotResiduals(residualData, options?): Object;
 ```
 
----
+Defined in: [src/plot/utils.js:221](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L221)
 
-## Common Pattern
+Generate residual plot configuration
 
-All plot functions follow the same usage pattern:
+#### Parameters
 
-```javascript
-import * as Plot from '@observablehq/plot';
+##### residualData
 
-// 1. Generate config
-const config = ds.plot.plotROC(yTrue, yProb);
+`Object`
 
-// 2. Render with Observable Plot
-const element = config.show(Plot);
+Result from residualPlotData()
 
-// 3. Add to DOM
-document.body.appendChild(element);
+##### options?
+
+`Object` = `{}`
+
+{width, height, standardized}
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotQQ()
+
+```ts
+function plotQQ(residualData, options?): Object;
 ```
 
----
+Defined in: [src/plot/utils.js:271](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L271)
 
-## See Also
+Generate Q-Q plot configuration for normality check
 
-- [Multivariate Analysis API](multivariate) - Ordination models for biplots
-- [Statistics API](statistics) - GLMs for diagnostic plots
-- [Machine Learning API](machine-learning) - Models for classification metrics
+#### Parameters
+
+##### residualData
+
+`Object`
+
+Result from residualPlotData()
+
+##### options?
+
+`Object` = `{}`
+
+{width, height}
+
+#### Returns
+
+`Object`
+
+Plot configuration
+
+***
+
+### plotLearningCurve()
+
+```ts
+function plotLearningCurve(lcResult, options?): Object;
+```
+
+Defined in: [src/plot/utils.js:355](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/plot/utils.js#L355)
+
+Generate learning curve plot configuration
+
+#### Parameters
+
+##### lcResult
+
+`Object`
+
+Result from learningCurve()
+
+##### options?
+
+`Object` = `{}`
+
+{width, height}
+
+#### Returns
+
+`Object`
+
+Plot configuration
