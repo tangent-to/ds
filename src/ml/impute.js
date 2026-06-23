@@ -182,6 +182,13 @@ export class SimpleImputer {
    * @returns {SimpleImputer} this
    */
   fit(X) {
+    // mean/median only make sense on numbers, so column auto-detection keeps
+    // them numeric-only. most_frequent/constant work on any value, so they
+    // must also pick up categorical (string) columns — otherwise auto-detect
+    // would silently skip exactly the columns those strategies are meant for.
+    const includeCategorical = this.strategy === "most_frequent" ||
+      this.strategy === "constant";
+
     // Handle table input: either {data, columns, group} format or array of objects
     if (X && typeof X === "object" && !Array.isArray(X)) {
       // Check if it's {data, columns} format or array of objects
@@ -210,6 +217,7 @@ export class SimpleImputer {
             const result = tableToMatrix({
               data: groupRows,
               columns: X.columns,
+              includeCategorical,
             });
 
             if (result.X.length > 0) {
@@ -227,7 +235,7 @@ export class SimpleImputer {
         }
 
         // Non-grouped imputation
-        const result = tableToMatrix({ data: X.data, columns: X.columns });
+        const result = tableToMatrix({ data: X.data, columns: X.columns, includeCategorical });
         this._tableColumns = result.columns;
         X = result.X;
       } else {
