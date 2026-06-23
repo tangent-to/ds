@@ -15,7 +15,7 @@ permalink: /api/machine-learning/mlp
 function createNetwork(layerSizes, activation?): Object[];
 ```
 
-Defined in: [src/ml/mlp.js:157](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/mlp.js#L157)
+Defined in: [src/ml/mlp.js:157](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/mlp.js#L157)
 
 Create MLP architecture
 
@@ -50,7 +50,7 @@ function fit(
    options?): Object;
 ```
 
-Defined in: [src/ml/mlp.js:192](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/mlp.js#L192)
+Defined in: [src/ml/mlp.js:192](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/mlp.js#L192)
 
 Train MLP using mini-batch gradient descent
 
@@ -88,7 +88,7 @@ Training options
 function predict(model, X): number[][];
 ```
 
-Defined in: [src/ml/mlp.js:335](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/mlp.js#L335)
+Defined in: [src/ml/mlp.js:335](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/mlp.js#L335)
 
 Predict using trained MLP
 
@@ -123,7 +123,7 @@ function evaluate(
    y): Object;
 ```
 
-Defined in: [src/ml/mlp.js:357](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/mlp.js#L357)
+Defined in: [src/ml/mlp.js:357](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/mlp.js#L357)
 
 Evaluate model on test data
 

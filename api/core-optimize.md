@@ -11,7 +11,7 @@ permalink: /api/core/optimize
 
 ### GradientDescent
 
-Defined in: [src/core/optimize.js:44](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L44)
+Defined in: [src/core/optimize.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L44)
 
 Gradient Descent Optimizer (Batch and Stochastic)
 
@@ -27,7 +27,7 @@ Gradient Descent Optimizer (Batch and Stochastic)
 new GradientDescent(options?): GradientDescent;
 ```
 
-Defined in: [src/core/optimize.js:45](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L45)
+Defined in: [src/core/optimize.js:45](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L45)
 
 ###### Parameters
 
@@ -51,7 +51,7 @@ Optimizer.constructor
 learningRate: any;
 ```
 
-Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L13)
+Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L13)
 
 ###### Inherited from
 
@@ -63,7 +63,7 @@ Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/edab
 maxIter: any;
 ```
 
-Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L14)
+Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L14)
 
 ###### Inherited from
 
@@ -75,7 +75,7 @@ Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/edab
 tol: any;
 ```
 
-Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L15)
+Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L15)
 
 ###### Inherited from
 
@@ -87,7 +87,7 @@ Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/edab
 verbose: any;
 ```
 
-Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L16)
+Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L16)
 
 ###### Inherited from
 
@@ -99,7 +99,7 @@ Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/edab
 stochastic: any;
 ```
 
-Defined in: [src/core/optimize.js:47](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L47)
+Defined in: [src/core/optimize.js:47](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L47)
 
 ##### batchSize
 
@@ -107,7 +107,7 @@ Defined in: [src/core/optimize.js:47](https://github.com/tangent-to/ds/blob/edab
 batchSize: any;
 ```
 
-Defined in: [src/core/optimize.js:48](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L48)
+Defined in: [src/core/optimize.js:48](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L48)
 
 ##### lineSearch
 
@@ -115,7 +115,7 @@ Defined in: [src/core/optimize.js:48](https://github.com/tangent-to/ds/blob/edab
 lineSearch: any;
 ```
 
-Defined in: [src/core/optimize.js:49](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L49)
+Defined in: [src/core/optimize.js:49](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L49)
 
 #### Methods
 
@@ -125,7 +125,7 @@ Defined in: [src/core/optimize.js:49](https://github.com/tangent-to/ds/blob/edab
 checkConvergence(gradient): boolean;
 ```
 
-Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L35)
+Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L35)
 
 Check convergence based on gradient norm
 
@@ -154,7 +154,7 @@ minimize(
    options?): object;
 ```
 
-Defined in: [src/core/optimize.js:52](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L52)
+Defined in: [src/core/optimize.js:52](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L52)
 
 Minimize a loss function
 
@@ -228,7 +228,7 @@ backtrackingLineSearch(
    currentLoss): number;
 ```
 
-Defined in: [src/core/optimize.js:108](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L108)
+Defined in: [src/core/optimize.js:108](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L108)
 
 Backtracking line search
 
@@ -260,7 +260,7 @@ Step size
 
 ### MomentumOptimizer
 
-Defined in: [src/core/optimize.js:139](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L139)
+Defined in: [src/core/optimize.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L139)
 
 Momentum Optimizer
 
@@ -276,7 +276,7 @@ Momentum Optimizer
 new MomentumOptimizer(options?): MomentumOptimizer;
 ```
 
-Defined in: [src/core/optimize.js:140](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L140)
+Defined in: [src/core/optimize.js:140](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L140)
 
 ###### Parameters
 
@@ -300,7 +300,7 @@ Optimizer.constructor
 learningRate: any;
 ```
 
-Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L13)
+Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L13)
 
 ###### Inherited from
 
@@ -314,7 +314,7 @@ Optimizer.learningRate
 maxIter: any;
 ```
 
-Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L14)
+Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L14)
 
 ###### Inherited from
 
@@ -328,7 +328,7 @@ Optimizer.maxIter
 tol: any;
 ```
 
-Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L15)
+Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L15)
 
 ###### Inherited from
 
@@ -342,7 +342,7 @@ Optimizer.tol
 verbose: any;
 ```
 
-Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L16)
+Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L16)
 
 ###### Inherited from
 
@@ -356,7 +356,7 @@ Optimizer.verbose
 momentum: any;
 ```
 
-Defined in: [src/core/optimize.js:142](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L142)
+Defined in: [src/core/optimize.js:142](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L142)
 
 #### Methods
 
@@ -366,7 +366,7 @@ Defined in: [src/core/optimize.js:142](https://github.com/tangent-to/ds/blob/eda
 checkConvergence(gradient): boolean;
 ```
 
-Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L35)
+Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L35)
 
 Check convergence based on gradient norm
 
@@ -395,7 +395,7 @@ minimize(
    options?): object;
 ```
 
-Defined in: [src/core/optimize.js:145](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L145)
+Defined in: [src/core/optimize.js:145](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L145)
 
 Minimize a loss function
 
@@ -457,7 +457,7 @@ Optimizer.minimize
 
 ### RMSProp
 
-Defined in: [src/core/optimize.js:189](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L189)
+Defined in: [src/core/optimize.js:189](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L189)
 
 RMSProp Optimizer
 
@@ -473,7 +473,7 @@ RMSProp Optimizer
 new RMSProp(options?): RMSProp;
 ```
 
-Defined in: [src/core/optimize.js:190](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L190)
+Defined in: [src/core/optimize.js:190](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L190)
 
 ###### Parameters
 
@@ -497,7 +497,7 @@ Optimizer.constructor
 learningRate: any;
 ```
 
-Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L13)
+Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L13)
 
 ###### Inherited from
 
@@ -511,7 +511,7 @@ Optimizer.learningRate
 maxIter: any;
 ```
 
-Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L14)
+Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L14)
 
 ###### Inherited from
 
@@ -525,7 +525,7 @@ Optimizer.maxIter
 tol: any;
 ```
 
-Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L15)
+Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L15)
 
 ###### Inherited from
 
@@ -539,7 +539,7 @@ Optimizer.tol
 verbose: any;
 ```
 
-Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L16)
+Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L16)
 
 ###### Inherited from
 
@@ -553,7 +553,7 @@ Optimizer.verbose
 decay: any;
 ```
 
-Defined in: [src/core/optimize.js:192](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L192)
+Defined in: [src/core/optimize.js:192](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L192)
 
 ##### epsilon
 
@@ -561,7 +561,7 @@ Defined in: [src/core/optimize.js:192](https://github.com/tangent-to/ds/blob/eda
 epsilon: any;
 ```
 
-Defined in: [src/core/optimize.js:193](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L193)
+Defined in: [src/core/optimize.js:193](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L193)
 
 #### Methods
 
@@ -571,7 +571,7 @@ Defined in: [src/core/optimize.js:193](https://github.com/tangent-to/ds/blob/eda
 checkConvergence(gradient): boolean;
 ```
 
-Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L35)
+Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L35)
 
 Check convergence based on gradient norm
 
@@ -600,7 +600,7 @@ minimize(
    options?): object;
 ```
 
-Defined in: [src/core/optimize.js:196](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L196)
+Defined in: [src/core/optimize.js:196](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L196)
 
 Minimize a loss function
 
@@ -662,7 +662,7 @@ Optimizer.minimize
 
 ### AdamOptimizer
 
-Defined in: [src/core/optimize.js:240](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L240)
+Defined in: [src/core/optimize.js:240](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L240)
 
 Adam Optimizer (Adaptive Moment Estimation)
 
@@ -678,7 +678,7 @@ Adam Optimizer (Adaptive Moment Estimation)
 new AdamOptimizer(options?): AdamOptimizer;
 ```
 
-Defined in: [src/core/optimize.js:241](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L241)
+Defined in: [src/core/optimize.js:241](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L241)
 
 ###### Parameters
 
@@ -702,7 +702,7 @@ Optimizer.constructor
 learningRate: any;
 ```
 
-Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L13)
+Defined in: [src/core/optimize.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L13)
 
 ###### Inherited from
 
@@ -716,7 +716,7 @@ Optimizer.learningRate
 maxIter: any;
 ```
 
-Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L14)
+Defined in: [src/core/optimize.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L14)
 
 ###### Inherited from
 
@@ -730,7 +730,7 @@ Optimizer.maxIter
 tol: any;
 ```
 
-Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L15)
+Defined in: [src/core/optimize.js:15](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L15)
 
 ###### Inherited from
 
@@ -744,7 +744,7 @@ Optimizer.tol
 verbose: any;
 ```
 
-Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L16)
+Defined in: [src/core/optimize.js:16](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L16)
 
 ###### Inherited from
 
@@ -758,7 +758,7 @@ Optimizer.verbose
 beta1: any;
 ```
 
-Defined in: [src/core/optimize.js:243](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L243)
+Defined in: [src/core/optimize.js:243](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L243)
 
 ##### beta2
 
@@ -766,7 +766,7 @@ Defined in: [src/core/optimize.js:243](https://github.com/tangent-to/ds/blob/eda
 beta2: any;
 ```
 
-Defined in: [src/core/optimize.js:244](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L244)
+Defined in: [src/core/optimize.js:244](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L244)
 
 ##### epsilon
 
@@ -774,7 +774,7 @@ Defined in: [src/core/optimize.js:244](https://github.com/tangent-to/ds/blob/eda
 epsilon: any;
 ```
 
-Defined in: [src/core/optimize.js:245](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L245)
+Defined in: [src/core/optimize.js:245](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L245)
 
 #### Methods
 
@@ -784,7 +784,7 @@ Defined in: [src/core/optimize.js:245](https://github.com/tangent-to/ds/blob/eda
 checkConvergence(gradient): boolean;
 ```
 
-Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L35)
+Defined in: [src/core/optimize.js:35](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L35)
 
 Check convergence based on gradient norm
 
@@ -813,7 +813,7 @@ minimize(
    options?): object;
 ```
 
-Defined in: [src/core/optimize.js:248](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L248)
+Defined in: [src/core/optimize.js:248](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L248)
 
 Minimize a loss function
 
@@ -879,7 +879,7 @@ Optimizer.minimize
 function createOptimizer(name, options?): Optimizer;
 ```
 
-Defined in: [src/core/optimize.js:310](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/optimize.js#L310)
+Defined in: [src/core/optimize.js:310](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/optimize.js#L310)
 
 Convenience function to create optimizer by name
 

@@ -15,7 +15,7 @@ permalink: /api/machine-learning/silhouette
 function silhouetteSamples(X, labels): object[];
 ```
 
-Defined in: [src/ml/silhouette.js:54](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/silhouette.js#L54)
+Defined in: [src/ml/silhouette.js:54](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/silhouette.js#L54)
 
 #### Parameters
 
@@ -39,7 +39,7 @@ Defined in: [src/ml/silhouette.js:54](https://github.com/tangent-to/ds/blob/edab
 function silhouetteByCluster(X, labels): object[];
 ```
 
-Defined in: [src/ml/silhouette.js:118](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/silhouette.js#L118)
+Defined in: [src/ml/silhouette.js:118](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/silhouette.js#L118)
 
 #### Parameters
 

@@ -15,7 +15,7 @@ permalink: /api/machine-learning/utils
 function setSeed(value): void;
 ```
 
-Defined in: [src/ml/utils.js:11](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/utils.js#L11)
+Defined in: [src/ml/utils.js:11](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/utils.js#L11)
 
 Set random seed for reproducibility
 
@@ -39,7 +39,7 @@ Seed value
 function random(): number;
 ```
 
-Defined in: [src/ml/utils.js:19](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/utils.js#L19)
+Defined in: [src/ml/utils.js:19](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/utils.js#L19)
 
 Seeded random number generator (LCG)
 
@@ -57,7 +57,7 @@ Random number between 0 and 1
 function randomInt(min, max): number;
 ```
 
-Defined in: [src/ml/utils.js:30](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/utils.js#L30)
+Defined in: [src/ml/utils.js:30](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/utils.js#L30)
 
 Random integer in range [min, max)
 
@@ -89,7 +89,7 @@ Random integer
 function shuffle(arr): any[];
 ```
 
-Defined in: [src/ml/utils.js:39](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/utils.js#L39)
+Defined in: [src/ml/utils.js:39](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/utils.js#L39)
 
 Shuffle array in place using seeded random
 
@@ -115,7 +115,7 @@ Shuffled array
 function sample(arr, k): any[];
 ```
 
-Defined in: [src/ml/utils.js:54](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/utils.js#L54)
+Defined in: [src/ml/utils.js:54](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/utils.js#L54)
 
 Sample without replacement
 

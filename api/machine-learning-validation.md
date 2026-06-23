@@ -34,7 +34,7 @@ function trainTestSplit(
 };
 ```
 
-Defined in: [src/ml/validation.js:238](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L238)
+Defined in: [src/ml/validation.js:238](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L238)
 
 Split data into train and test sets
 Supports both raw matrices and declarative table descriptors
@@ -82,7 +82,7 @@ function kFold(
    shuffle?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:416](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L416)
+Defined in: [src/ml/validation.js:416](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L416)
 
 K-Fold cross-validation generator
 
@@ -129,7 +129,7 @@ function stratifiedKFold(
    k?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:441](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L441)
+Defined in: [src/ml/validation.js:441](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L441)
 
 Stratified K-Fold for classification with balanced class distribution
 
@@ -171,7 +171,7 @@ function groupKFold(
    k?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:468](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L468)
+Defined in: [src/ml/validation.js:468](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L468)
 
 Group K-Fold keeping group membership intact
 
@@ -215,7 +215,7 @@ Array of fold objects
 function leaveOneOut(X, _y): Object[];
 ```
 
-Defined in: [src/ml/validation.js:501](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L501)
+Defined in: [src/ml/validation.js:501](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L501)
 
 Leave-One-Out cross-validation
 
@@ -248,7 +248,7 @@ function shuffleSplit(
    options?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:522](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L522)
+Defined in: [src/ml/validation.js:522](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L522)
 
 Shuffle Split - repeated random train-test splits
 
@@ -291,7 +291,7 @@ function crossValidate(
    folds?): object;
 ```
 
-Defined in: [src/ml/validation.js:559](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L559)
+Defined in: [src/ml/validation.js:559](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/validation.js#L559)
 
 Execute cross-validation with a model.
 

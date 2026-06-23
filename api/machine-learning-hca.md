@@ -15,7 +15,7 @@ permalink: /api/machine-learning/hca
 function fit(X, options?): Object;
 ```
 
-Defined in: [src/ml/hca.js:132](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/hca.js#L132)
+Defined in: [src/ml/hca.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/hca.js#L132)
 
 Fit hierarchical clustering
 
@@ -47,7 +47,7 @@ Data matrix
 function cut(model, k): any[];
 ```
 
-Defined in: [src/ml/hca.js:227](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/hca.js#L227)
+Defined in: [src/ml/hca.js:227](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/hca.js#L227)
 
 #### Parameters
 
@@ -71,7 +71,7 @@ Defined in: [src/ml/hca.js:227](https://github.com/tangent-to/ds/blob/edabdef9ec
 function cutHeight(model, height): any[];
 ```
 
-Defined in: [src/ml/hca.js:275](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/hca.js#L275)
+Defined in: [src/ml/hca.js:275](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/hca.js#L275)
 
 #### Parameters
 

@@ -1,3 +1,10 @@
+---
+layout: default
+title: "Machine Learning"
+parent: Tutorials
+nav_order: 4
+---
+
 # Tutorials Directory
 
 Tutorial content will go here. Each tutorial should be a markdown file converted from the Jupyter notebooks in `examples/user-guide/`.

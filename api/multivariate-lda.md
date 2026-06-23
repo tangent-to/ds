@@ -18,7 +18,7 @@ function fit(
    options?): object;
 ```
 
-Defined in: [src/mva/lda.js:22](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/lda.js#L22)
+Defined in: [src/mva/lda.js:22](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/lda.js#L22)
 
 #### Parameters
 
@@ -176,7 +176,7 @@ labelEncoder: any;
 function transform(model, X): Object[];
 ```
 
-Defined in: [src/mva/lda.js:365](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/lda.js#L365)
+Defined in: [src/mva/lda.js:360](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/lda.js#L360)
 
 #### Parameters
 
@@ -200,7 +200,7 @@ Defined in: [src/mva/lda.js:365](https://github.com/tangent-to/ds/blob/edabdef9e
 function predict(model, X): any[];
 ```
 
-Defined in: [src/mva/lda.js:402](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/lda.js#L402)
+Defined in: [src/mva/lda.js:397](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/lda.js#L397)
 
 #### Parameters
 

@@ -15,7 +15,7 @@ permalink: /api/machine-learning/loss
 function mseLoss(yTrue, yPred): Object;
 ```
 
-Defined in: [src/ml/loss.js:12](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L12)
+Defined in: [src/ml/loss.js:12](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L12)
 
 Mean Squared Error Loss
 
@@ -47,7 +47,7 @@ Predicted values
 function maeLoss(yTrue, yPred): Object;
 ```
 
-Defined in: [src/ml/loss.js:38](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L38)
+Defined in: [src/ml/loss.js:38](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L38)
 
 Mean Absolute Error Loss
 
@@ -82,7 +82,7 @@ function logLoss(
    epsilon?): Object;
 ```
 
-Defined in: [src/ml/loss.js:65](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L65)
+Defined in: [src/ml/loss.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L65)
 
 Binary Cross-Entropy Loss (Log Loss)
 
@@ -123,7 +123,7 @@ function crossEntropy(
    epsilon?): Object;
 ```
 
-Defined in: [src/ml/loss.js:96](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L96)
+Defined in: [src/ml/loss.js:96](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L96)
 
 Categorical Cross-Entropy Loss
 
@@ -161,7 +161,7 @@ Small value to avoid log(0)
 function hingeLoss(yTrue, yPred): Object;
 ```
 
-Defined in: [src/ml/loss.js:130](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L130)
+Defined in: [src/ml/loss.js:130](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L130)
 
 Hinge Loss (for SVM)
 
@@ -196,7 +196,7 @@ function huberLoss(
    delta?): Object;
 ```
 
-Defined in: [src/ml/loss.js:160](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L160)
+Defined in: [src/ml/loss.js:160](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L160)
 
 Huber Loss (robust to outliers)
 
@@ -234,7 +234,7 @@ Threshold for switching from quadratic to linear
 function getLossFunction(name): Function;
 ```
 
-Defined in: [src/ml/loss.js:195](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/loss.js#L195)
+Defined in: [src/ml/loss.js:195](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/loss.js#L195)
 
 Get loss function by name
 

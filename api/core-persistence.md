@@ -15,7 +15,7 @@ permalink: /api/core/persistence
 function saveModel(model): string;
 ```
 
-Defined in: [src/core/persistence.js:11](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/persistence.js#L11)
+Defined in: [src/core/persistence.js:11](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/persistence.js#L11)
 
 Save model to JSON
 
@@ -41,7 +41,7 @@ JSON string representation of the model
 function loadModel(json): Object;
 ```
 
-Defined in: [src/core/persistence.js:44](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/persistence.js#L44)
+Defined in: [src/core/persistence.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/persistence.js#L44)
 
 Load model from JSON
 
@@ -67,7 +67,7 @@ Reconstructed model object
 function addSerializationSupport(EstimatorClass, toJSONFn): void;
 ```
 
-Defined in: [src/core/persistence.js:113](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/persistence.js#L113)
+Defined in: [src/core/persistence.js:113](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/persistence.js#L113)
 
 Add toJSON method to an estimator class prototype
 This allows models to define their own serialization logic
@@ -98,7 +98,7 @@ Custom toJSON function
 function serializeValue(value): any;
 ```
 
-Defined in: [src/core/persistence.js:123](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/persistence.js#L123)
+Defined in: [src/core/persistence.js:123](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/persistence.js#L123)
 
 Serialize model to file-safe object
 Handles special types like undefined, Infinity, NaN
@@ -125,7 +125,7 @@ Serializable value
 function deserializeValue(value): any;
 ```
 
-Defined in: [src/core/persistence.js:154](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/persistence.js#L154)
+Defined in: [src/core/persistence.js:154](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/persistence.js#L154)
 
 Deserialize value from file-safe object
 
@@ -151,7 +151,7 @@ Deserialized value
 function makeSaveable(model): Object;
 ```
 
-Defined in: [src/core/persistence.js:186](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/persistence.js#L186)
+Defined in: [src/core/persistence.js:186](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/persistence.js#L186)
 
 Create a saveable model wrapper
 Adds save() method to any model object

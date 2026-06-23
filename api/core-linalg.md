@@ -5657,7 +5657,7 @@ Row to add.
 function toMatrix(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L13)
+Defined in: [src/core/linalg.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L13)
 
 Convert array-like structure to Matrix
 
@@ -5683,7 +5683,7 @@ Matrix object
 function solveLeastSquares(A, b): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:26](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L26)
+Defined in: [src/core/linalg.js:26](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L26)
 
 Solve least squares problem: minimize ||Ax - b||^2
 
@@ -5715,7 +5715,7 @@ Solution x
 function covarianceMatrix(data, center?): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:51](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L51)
+Defined in: [src/core/linalg.js:51](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L51)
 
 Compute covariance matrix
 
@@ -5747,7 +5747,7 @@ Covariance matrix
 function svd(data): Object;
 ```
 
-Defined in: [src/core/linalg.js:74](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L74)
+Defined in: [src/core/linalg.js:74](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L74)
 
 Singular Value Decomposition
 
@@ -5773,7 +5773,7 @@ Input matrix
 function eig(data): Object;
 ```
 
-Defined in: [src/core/linalg.js:89](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L89)
+Defined in: [src/core/linalg.js:89](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L89)
 
 Eigenvalue decomposition
 
@@ -5799,7 +5799,7 @@ Square matrix
 function mmul(A, B): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:104](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L104)
+Defined in: [src/core/linalg.js:104](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L104)
 
 Matrix multiplication
 
@@ -5831,7 +5831,7 @@ A * B
 function transpose(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:113](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L113)
+Defined in: [src/core/linalg.js:113](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L113)
 
 Matrix transpose
 
@@ -5857,7 +5857,7 @@ Transposed matrix
 function inverse(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:122](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L122)
+Defined in: [src/core/linalg.js:122](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L122)
 
 Matrix inverse
 
@@ -5883,7 +5883,7 @@ Inverse matrix
 function pseudoInverse(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:128](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/linalg.js#L128)
+Defined in: [src/core/linalg.js:128](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/linalg.js#L128)
 
 #### Parameters
 

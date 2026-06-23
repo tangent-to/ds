@@ -18,7 +18,7 @@ function fit(
    options?): object;
 ```
 
-Defined in: [src/mva/cca.js:19](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L19)
+Defined in: [src/mva/cca.js:19](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/cca.js#L19)
 
 Fit CCA model.
 
@@ -160,7 +160,7 @@ function transformX(
    options?): object[];
 ```
 
-Defined in: [src/mva/cca.js:195](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L195)
+Defined in: [src/mva/cca.js:195](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/cca.js#L195)
 
 #### Parameters
 
@@ -189,7 +189,7 @@ function transformY(
    options?): object[];
 ```
 
-Defined in: [src/mva/cca.js:212](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L212)
+Defined in: [src/mva/cca.js:212](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/cca.js#L212)
 
 #### Parameters
 
@@ -219,7 +219,7 @@ function transform(
    options?): object;
 ```
 
-Defined in: [src/mva/cca.js:229](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L229)
+Defined in: [src/mva/cca.js:229](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/cca.js#L229)
 
 #### Parameters
 

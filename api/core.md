@@ -25,7 +25,7 @@ permalink: /api/core
 function parseFormula(formula, _data?): Object;
 ```
 
-Defined in: [src/core/formula.js:19](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/formula.js#L19)
+Defined in: [src/core/formula.js:19](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/formula.js#L19)
 
 Parse an R-style formula string
 
@@ -58,7 +58,7 @@ function applyFormula(
    options?): Object;
 ```
 
-Defined in: [src/core/formula.js:415](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/formula.js#L415)
+Defined in: [src/core/formula.js:415](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/formula.js#L415)
 
 Apply formula to data to extract design matrix and response
 

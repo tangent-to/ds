@@ -15,7 +15,7 @@ permalink: /api/machine-learning/criteria
 function gini(labels): number;
 ```
 
-Defined in: [src/ml/criteria.js:13](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L13)
+Defined in: [src/ml/criteria.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L13)
 
 Gini impurity for classification
 Measures probability of misclassification
@@ -43,7 +43,7 @@ Gini impurity [0, 1]
 function entropy(labels): number;
 ```
 
-Defined in: [src/ml/criteria.js:39](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L39)
+Defined in: [src/ml/criteria.js:39](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L39)
 
 Entropy (information gain) for classification
 Measures uncertainty/disorder in the data
@@ -71,7 +71,7 @@ Entropy [0, log2(n_classes)]
 function variance(values): number;
 ```
 
-Defined in: [src/ml/criteria.js:67](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L67)
+Defined in: [src/ml/criteria.js:67](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L67)
 
 Variance for regression
 Measures spread of continuous values
@@ -99,7 +99,7 @@ Variance
 function mse(values): number;
 ```
 
-Defined in: [src/ml/criteria.js:87](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L87)
+Defined in: [src/ml/criteria.js:87](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L87)
 
 Mean Squared Error (MSE) for regression
 Alternative to variance, measures prediction error
@@ -126,7 +126,7 @@ MSE (same as variance for single node)
 function mae(values): number;
 ```
 
-Defined in: [src/ml/criteria.js:97](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L97)
+Defined in: [src/ml/criteria.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L97)
 
 Mean Absolute Error (MAE) for regression
 Robust alternative to MSE
@@ -153,7 +153,7 @@ MAE
 function classificationError(labels): number;
 ```
 
-Defined in: [src/ml/criteria.js:116](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L116)
+Defined in: [src/ml/criteria.js:116](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L116)
 
 Classification error (misclassification rate)
 Simple impurity measure based on majority class
@@ -180,7 +180,7 @@ Classification error [0, 1]
 function getCriterionFunction(criterion, task?): Function;
 ```
 
-Defined in: [src/ml/criteria.js:134](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L134)
+Defined in: [src/ml/criteria.js:134](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L134)
 
 Get impurity function by name
 
@@ -216,7 +216,7 @@ function informationGain(
    impurityFn?): number;
 ```
 
-Defined in: [src/ml/criteria.js:169](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/criteria.js#L169)
+Defined in: [src/ml/criteria.js:169](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/criteria.js#L169)
 
 Compute information gain (reduction in impurity)
 

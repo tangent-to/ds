@@ -11,7 +11,7 @@ permalink: /api/core/spatial
 
 ### KDTree
 
-Defined in: [src/core/spatial/kdtree.js:24](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L24)
+Defined in: [src/core/spatial/kdtree.js:24](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L24)
 
 KD-Tree for efficient spatial queries
 
@@ -23,7 +23,7 @@ KD-Tree for efficient spatial queries
 new KDTree(points, metric?): KDTree;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:25](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L25)
+Defined in: [src/core/spatial/kdtree.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L25)
 
 ###### Parameters
 
@@ -47,7 +47,7 @@ Defined in: [src/core/spatial/kdtree.js:25](https://github.com/tangent-to/ds/blo
 metric: string;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:26](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L26)
+Defined in: [src/core/spatial/kdtree.js:26](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L26)
 
 ##### dimensions
 
@@ -55,7 +55,7 @@ Defined in: [src/core/spatial/kdtree.js:26](https://github.com/tangent-to/ds/blo
 dimensions: any;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:27](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L27)
+Defined in: [src/core/spatial/kdtree.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L27)
 
 ##### root
 
@@ -63,7 +63,7 @@ Defined in: [src/core/spatial/kdtree.js:27](https://github.com/tangent-to/ds/blo
 root: any;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:28](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L28)
+Defined in: [src/core/spatial/kdtree.js:28](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L28)
 
 #### Methods
 
@@ -73,7 +73,7 @@ Defined in: [src/core/spatial/kdtree.js:28](https://github.com/tangent-to/ds/blo
 knn(point, k): object[];
 ```
 
-Defined in: [src/core/spatial/kdtree.js:64](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L64)
+Defined in: [src/core/spatial/kdtree.js:64](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L64)
 
 Find k nearest neighbors
 
@@ -101,7 +101,7 @@ Number of neighbors
 radiusSearch(point, radius): object[];
 ```
 
-Defined in: [src/core/spatial/kdtree.js:100](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L100)
+Defined in: [src/core/spatial/kdtree.js:100](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L100)
 
 Find all neighbors within radius
 
@@ -129,7 +129,7 @@ Search radius
 _euclidean(a, b): number;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:151](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L151)
+Defined in: [src/core/spatial/kdtree.js:151](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L151)
 
 ###### Parameters
 
@@ -151,7 +151,7 @@ Defined in: [src/core/spatial/kdtree.js:151](https://github.com/tangent-to/ds/bl
 _manhattan(a, b): number;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:159](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L159)
+Defined in: [src/core/spatial/kdtree.js:159](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L159)
 
 ###### Parameters
 
@@ -173,7 +173,7 @@ Defined in: [src/core/spatial/kdtree.js:159](https://github.com/tangent-to/ds/bl
 _chebyshev(a, b): number;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:167](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L167)
+Defined in: [src/core/spatial/kdtree.js:167](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L167)
 
 ###### Parameters
 
@@ -197,7 +197,7 @@ Defined in: [src/core/spatial/kdtree.js:167](https://github.com/tangent-to/ds/bl
 function buildKDTree(points, metric?): KDTree;
 ```
 
-Defined in: [src/core/spatial/kdtree.js:212](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/core/spatial/kdtree.js#L212)
+Defined in: [src/core/spatial/kdtree.js:212](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/spatial/kdtree.js#L212)
 
 Build KD-tree from data
 
