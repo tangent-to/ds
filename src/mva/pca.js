@@ -6,7 +6,7 @@
 
 import { Matrix, svd, toMatrix } from '../core/linalg.js';
 import { mean, stddev } from '../core/math.js';
-import { prepareX } from '../core/table.js';
+import { prepareX, attachSourceRows } from '../core/table.js';
 import {
   columnsToRows,
   eigenvaluePowers,
@@ -95,12 +95,12 @@ export function fit(
   // Convert to array format
   let data;
   let featureNames = null;
-  let sourceRows = null;
+  let sourcePrepared = null;
   if (data_in) {
     // Prepare numeric matrix from table-like input
     const prepared = prepareX({ columns, data: data_in, naOmit: shouldOmitMissing });
     data = prepared.X;
-    sourceRows = prepared.rows;
+    sourcePrepared = prepared;
     if (prepared.columns && prepared.columns.length) {
       featureNames = prepared.columns.map((name) => String(name));
     }
@@ -108,7 +108,7 @@ export function fit(
     // Array of objects (table-like data) - use prepareX
     const prepared = prepareX({ columns, data: X, naOmit: shouldOmitMissing });
     data = prepared.X;
-    sourceRows = prepared.rows;
+    sourcePrepared = prepared;
     if (prepared.columns && prepared.columns.length) {
       featureNames = prepared.columns.map((name) => String(name));
     }
@@ -223,17 +223,11 @@ export function fit(
     featureNames: variableNames,
   };
 
-  // Keep a reference (not a copy) to the filtered source rows so plot
-  // helpers can resolve column names (e.g. colorBy: 'Species'), aligned
-  // row-for-row with the scores after naOmit filtering. Non-enumerable so
-  // it is skipped by JSON serialization / model persistence.
-  if (sourceRows) {
-    Object.defineProperty(model, 'rows', {
-      value: sourceRows,
-      enumerable: false,
-      configurable: true,
-    });
-  }
+  // Keep a reference (not a copy) to the filtered source rows + the indices
+  // they had before naOmit, so plot helpers can resolve column names
+  // (e.g. colorBy: 'Species') and realign external per-row arrays to the
+  // scores. Non-enumerable so they are skipped by JSON / model persistence.
+  attachSourceRows(model, sourcePrepared);
 
   return model;
 }

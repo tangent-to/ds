@@ -481,10 +481,19 @@ describe('ordiplot colorBy resolution', () => {
     expect(config.data.scores.map((s) => s.color)).toEqual(['x', 'x', 'y', 'z', 'z']);
   });
 
-  it('throws an informative error when colorBy length does not match scores', () => {
+  it('realigns a full-length colorBy array to the rows kept after naOmit', () => {
     const model = mva.pca.fit({ data, columns: ['a', 'b'] });
-    expect(() => plot.ordiplot(model, { colorBy: data.map((d) => d.sp) }))
-      .toThrow(/6 values but the ordination has 5 scores/);
+    // `data` has 6 rows; one is dropped by naOmit -> 5 scores. A 6-long array
+    // (one value per ORIGINAL row) is realigned to the 5 kept rows instead of
+    // throwing, so callers don't have to filter colorBy the same way by hand.
+    const config = plot.ordiplot(model, { colorBy: data.map((d) => d.sp) });
+    expect(config.data.scores.map((s) => s.color)).toEqual(['x', 'x', 'y', 'z', 'z']);
+  });
+
+  it('throws when colorBy length matches neither the source nor the scores', () => {
+    const model = mva.pca.fit({ data, columns: ['a', 'b'] });
+    expect(() => plot.ordiplot(model, { colorBy: ['a', 'b', 'c'] }))
+      .toThrow(/3 values but the ordination has 5 scores/);
   });
 
   it('throws an informative error for string colorBy on a matrix-fitted model', () => {

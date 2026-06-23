@@ -6,7 +6,7 @@
 import { Matrix, solveLeastSquares, toMatrix as _toMatrix } from '../core/linalg.js';
 import * as pca from './pca.js';
 import { mean } from '../core/math.js';
-import { prepareX } from '../core/table.js';
+import { prepareX, attachSourceRows } from '../core/table.js';
 import {
   eigenvaluePowers,
   normalizeScaling,
@@ -36,7 +36,7 @@ export function fit(Y, X, options = {}) {
     : (options.naOmit !== undefined ? options.naOmit : true);
   let responseMatrix = Y;
   let predictorMatrix = X;
-  let sourceRows = null;
+  let sourcePrepared = null;
   let responseNames = Array.isArray(options.responseNames)
     ? options.responseNames.map((name) => String(name))
     : null;
@@ -86,7 +86,7 @@ export function fit(Y, X, options = {}) {
 
     responseMatrix = responsePrepAligned.X;
     predictorMatrix = predictorPrep.X;
-    sourceRows = predictorPrep.rows;
+    sourcePrepared = predictorPrep;
     responseNames = responsePrepAligned.columns.map((name) => String(name));
     predictorNames = predictorPrep.columns.map((name) => String(name));
   }
@@ -284,15 +284,10 @@ export function fit(Y, X, options = {}) {
   model.canonicalLoadings = loadingsObjects;
   model.predictorCorrelations = predictorCorrelations;
 
-  // Reference to the filtered source rows for plot helpers (colorBy by
-  // column name); non-enumerable so persistence/JSON skips it
-  if (sourceRows) {
-    Object.defineProperty(model, 'rows', {
-      value: sourceRows,
-      enumerable: false,
-      configurable: true,
-    });
-  }
+  // Reference to the filtered source rows (+ original indices) for plot
+  // helpers (colorBy by column name, and realigning external per-row arrays);
+  // non-enumerable so persistence/JSON skips it
+  attachSourceRows(model, sourcePrepared);
 
   return model;
 }

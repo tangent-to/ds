@@ -503,10 +503,17 @@ export function prepareX(
     }
   }
 
-  // If naOmit/omit_missing is true, drop rows with missing in any requested columns
-  const preFiltered = shouldOmitMissing
-    ? rows.filter((r) => columns.every((c) => !isMissing(r[c])))
-    : rows.slice();
+  // If naOmit/omit_missing is true, drop rows with missing in any requested columns.
+  // Track which original-row indices survived so callers can realign external
+  // per-row values (e.g. a plot's colorBy) to the rows that were kept.
+  const preFiltered = [];
+  const validIndices = [];
+  rows.forEach((r, i) => {
+    if (!shouldOmitMissing || columns.every((c) => !isMissing(r[c]))) {
+      preFiltered.push(r);
+      validIndices.push(i);
+    }
+  });
 
   // Determine per-column encoders if requested
   const providedEncoders = encoders || {};
@@ -621,8 +628,37 @@ export function prepareX(
     columns: finalColumnNames,
     n: X.length,
     rows: preFiltered,
+    validIndices,
+    sourceLength: rows.length,
     encoders: resolvedEncoders,
   };
+}
+
+/**
+ * Attach naOmit alignment metadata to a fitted model as non-enumerable
+ * properties, so plot helpers can realign external per-row values (colorBy,
+ * labels) to the rows that survived missing-value filtering.
+ *
+ * @param {Object} model - Fitted model to annotate
+ * @param {Object} prepared - A prepareX() result ({ rows, validIndices, sourceLength })
+ * @returns {Object} The same model
+ */
+export function attachSourceRows(model, prepared) {
+  if (!model || !prepared || !prepared.rows) return model;
+  const meta = {
+    rows: prepared.rows,
+    rowIndices: prepared.validIndices,
+    sourceLength: prepared.sourceLength,
+  };
+  for (const [key, value] of Object.entries(meta)) {
+    if (value === undefined) continue;
+    Object.defineProperty(model, key, {
+      value,
+      enumerable: false,
+      configurable: true,
+    });
+  }
+  return model;
 }
 
 /**
@@ -745,12 +781,16 @@ export function prepareXY(
     }
   }
 
-  // If naOmit/omit_missing: filter rows where any of the X columns or y are missing
-  const preFiltered = shouldOmitMissing
-    ? rows.filter((r) => {
-      return columnsX.every((c) => !isMissing(r[c])) && !isMissing(r[y]);
-    })
-    : rows.slice();
+  // If naOmit/omit_missing: filter rows where any of the X columns or y are
+  // missing, tracking surviving original-row indices for downstream realignment.
+  const preFiltered = [];
+  const validIndices = [];
+  rows.forEach((r, i) => {
+    if (!shouldOmitMissing || (columnsX.every((c) => !isMissing(r[c])) && !isMissing(r[y]))) {
+      preFiltered.push(r);
+      validIndices.push(i);
+    }
+  });
 
   // For X we will reuse prepareX logic by delegating to prepareX with the same encode map
   const providedEncoders = encoders || {};
@@ -809,6 +849,8 @@ export function prepareXY(
     columnsX: xPrep.columns,
     n: xPrep.n,
     rows: preFiltered,
+    validIndices,
+    sourceLength: rows.length,
     encoders: encodersOut,
   };
 }

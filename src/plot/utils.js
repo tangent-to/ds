@@ -26,7 +26,7 @@ import { normalize } from '../core/table.js';
 export function resolveGroupValues(spec, result = null, name = 'colorBy') {
   if (spec === null || spec === undefined) return null;
 
-  if (Array.isArray(spec)) return spec;
+  if (Array.isArray(spec)) return alignToKeptRows(spec, result);
 
   if (typeof spec === 'string') {
     const rows = result && result.rows;
@@ -40,23 +40,50 @@ export function resolveGroupValues(spec, result = null, name = 'colorBy') {
     if (rows.length > 0 && !(spec in rows[0])) {
       throw new Error(`${name}: column "${spec}" not found in the model's source data.`);
     }
+    // `rows` are already the post-naOmit kept rows, so this is aligned.
     return rows.map((row) => row[spec]);
   }
 
   if (typeof spec === 'object' && spec.data !== undefined && spec.column !== undefined) {
     const rows = normalize(spec.data);
-    return rows.map((row) => row[spec.column]);
+    return alignToKeptRows(rows.map((row) => row[spec.column]), result);
   }
 
   if (typeof spec[Symbol.iterator] === 'function') {
     // Arquero columns, typed arrays, Sets, generators...
-    return Array.from(spec);
+    return alignToKeptRows(Array.from(spec), result);
   }
 
   throw new Error(
     `${name} must be an array, an iterable (e.g. an Arquero column), ` +
       `a { data, column } descriptor, or a column-name string.`,
   );
+}
+
+/**
+ * Realign a full-length per-row array to the rows a model kept after naOmit.
+ *
+ * When `values` has one entry per ORIGINAL row (length === model.sourceLength)
+ * but the model dropped rows with missing values during fitting, this selects
+ * only the surviving rows (via model.rowIndices) so the result lines up
+ * row-for-row with the ordination scores. Arrays that are already the kept
+ * length (or models without naOmit metadata) are returned unchanged.
+ *
+ * @param {Array} values - Per-row values, one per original input row
+ * @param {Object|null} result - Fitted model carrying { rowIndices, sourceLength }
+ * @returns {Array}
+ */
+function alignToKeptRows(values, result) {
+  if (
+    result &&
+    Array.isArray(result.rowIndices) &&
+    typeof result.sourceLength === 'number' &&
+    values.length === result.sourceLength &&
+    result.rowIndices.length !== values.length
+  ) {
+    return result.rowIndices.map((i) => values[i]);
+  }
+  return values;
 }
 
 /**

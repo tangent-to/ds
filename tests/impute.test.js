@@ -75,6 +75,37 @@ describe('Imputation (compared with sklearn)', () => {
       expect(result[4][0]).toBe(1);
     });
 
+    it('most_frequent imputes categorical columns when none are specified', () => {
+      // Regression: auto-detected columns used to be numeric-only, so
+      // most_frequent silently skipped string columns (a no-op for its main use).
+      const data = [
+        { bill: 39.1, sex: 'male' },
+        { bill: 38.8, sex: null }, // categorical missing
+        { bill: 40.3, sex: 'female' },
+        { bill: 36.7, sex: 'female' },
+        { bill: 39.3, sex: 'male' },
+      ];
+
+      const out = new SimpleImputer({ strategy: 'most_frequent' }).fit_transform({ data });
+
+      // The string column is imputed with its mode (no columns passed)
+      expect(out.map((r) => r.sex)).not.toContain(null);
+      expect(['male', 'female']).toContain(out[1].sex);
+    });
+
+    it('mean still auto-detects only numeric columns (skips categoricals)', () => {
+      const data = [
+        { bill: 39.1, sex: 'male' },
+        { bill: null, sex: 'female' }, // numeric missing -> imputed; sex left alone
+        { bill: 40.3, sex: 'female' },
+      ];
+
+      const out = new SimpleImputer({ strategy: 'mean' }).fit_transform({ data });
+
+      expect(out[1].bill).toBeCloseTo((39.1 + 40.3) / 2, 6);
+      expect(out[1].sex).toBe('female'); // categorical untouched by mean
+    });
+
     it('should impute with constant strategy', () => {
       const X = [
         [1, 2],
