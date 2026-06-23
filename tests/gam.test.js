@@ -263,4 +263,36 @@ describe('GAM estimators', () => {
       expect(preds[1]).toBeLessThan(-0.5);
     });
   });
+
+  describe('Input validation', () => {
+    const rows = Array.from({ length: 40 }, (_, i) => ({
+      x1: (i / 39) * 2 * Math.PI,
+      x2: ((i % 20) / 19) * Math.PI,
+      y: Math.sin((i / 39) * 2 * Math.PI),
+    }));
+
+    it('throws a clear error when positional X is an array of objects', () => {
+      const X = rows.map((d) => ({ x1: d.x1, x2: d.x2 })); // objects, not [x1, x2]
+      const y = rows.map((d) => d.y);
+      expect(() => new GAMRegressor({ basis: 'cr', nSplines: 6 }).fit(X, y))
+        .toThrow(/X must be a 2D array of numbers.*declarative form/s);
+    });
+
+    it('GAMClassifier guards object-array X the same way', () => {
+      const X = rows.map((d) => ({ x1: d.x1 }));
+      const y = rows.map((_, i) => (i % 2));
+      expect(() => new GAMClassifier({ basis: 'cr', nSplines: 6 }).fit(X, y))
+        .toThrow(/X must be a 2D array of numbers/);
+    });
+
+    it('a 2D array and the declarative form both yield one smooth term per feature', () => {
+      const fromArray = new GAMRegressor({ basis: 'cr', nSplines: 6 })
+        .fit(rows.map((d) => [d.x1, d.x2]), rows.map((d) => d.y));
+      const fromTable = new GAMRegressor({ basis: 'cr', nSplines: 6 })
+        .fit({ data: rows, X: ['x1', 'x2'], y: 'y' });
+
+      expect(fromArray.summary().smoothTerms).toHaveLength(2);
+      expect(fromTable.summary().smoothTerms).toHaveLength(2);
+    });
+  });
 });

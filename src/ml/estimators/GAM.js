@@ -66,7 +66,20 @@ const _logit = {
 };
 
 function toNumericMatrix(X) {
-  return X.map((row) => Array.isArray(row) ? row.map(Number) : [Number(row)]);
+  return X.map((row, i) => {
+    if (Array.isArray(row)) return row.map(Number);
+    // A plain object row (e.g. { x1, x2 }) would silently become [NaN] via
+    // Number(object), collapsing every row to a single NaN "feature". Catch it
+    // with an actionable message instead of fitting a degenerate model.
+    if (row !== null && typeof row === 'object') {
+      throw new Error(
+        `GAM fit(X, y): X must be a 2D array of numbers, but row ${i} is an object ` +
+          `(keys: ${Object.keys(row).join(', ')}). For row-object/table input, use the ` +
+          `declarative form: fit({ data, X: ['col1', 'col2'], y: 'target' }).`,
+      );
+    }
+    return [Number(row)];
+  });
 }
 
 function prepareDataset(X, y) {
