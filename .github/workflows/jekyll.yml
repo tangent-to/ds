@@ -87,6 +87,17 @@ jobs:
             mv "$temp_file" "$file"
           done
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate API reference from JSDoc (TypeDoc)
+        run: npm run docs:api
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:

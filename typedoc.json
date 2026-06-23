@@ -1,0 +1,24 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/core/index.js",
+    "src/stats/index.js",
+    "src/ml/index.js",
+    "src/mva/index.js",
+    "src/plot/index.js"
+  ],
+  "tsconfig": "tsconfig.typedoc.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "out": "docs/api-generated",
+  "readme": "none",
+  "githubPages": false,
+  "hideGenerator": true,
+  "excludeInternal": true,
+  "sort": ["source-order"],
+  "outputFileStrategy": "modules",
+  "entryFileName": "index",
+  "mergeReadme": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "useCodeBlocks": true
+}

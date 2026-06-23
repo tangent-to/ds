@@ -113,3 +113,7 @@ deno.lock
 .tmp/
 .npm-cache/
 .gitconfig
+.analysis/
+
+# TypeDoc scratch output (post-processed into docs/api/)
+docs/api-generated/
