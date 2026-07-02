@@ -177,6 +177,13 @@ function buildObservablePlotSpec(config, Plot, overrides) {
     };
   }
 
+  // Full scale objects set directly on the config (e.g. by ordiplot's `color` /
+  // `symbolBy` options) - these carry range/scheme/domain and take precedence over
+  // the derived legend.color shorthand. User overrides passed to .show() still win
+  // (they are spread last, below).
+  if (config.color) spec.color = { ...spec.color, ...config.color };
+  if (config.symbol) spec.symbol = { ...spec.symbol, ...config.symbol };
+
   const datasets = config.data || {};
 
   spec.marks = config.marks.map(mark => convertMarkToPlot(mark, datasets, Plot));

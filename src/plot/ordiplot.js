@@ -27,6 +27,18 @@ import { resolveGroupValues } from './utils.js';
  * @param {number} options.loadingScale - Scale factor for loading vectors (default: 3)
  * @param {number} options.loadingFactor - Multiplier applied to loading vectors (default: 1, set 0 for auto)
  * @param {number|null} options.predictorFactor - Multiplier for predictor arrows (RDA only, default: inherits loadingFactor; set 0 for auto)
+ * @param {Object|null} options.color - Point color scale for grouped points, merged
+ *   into the Plot `color` scale: `{ range, scheme, domain, legend, label }`. E.g.
+ *   `{ range: ["#111","#888"] }` for greyscale, or `{ scheme: "Observable10" }`.
+ * @param {string} options.pointColor - Fill for points when there is no `colorBy`
+ *   (default: 'steelblue').
+ * @param {boolean} options.symbolBy - Also encode groups by symbol (shape), not
+ *   colour alone - recommended for greyscale / colour-vision-deficiency safety.
+ * @param {string|null} options.loadingColor - Stroke for loading arrows (default:
+ *   'red', or 'blue' for an RDA response triplot).
+ * @param {string|null} options.loadingTextColor - Fill for loading labels (default:
+ *   'darkred', or 'darkblue' for RDA).
+ * @param {number} options.pointRadius - Point radius (default: 4).
  * @returns {Object} Plot configuration
  */
 export function ordiplot(result, {
@@ -42,7 +54,13 @@ export function ordiplot(result, {
   height = 400,
   loadingScale = 3,
   loadingFactor = 1,
-  predictorFactor = null
+  predictorFactor = null,
+  color = null,
+  pointColor = 'steelblue',
+  symbolBy = false,
+  loadingColor = null,
+  loadingTextColor = null,
+  pointRadius = 4
 } = {}) {
   // Auto-detect ordination type if not specified
   if (!type) {
@@ -108,28 +126,31 @@ export function ordiplot(result, {
     }
   }
 
-  // Add score points
-  const hasColorField = scoresData.length > 0 && scoresData.every((d) => typeof d.color !== 'undefined');
-  config.marks.push({
+  // Add score points. Group identity is carried by a fill colour scale and,
+  // when symbolBy is set, also by shape - so the plot stays readable in greyscale
+  // and under colour-vision deficiency.
+  // Real groups only: without colorBy every point carries color:'default', which
+  // should render as one constant fill (pointColor), not a one-entry colour scale.
+  const hasColorField = Array.isArray(colorBy) && colorBy.length > 0 &&
+    scoresData.length > 0 && scoresData.every((d) => typeof d.color !== 'undefined');
+  const dotMark = {
     type: 'dot',
     data: 'scores',
     x: 'x',
     y: 'y',
-    fill: hasColorField ? 'color' : 'steelblue',
-    r: 4,
+    fill: hasColorField ? 'color' : pointColor,
+    r: pointRadius,
     fillOpacity: 0.7,
     tip: labels ? true : false
-  });
+  };
+  if (hasColorField && symbolBy) dotMark.symbol = 'color';
+  config.marks.push(dotMark);
 
+  // Expose the colour (and optional symbol) scale so `.show(Plot)` renders a
+  // legend by default; the `color` option merges in range/scheme/domain overrides.
   if (hasColorField) {
-    const uniqueColors = Array.from(new Set(scoresData.map((d) => d.color))); // eslint-disable-line no-undef
-    config.legends = config.legends || [];
-    config.legends.push({
-      fill: 'color',
-      type: 'symbol',
-      title: 'Group',
-      categories: uniqueColors
-    });
+    config.color = { legend: true, ...(color || {}) };
+    if (symbolBy) config.symbol = { legend: true };
   }
 
   // Add labels if provided
@@ -194,9 +215,10 @@ export function ordiplot(result, {
       config.data.predictors = scaledPredictors;
     }
 
-    // For RDA triplot: use blue for response loadings
-    const loadingColor = (type === 'rda' && predictorData) ? 'blue' : 'red';
-    const loadingTextColor = (type === 'rda' && predictorData) ? 'darkblue' : 'darkred';
+    // Loading colours: honour explicit overrides, else default (RDA response = blue,
+    // otherwise red). Pass e.g. loadingColor: "#111" for a greyscale biplot.
+    const loadingStroke = loadingColor ?? ((type === 'rda' && predictorData) ? 'blue' : 'red');
+    const loadingLabelFill = loadingTextColor ?? ((type === 'rda' && predictorData) ? 'darkblue' : 'darkred');
 
     config.marks.push({
       type: 'arrow',
@@ -205,21 +227,36 @@ export function ordiplot(result, {
       y1: 'y1',
       x2: 'x2',
       y2: 'y2',
-      stroke: loadingColor,
+      stroke: loadingStroke,
       strokeWidth: 2,
       headLength: 8
     });
-    config.marks.push({
+
+    // Label placement: anchor each label on the outward side of its arrow tip and
+    // spread labels vertically so near-collinear vectors don't stack on top of
+    // each other (the common failure mode of dense biplots). A white halo keeps
+    // labels legible where they cross arrows or points.
+    const placed = placeLoadingLabels(scaledLoadings);
+    config.data.loadingLabelsRight = placed.filter((d) => d.side === 'right');
+    config.data.loadingLabelsLeft = placed.filter((d) => d.side === 'left');
+
+    const labelMark = (dataKey, anchor, dx) => ({
       type: 'text',
-      data: 'loadings',
+      data: dataKey,
       x: 'x2',
-      y: 'y2',
+      y: 'ly',
       text: 'variable',
       fontSize: 10,
-      fill: loadingTextColor,
-      dx: 5,
-      dy: 5
+      fontWeight: 600,
+      fill: loadingLabelFill,
+      stroke: 'white',
+      strokeWidth: 3,
+      textAnchor: anchor,
+      dx,
+      dy: 0
     });
+    config.marks.push(labelMark('loadingLabelsRight', 'start', 6));
+    config.marks.push(labelMark('loadingLabelsLeft', 'end', -6));
   }
 
   // Add predictor correlations for RDA triplot
@@ -278,6 +315,38 @@ export function ordiplot(result, {
   }
 
   return attachShow(config);
+}
+
+/**
+ * Place loading labels so near-collinear vectors don't overlap.
+ *
+ * Labels are anchored on the outward (left/right) side of each arrow tip, then
+ * spread apart vertically within each side using a greedy minimum-gap pass. The
+ * gap is a fraction of the largest loading radius, so it scales with the plot.
+ * Returns each loading augmented with `ly` (label y) and `side`.
+ * @private
+ */
+function placeLoadingLabels(loadings) {
+  const maxRadius = loadings.reduce(
+    (max, l) => Math.max(max, Math.hypot(l.x2 || 0, l.y2 || 0)),
+    0
+  );
+  const gap = (maxRadius || 1) * 0.14;
+
+  const spread = (group) => {
+    group.sort((a, b) => (b.y2 || 0) - (a.y2 || 0)); // top to bottom
+    let prev = Infinity;
+    return group.map((d) => {
+      let ly = d.y2 || 0;
+      if (prev - ly < gap) ly = prev - gap;
+      prev = ly;
+      return { ...d, ly };
+    });
+  };
+
+  const right = spread(loadings.filter((d) => (d.x2 || 0) >= 0).map((d) => ({ ...d, side: 'right' })));
+  const left = spread(loadings.filter((d) => (d.x2 || 0) < 0).map((d) => ({ ...d, side: 'left' })));
+  return [...right, ...left];
 }
 
 /**

@@ -210,6 +210,9 @@ export class GaussianProcessRegressor extends Regressor {
    * @param {number} opts.alpha - Noise level / regularization (default: 1e-10)
    * @param {number} opts.noiseLevel - Alias for alpha
    * @param {number} opts.period - Period for periodic kernel
+   * @param {boolean} opts.normalizeY - Standardize the target (center + scale to
+   *   unit variance) before fitting; predictions, std, covariance and posterior
+   *   samples are back-transformed. Alias: `normalize_y` (default: false)
    */
   constructor(opts = {}) {
     super(opts);
@@ -247,6 +250,15 @@ export class GaussianProcessRegressor extends Regressor {
     
     // Support both alpha and noiseLevel
     this.alpha = opts.alpha ?? opts.noiseLevel ?? 1e-10;
+
+    // Optionally standardize the target before fitting (sklearn `normalize_y`).
+    // A GP has a zero-mean prior, so on a target with a large mean the posterior
+    // reverts toward 0 away from the training data and the kernel amplitude must
+    // absorb the offset. Centring (and scaling) y fixes both; predictions,
+    // std, covariance and posterior samples are back-transformed automatically.
+    this.normalizeY = opts.normalizeY ?? opts.normalize_y ?? false;
+    this._yMean = 0;
+    this._yStd = 1;
 
     // Hyperparameter optimization (maximize the log marginal likelihood).
     // Off by default for backward compatibility; opt in with `optimize: true`
@@ -291,7 +303,21 @@ export class GaussianProcessRegressor extends Regressor {
 
     // Convert to matrix
     this._XTrain = toMatrix(dataX);
-    this._yTrain = Array.isArray(dataY) ? [...dataY] : Array.from(dataY);
+    const yRaw = Array.isArray(dataY) ? [...dataY] : Array.from(dataY);
+
+    // Standardize the target if requested; factorization below works on the
+    // transformed y, and predict()/sample() invert the transform.
+    if (this.normalizeY) {
+      const m = yRaw.reduce((a, b) => a + b, 0) / yRaw.length;
+      const v = yRaw.reduce((a, b) => a + (b - m) ** 2, 0) / yRaw.length;
+      this._yMean = m;
+      this._yStd = v > 0 ? Math.sqrt(v) : 1;
+      this._yTrain = yRaw.map((val) => (val - this._yMean) / this._yStd);
+    } else {
+      this._yMean = 0;
+      this._yStd = 1;
+      this._yTrain = yRaw;
+    }
 
     // Optionally tune hyperparameters by maximizing the log marginal likelihood.
     if (this.optimize) {
@@ -414,13 +440,14 @@ export class GaussianProcessRegressor extends Regressor {
     const XTest = toMatrix(X);
     const KStar = this.kernel.call(this._XTrain, XTest);
 
-    // Compute mean: K* @ alpha
+    // Compute mean: K* @ alpha (in standardized-y space), then back-transform.
     const mean = new Array(XTest.rows);
     for (let i = 0; i < XTest.rows; i++) {
       mean[i] = 0;
       for (let j = 0; j < this._XTrain.rows; j++) {
         mean[i] += KStar.get(j, i) * this._alphaVector[j];
       }
+      mean[i] = mean[i] * this._yStd + this._yMean;
     }
 
     if (!returnStd && !returnCov) {
@@ -431,11 +458,13 @@ export class GaussianProcessRegressor extends Regressor {
     const result = { mean };
 
     if (returnStd) {
-      result.std = diag.map(v => Math.sqrt(Math.max(0, v)));
+      // std scales with y; variance (diag) scales with y².
+      result.std = diag.map(v => Math.sqrt(Math.max(0, v)) * this._yStd);
     }
 
     if (returnCov) {
-      result.covariance = covarianceMatrix.to2DArray();
+      const s2 = this._yStd * this._yStd;
+      result.covariance = covarianceMatrix.to2DArray().map(row => row.map(x => x * s2));
     }
 
     return result;
@@ -471,6 +500,10 @@ export class GaussianProcessRegressor extends Regressor {
       samples.push(sampleMultivariateNormal(mean, covarianceMatrix, rng));
     }
 
+    // Draws are in standardized-y space; back-transform to the original scale.
+    if (this.normalizeY) {
+      return samples.map((row) => row.map((v) => v * this._yStd + this._yMean));
+    }
     return samples;
   }
 
@@ -590,6 +623,9 @@ export class GaussianProcessRegressor extends Regressor {
         params: this.kernel.getParams()
       },
       alpha: this.alpha,
+      normalizeY: this.normalizeY,
+      yMean: this._yMean,
+      yStd: this._yStd,
       fitted: this.fitted,
       XTrain: this._XTrain ? this._XTrain.to2DArray() : null,
       yTrain: this._yTrain,
@@ -614,8 +650,10 @@ export class GaussianProcessRegressor extends Regressor {
         throw new Error(`Unknown kernel type: ${json.kernel.type}`);
     }
 
-    const gp = new GaussianProcessRegressor({ kernel, alpha: json.alpha });
-    
+    const gp = new GaussianProcessRegressor({ kernel, alpha: json.alpha, normalizeY: json.normalizeY });
+    gp._yMean = json.yMean ?? 0;
+    gp._yStd = json.yStd ?? 1;
+
     if (json.fitted) {
       gp._XTrain = toMatrix(json.XTrain);
       gp._yTrain = json.yTrain;

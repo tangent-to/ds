@@ -17,7 +17,7 @@ import PCA from './estimators/PCA.js';
 import { LDA } from './estimators/LDA.js';
 import RDA from './estimators/RDA.js';
 import { CCA } from './estimators/CCA.js';
-import { CompositionalOutlierDetector } from './composition.js';
+import { CompositionalOutlierDetector, CompositionalImputer } from './composition.js';
 
 export {
   // Functional namespaces
@@ -32,5 +32,6 @@ export {
   LDA,
   RDA,
   CCA,
-  CompositionalOutlierDetector
+  CompositionalOutlierDetector,
+  CompositionalImputer
 };
