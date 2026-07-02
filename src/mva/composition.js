@@ -437,7 +437,7 @@ export function imputeMissing(mat, { maxIter = 100, tol = 1e-9 } = {}) {
   const D = M[0].length;
   // Only genuinely missing cells (null / NaN) are imputed. Observed zeros are
   // left in place for multiplicativeReplacement, but they are excluded from the
-  // (geometric) means below so they never poison a log — imputeMissing stays
+  // (geometric) means below so they never poison a log - imputeMissing stays
   // numerically robust even when the data still contains essential zeros.
   const miss = M.map((row) => row.map((v) => v == null || Number.isNaN(v)));
   const anyMiss = miss.map((r) => r.some(Boolean));
@@ -502,6 +502,98 @@ export function imputeMissing(mat, { maxIter = 100, tol = 1e-9 } = {}) {
 }
 
 /**
+ * Fit/transform wrapper around {@link imputeMissing} for leakage-free
+ * cross-validation. `fit()` learns the CLR mean of a training composition
+ * (zeros and missing cells treated alike as left-censored); `transform()`
+ * completes each row of new data toward that learned mean, holding the observed
+ * parts fixed. Because every incomplete row is completed individually (toward a
+ * shared target mean), below-detection samples do NOT collapse onto one constant
+ * coordinate - the property that motivates lrEM imputation in the first place - 
+ * while test rows never influence the imputation model.
+ *
+ * @example
+ * const imp = new CompositionalImputer().fit(trainComp);
+ * const trainZ = imp.transform(trainComp); // completed training rows
+ * const testZ  = imp.transform(testComp);  // completed with train-only stats
+ */
+export class CompositionalImputer {
+  /**
+   * @param {Object} [opts]
+   * @param {number} [opts.maxIter=100] - EM iterations for the training fit.
+   * @param {number} [opts.tol=1e-9] - Convergence tolerance for the training fit.
+   */
+  constructor({ maxIter = 100, tol = 1e-9 } = {}) {
+    this.maxIter = maxIter;
+    this.tol = tol;
+    this.fitted = false;
+  }
+
+  /** Treat null/NaN and zeros as missing (left-censored). @private */
+  static _nullifyZeros(M) {
+    return M.map((row) => row.map((v) => (v == null || Number.isNaN(v) || v === 0 ? null : v)));
+  }
+
+  /**
+   * Learn the CLR mean of the (imputed) training composition.
+   * @param {Array<Array<number>>} mat - Training composition with zeros/missing.
+   * @returns {CompositionalImputer} this
+   */
+  fit(mat) {
+    const { mat: M0 } = _ensureMatrix(mat);
+    const imputed = imputeMissing(CompositionalImputer._nullifyZeros(M0), { maxIter: this.maxIter, tol: this.tol });
+    const { mat: M } = _ensureMatrix(imputed);
+    const D = M[0].length;
+    const meanClr = new Array(D).fill(0);
+    for (const row of M) {
+      const gLog = row.reduce((s, v) => s + Math.log(v), 0) / D;
+      for (let j = 0; j < D; j++) meanClr[j] += Math.log(row[j]) - gLog;
+    }
+    for (let j = 0; j < D; j++) meanClr[j] /= M.length;
+    this.meanClr = meanClr;
+    this.D = D;
+    this.fitted = true;
+    return this;
+  }
+
+  /**
+   * Complete each row of `mat` toward the learned CLR mean.
+   * @param {Array<Array<number>>} mat - Composition with zeros/missing.
+   * @returns {Array<Array<number>>} Strictly-positive completed composition.
+   */
+  transform(mat) {
+    if (!this.fitted) throw new Error("CompositionalImputer: call fit() first");
+    const { mat: M, was1d } = _ensureMatrix(mat);
+    const D = this.D;
+    const out = M.map((row) => {
+      const r = row.slice();
+      const miss = r.map((v) => v == null || Number.isNaN(v) || v === 0);
+      if (!miss.some(Boolean)) return r.map((v) => +v);
+      for (let j = 0; j < D; j++) if (miss[j]) r[j] = Math.exp(this.meanClr[j]); // init
+      for (let it = 0; it < 100; it++) {
+        let s = 0, c = 0;
+        for (let j = 0; j < D; j++) if (Number.isFinite(r[j]) && r[j] > 0) { s += Math.log(r[j]); c++; }
+        const gLog = c ? s / c : 0;
+        let delta = 0;
+        for (let j = 0; j < D; j++) {
+          if (!miss[j]) continue;
+          const nv = Math.exp(this.meanClr[j] + gLog);
+          delta = Math.max(delta, Math.abs(Math.log(nv) - Math.log(r[j])));
+          r[j] = nv;
+        }
+        if (delta < 1e-13) break;
+      }
+      return r;
+    });
+    return _restoreShape(out, was1d);
+  }
+
+  /** Convenience: fit then transform the same matrix. */
+  fitTransform(mat) {
+    return this.fit(mat).transform(mat);
+  }
+}
+
+/**
  * Detect compositional outliers via the Mahalanobis distance in log-ratio
  * space, tested as a chi-squared variable (Filzmoser & Hron; Parent & Dafir,
  * 1992).
@@ -535,7 +627,7 @@ export class CompositionalOutlierDetector {
 
   /**
    * Estimate the centroid and (pseudo-inverse) covariance in log-ratio space
-   * from a reference composition — e.g. a healthy / high-yielding subpopulation.
+   * from a reference composition - e.g. a healthy / high-yielding subpopulation.
    * @param {Array<Array<number>>} mat - Strictly-positive reference composition.
    * @returns {CompositionalOutlierDetector} this
    */
@@ -609,7 +701,7 @@ export class CompositionalOutlierDetector {
  * fits on `mat` (or a `reference` subset of it) and tests `mat`.
  *
  * For testing *new* points against the fitted reference (e.g. external
- * standards), fit a detector once and call `.test(newComposition)` — no manual
+ * standards), fit a detector once and call `.test(newComposition)` - no manual
  * projection needed.
  *
  * @param {Array<Array<number>>} mat - Strictly-positive composition.
@@ -647,6 +739,7 @@ export default {
   sbpBasis,
   inner,
   imputeMissing,
+  CompositionalImputer,
   compositionalOutliers,
   CompositionalOutlierDetector,
 };
