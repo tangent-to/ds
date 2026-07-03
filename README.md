@@ -4,6 +4,15 @@ A browser-friendly data science library in modern JavaScript (ESM).
 
 ## Installation
 
+tangent/ds is browser-first: import it straight from a CDN, with no install and no
+build step.
+
+```javascript
+import { core, stats, ml, mva, plot } from 'https://esm.sh/@tangent.to/ds';
+```
+
+For a bundler or Node project, install from npm (or `jsr:@tangent/ds` for Deno):
+
 ```bash
 npm install @tangent.to/ds
 ```
