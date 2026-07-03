@@ -19,7 +19,7 @@ function plotROC(
    options?): Object;
 ```
 
-Defined in: [src/plot/classification.js:15](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/classification.js#L15)
+Defined in: [src/plot/classification.js:15](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/classification.js#L15)
 
 Generate ROC curve plot configuration
 
@@ -60,7 +60,7 @@ function plotPrecisionRecall(
    options?): Object;
 ```
 
-Defined in: [src/plot/classification.js:125](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/classification.js#L125)
+Defined in: [src/plot/classification.js:125](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/classification.js#L125)
 
 Generate precision-recall curve plot configuration
 
@@ -101,7 +101,7 @@ function plotConfusionMatrix(
    options?): Object;
 ```
 
-Defined in: [src/plot/classification.js:230](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/classification.js#L230)
+Defined in: [src/plot/classification.js:230](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/classification.js#L230)
 
 Generate confusion matrix plot configuration
 
@@ -142,7 +142,7 @@ function plotCalibration(
    options?): Object;
 ```
 
-Defined in: [src/plot/classification.js:337](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/classification.js#L337)
+Defined in: [src/plot/classification.js:337](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/classification.js#L337)
 
 Generate calibration curve plot configuration
 Shows how well predicted probabilities match actual frequencies
@@ -181,7 +181,7 @@ Plot configuration with calibration curve
 function residualPlot(model, options?): Object;
 ```
 
-Defined in: [src/plot/diagnostics.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L14)
+Defined in: [src/plot/diagnostics.js:14](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L14)
 
 Generate residual vs fitted plot
 
@@ -213,7 +213,7 @@ Observable Plot specification
 function scaleLocationPlot(model, options?): Object;
 ```
 
-Defined in: [src/plot/diagnostics.js:47](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L47)
+Defined in: [src/plot/diagnostics.js:47](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L47)
 
 Generate scale-location plot (sqrt of standardized residuals vs fitted)
 
@@ -245,7 +245,7 @@ Observable Plot specification
 function qqPlot(model, options?): Object;
 ```
 
-Defined in: [src/plot/diagnostics.js:86](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L86)
+Defined in: [src/plot/diagnostics.js:86](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L86)
 
 Generate Q-Q plot for normality check
 
@@ -277,7 +277,7 @@ Observable Plot specification
 function residualsLeveragePlot(model, options?): Object;
 ```
 
-Defined in: [src/plot/diagnostics.js:143](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L143)
+Defined in: [src/plot/diagnostics.js:143](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L143)
 
 Generate residuals vs leverage plot (Cook's distance)
 
@@ -309,7 +309,7 @@ Observable Plot specification
 function diagnosticDashboard(model, options?): Object[];
 ```
 
-Defined in: [src/plot/diagnostics.js:192](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L192)
+Defined in: [src/plot/diagnostics.js:192](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L192)
 
 Generate all diagnostic plots in a dashboard
 
@@ -345,7 +345,7 @@ function effectPlot(
    options?): Object;
 ```
 
-Defined in: [src/plot/diagnostics.js:209](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L209)
+Defined in: [src/plot/diagnostics.js:209](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L209)
 
 Generate effect plot for a specific predictor
 
@@ -393,7 +393,7 @@ function partialResidualPlot(
    options?): Object;
 ```
 
-Defined in: [src/plot/diagnostics.js:276](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/diagnostics.js#L276)
+Defined in: [src/plot/diagnostics.js:276](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/diagnostics.js#L276)
 
 Generate partial residual plot (component + residual plot)
 
@@ -437,7 +437,7 @@ Observable Plot specification
 function ordiplot(result, options?): Object;
 ```
 
-Defined in: [src/plot/ordiplot.js:32](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/ordiplot.js#L32)
+Defined in: [src/plot/ordiplot.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/ordiplot.js#L44)
 
 Generate unified ordination plot configuration
 Works with PCA, LDA, and RDA results
@@ -534,6 +534,48 @@ Multiplier applied to loading vectors (default: 1, set 0 for auto)
 
 Multiplier for predictor arrows (RDA only, default: inherits loadingFactor; set 0 for auto)
 
+###### color
+
+`Object` \| `null` = `null`
+
+Point color scale for grouped points, merged
+  into the Plot `color` scale: `{ range, scheme, domain, legend, label }`. E.g.
+  `{ range: ["#111","#888"] }` for greyscale, or `{ scheme: "Observable10" }`.
+
+###### pointColor
+
+`string` = `'steelblue'`
+
+Fill for points when there is no `colorBy`
+  (default: 'steelblue').
+
+###### symbolBy
+
+`boolean` = `false`
+
+Also encode groups by symbol (shape), not
+  colour alone - recommended for greyscale / colour-vision-deficiency safety.
+
+###### loadingColor
+
+`string` \| `null` = `null`
+
+Stroke for loading arrows (default:
+  'red', or 'blue' for an RDA response triplot).
+
+###### loadingTextColor
+
+`string` \| `null` = `null`
+
+Fill for loading labels (default:
+  'darkred', or 'darkblue' for RDA).
+
+###### pointRadius
+
+`number` = `4`
+
+Point radius (default: 4).
+
 #### Returns
 
 `Object`
@@ -548,7 +590,7 @@ Plot configuration
 function plotHCA(result): Object;
 ```
 
-Defined in: [src/plot/plotHCA.js:13](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHCA.js#L13)
+Defined in: [src/plot/plotHCA.js:13](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHCA.js#L13)
 
 Generate dendrogram data structure
 
@@ -574,7 +616,7 @@ Dendrogram tree structure
 function dendrogramLayout(dendrogramData, options?): Object;
 ```
 
-Defined in: [src/plot/plotHCA.js:59](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHCA.js#L59)
+Defined in: [src/plot/plotHCA.js:59](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHCA.js#L59)
 
 Convert dendrogram to layout coordinates
 
@@ -606,7 +648,7 @@ Layout with coordinates
 function plotCondensedTree(model, options?): Object;
 ```
 
-Defined in: [src/plot/plotHDBSCAN.js:17](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHDBSCAN.js#L17)
+Defined in: [src/plot/plotHDBSCAN.js:17](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHDBSCAN.js#L17)
 
 Generate condensed cluster tree visualization configuration
 
@@ -654,7 +696,7 @@ Observable Plot-compatible configuration
 function plotHDBSCANDendrogram(model, options?): Object;
 ```
 
-Defined in: [src/plot/plotHDBSCAN.js:86](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHDBSCAN.js#L86)
+Defined in: [src/plot/plotHDBSCAN.js:86](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHDBSCAN.js#L86)
 
 Generate dendrogram visualization from HDBSCAN hierarchy
 Similar to HCA dendrogram but for HDBSCAN
@@ -690,7 +732,7 @@ function plotClusterMembership(
    options?): Object;
 ```
 
-Defined in: [src/plot/plotHDBSCAN.js:146](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHDBSCAN.js#L146)
+Defined in: [src/plot/plotHDBSCAN.js:146](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHDBSCAN.js#L146)
 
 Visualize cluster membership probabilities
 
@@ -750,7 +792,7 @@ Observable Plot-compatible configuration
 function plotClusterStability(model, options?): Object;
 ```
 
-Defined in: [src/plot/plotHDBSCAN.js:242](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHDBSCAN.js#L242)
+Defined in: [src/plot/plotHDBSCAN.js:242](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHDBSCAN.js#L242)
 
 Visualize cluster stability and persistence
 
@@ -795,7 +837,7 @@ function plotHDBSCANDashboard(
    options?): Object;
 ```
 
-Defined in: [src/plot/plotHDBSCAN.js:301](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHDBSCAN.js#L301)
+Defined in: [src/plot/plotHDBSCAN.js:301](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHDBSCAN.js#L301)
 
 Create a comprehensive HDBSCAN visualization dashboard
 
@@ -833,7 +875,7 @@ Dashboard configuration with multiple plots
 function plotHDBSCAN(model, options?): Object;
 ```
 
-Defined in: [src/plot/plotHDBSCAN.js:313](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotHDBSCAN.js#L313)
+Defined in: [src/plot/plotHDBSCAN.js:313](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotHDBSCAN.js#L313)
 
 #### Parameters
 
@@ -855,7 +897,7 @@ Defined in: [src/plot/plotHDBSCAN.js:313](https://github.com/tangent-to/ds/blob/
 function plotScree(result, options?): Object;
 ```
 
-Defined in: [src/plot/plotScree.js:11](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotScree.js#L11)
+Defined in: [src/plot/plotScree.js:11](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotScree.js#L11)
 
 Generate scree plot configuration for PCA/ordination results
 Shows variance explained by each component
@@ -888,7 +930,7 @@ Plot configuration
 function plotSilhouette(options?, __namedParameters?): Object;
 ```
 
-Defined in: [src/plot/plotSilhouette.js:73](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/plotSilhouette.js#L73)
+Defined in: [src/plot/plotSilhouette.js:73](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/plotSilhouette.js#L73)
 
 Generate silhouette plot configuration displaying per-sample scores.
 Accepts either precomputed samples or raw data/labels for convenience.
@@ -983,7 +1025,7 @@ Observable Plot-compatible configuration with `.show()`
 function createD3DendrogramRenderer(d3, options?): Function;
 ```
 
-Defined in: [src/plot/renderers/d3Dendrogram.js:52](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/renderers/d3Dendrogram.js#L52)
+Defined in: [src/plot/renderers/d3Dendrogram.js:52](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/renderers/d3Dendrogram.js#L52)
 
 Build a dendrogram renderer that relies on user-supplied D3 modules for scaling.
 The returned function is compatible with the `.show(renderer)` helper emitted by plotHCA.
@@ -1025,7 +1067,7 @@ function resolveGroupValues(
    name?): any[] | null;
 ```
 
-Defined in: [src/plot/utils.js:26](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L26)
+Defined in: [src/plot/utils.js:26](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L26)
 
 Normalize a colorBy (or labels) specification into a plain array of
 per-observation values.
@@ -1072,7 +1114,7 @@ Array of values, or null when spec is null
 function plotFeatureImportance(importances, options?): Object;
 ```
 
-Defined in: [src/plot/utils.js:95](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L95)
+Defined in: [src/plot/utils.js:95](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L95)
 
 Generate feature importance bar plot configuration
 
@@ -1104,7 +1146,7 @@ Plot configuration
 function plotPartialDependence(pdResult, options?): Object;
 ```
 
-Defined in: [src/plot/utils.js:138](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L138)
+Defined in: [src/plot/utils.js:138](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L138)
 
 Generate partial dependence plot configuration
 
@@ -1136,7 +1178,7 @@ Plot configuration
 function plotCorrelationMatrix(corrResult, options?): Object;
 ```
 
-Defined in: [src/plot/utils.js:188](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L188)
+Defined in: [src/plot/utils.js:188](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L188)
 
 Generate correlation matrix heatmap configuration
 
@@ -1168,7 +1210,7 @@ Plot configuration
 function plotResiduals(residualData, options?): Object;
 ```
 
-Defined in: [src/plot/utils.js:248](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L248)
+Defined in: [src/plot/utils.js:248](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L248)
 
 Generate residual plot configuration
 
@@ -1200,7 +1242,7 @@ Plot configuration
 function plotQQ(residualData, options?): Object;
 ```
 
-Defined in: [src/plot/utils.js:298](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L298)
+Defined in: [src/plot/utils.js:298](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L298)
 
 Generate Q-Q plot configuration for normality check
 
@@ -1232,7 +1274,7 @@ Plot configuration
 function plotLearningCurve(lcResult, options?): Object;
 ```
 
-Defined in: [src/plot/utils.js:382](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/plot/utils.js#L382)
+Defined in: [src/plot/utils.js:382](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/plot/utils.js#L382)
 
 Generate learning curve plot configuration
 

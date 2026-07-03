@@ -15,7 +15,7 @@ permalink: /api/machine-learning/kmeans
 function fit(X, options?): Object;
 ```
 
-Defined in: [src/ml/kmeans.js:166](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/kmeans.js#L166)
+Defined in: [src/ml/kmeans.js:166](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/kmeans.js#L166)
 
 Fit k-means clustering model
 
@@ -47,7 +47,7 @@ Data matrix (n samples × d features)
 function predict(model, X): number[];
 ```
 
-Defined in: [src/ml/kmeans.js:268](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/kmeans.js#L268)
+Defined in: [src/ml/kmeans.js:268](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/kmeans.js#L268)
 
 Predict cluster labels for new data
 
@@ -79,7 +79,7 @@ Cluster labels
 function silhouetteScore(X, labels): number;
 ```
 
-Defined in: [src/ml/kmeans.js:280](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/kmeans.js#L280)
+Defined in: [src/ml/kmeans.js:280](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/kmeans.js#L280)
 
 Compute silhouette score for clustering quality
 

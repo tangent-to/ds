@@ -19,7 +19,7 @@ function train(
    options?): Object;
 ```
 
-Defined in: [src/ml/train.js:17](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/train.js#L17)
+Defined in: [src/ml/train.js:17](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/train.js#L17)
 
 Train a model with gradient-based optimization
 
@@ -66,7 +66,7 @@ function trainFunction(
    options?): Object;
 ```
 
-Defined in: [src/ml/train.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/train.js#L148)
+Defined in: [src/ml/train.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/train.js#L148)
 
 Simple training loop for functions (not models)
 
@@ -104,7 +104,7 @@ Training options
 function earlyStopping(patience?, minDelta?): Object;
 ```
 
-Defined in: [src/ml/train.js:185](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/train.js#L185)
+Defined in: [src/ml/train.js:185](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/train.js#L185)
 
 Early stopping callback
 
@@ -136,7 +136,7 @@ Callback object with state
 function learningRateScheduler(scheduleFn, optimizer): Object;
 ```
 
-Defined in: [src/ml/train.js:222](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/train.js#L222)
+Defined in: [src/ml/train.js:222](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/train.js#L222)
 
 Learning rate scheduler callback
 
@@ -168,7 +168,7 @@ Callback object
 function modelCheckpoint(metric?): Object;
 ```
 
-Defined in: [src/ml/train.js:239](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/train.js#L239)
+Defined in: [src/ml/train.js:239](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/train.js#L239)
 
 Model checkpoint callback
 

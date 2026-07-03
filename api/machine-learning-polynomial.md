@@ -15,7 +15,7 @@ permalink: /api/machine-learning/polynomial
 function polynomialFeatures(X, degree): number[][];
 ```
 
-Defined in: [src/ml/polynomial.js:30](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/polynomial.js#L30)
+Defined in: [src/ml/polynomial.js:30](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/polynomial.js#L30)
 
 Create polynomial features from input
 
@@ -50,7 +50,7 @@ function fit(
    options?): Object;
 ```
 
-Defined in: [src/ml/polynomial.js:75](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/polynomial.js#L75)
+Defined in: [src/ml/polynomial.js:75](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/polynomial.js#L75)
 
 Fit polynomial regression model
 
@@ -91,7 +91,7 @@ function predict(
    options?): number[];
 ```
 
-Defined in: [src/ml/polynomial.js:120](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/polynomial.js#L120)
+Defined in: [src/ml/polynomial.js:120](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/polynomial.js#L120)
 
 Predict using polynomial regression model
 

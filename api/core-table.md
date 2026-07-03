@@ -11,7 +11,7 @@ permalink: /api/core/table
 
 ### LabelEncoder
 
-Defined in: [src/core/table.js:226](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L226)
+Defined in: [src/core/table.js:226](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L226)
 
 Simple Label Encoder for categorical labels -> integers
 
@@ -33,7 +33,7 @@ predict time because indices grow past the fitted class set).
 new LabelEncoder(__namedParameters?): LabelEncoder;
 ```
 
-Defined in: [src/core/table.js:227](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L227)
+Defined in: [src/core/table.js:227](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L227)
 
 ###### Parameters
 
@@ -55,7 +55,7 @@ Defined in: [src/core/table.js:227](https://github.com/tangent-to/ds/blob/2e2217
 classes_: any[];
 ```
 
-Defined in: [src/core/table.js:228](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L228)
+Defined in: [src/core/table.js:228](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L228)
 
 ##### classIndex
 
@@ -63,7 +63,7 @@ Defined in: [src/core/table.js:228](https://github.com/tangent-to/ds/blob/2e2217
 classIndex: Map<any, any>;
 ```
 
-Defined in: [src/core/table.js:229](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L229)
+Defined in: [src/core/table.js:229](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L229)
 
 ##### handleUnknown
 
@@ -71,7 +71,7 @@ Defined in: [src/core/table.js:229](https://github.com/tangent-to/ds/blob/2e2217
 handleUnknown: string;
 ```
 
-Defined in: [src/core/table.js:230](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L230)
+Defined in: [src/core/table.js:230](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L230)
 
 #### Methods
 
@@ -81,7 +81,7 @@ Defined in: [src/core/table.js:230](https://github.com/tangent-to/ds/blob/2e2217
 fit(values?): LabelEncoder;
 ```
 
-Defined in: [src/core/table.js:233](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L233)
+Defined in: [src/core/table.js:233](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L233)
 
 ###### Parameters
 
@@ -99,7 +99,7 @@ Defined in: [src/core/table.js:233](https://github.com/tangent-to/ds/blob/2e2217
 transform(values?): any[];
 ```
 
-Defined in: [src/core/table.js:246](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L246)
+Defined in: [src/core/table.js:246](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L246)
 
 ###### Parameters
 
@@ -117,7 +117,7 @@ Defined in: [src/core/table.js:246](https://github.com/tangent-to/ds/blob/2e2217
 fitTransform(values?): any[];
 ```
 
-Defined in: [src/core/table.js:266](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L266)
+Defined in: [src/core/table.js:266](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L266)
 
 ###### Parameters
 
@@ -135,7 +135,7 @@ Defined in: [src/core/table.js:266](https://github.com/tangent-to/ds/blob/2e2217
 inverseTransform(indices?): any[];
 ```
 
-Defined in: [src/core/table.js:271](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L271)
+Defined in: [src/core/table.js:271](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L271)
 
 ###### Parameters
 
@@ -153,7 +153,7 @@ Defined in: [src/core/table.js:271](https://github.com/tangent-to/ds/blob/2e2217
 toJSON(): object;
 ```
 
-Defined in: [src/core/table.js:275](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L275)
+Defined in: [src/core/table.js:275](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L275)
 
 ###### Returns
 
@@ -183,7 +183,7 @@ handleUnknown: string;
 static fromJSON(obj?): LabelEncoder;
 ```
 
-Defined in: [src/core/table.js:283](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L283)
+Defined in: [src/core/table.js:283](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L283)
 
 ###### Parameters
 
@@ -197,7 +197,7 @@ Defined in: [src/core/table.js:283](https://github.com/tangent-to/ds/blob/2e2217
 
 ### OneHotEncoder
 
-Defined in: [src/core/table.js:299](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L299)
+Defined in: [src/core/table.js:299](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L299)
 
 Simple OneHotEncoder for a single categorical column
 Note: this encoder returns an array of arrays (one-hot vectors)
@@ -210,7 +210,7 @@ Note: this encoder returns an array of arrays (one-hot vectors)
 new OneHotEncoder(__namedParameters?): OneHotEncoder;
 ```
 
-Defined in: [src/core/table.js:300](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L300)
+Defined in: [src/core/table.js:300](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L300)
 
 ###### Parameters
 
@@ -232,7 +232,7 @@ Defined in: [src/core/table.js:300](https://github.com/tangent-to/ds/blob/2e2217
 categories_: any[];
 ```
 
-Defined in: [src/core/table.js:301](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L301)
+Defined in: [src/core/table.js:301](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L301)
 
 ##### catIndex
 
@@ -240,7 +240,7 @@ Defined in: [src/core/table.js:301](https://github.com/tangent-to/ds/blob/2e2217
 catIndex: Map<any, any>;
 ```
 
-Defined in: [src/core/table.js:302](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L302)
+Defined in: [src/core/table.js:302](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L302)
 
 ##### handleUnknown
 
@@ -248,7 +248,7 @@ Defined in: [src/core/table.js:302](https://github.com/tangent-to/ds/blob/2e2217
 handleUnknown: string;
 ```
 
-Defined in: [src/core/table.js:303](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L303)
+Defined in: [src/core/table.js:303](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L303)
 
 ##### \_columnConfigs
 
@@ -256,7 +256,7 @@ Defined in: [src/core/table.js:303](https://github.com/tangent-to/ds/blob/2e2217
 _columnConfigs: Map<any, any> | null;
 ```
 
-Defined in: [src/core/table.js:304](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L304)
+Defined in: [src/core/table.js:304](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L304)
 
 ##### \_columns
 
@@ -264,7 +264,7 @@ Defined in: [src/core/table.js:304](https://github.com/tangent-to/ds/blob/2e2217
 _columns: any[] | undefined;
 ```
 
-Defined in: [src/core/table.js:368](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L368)
+Defined in: [src/core/table.js:368](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L368)
 
 ##### \_encoders
 
@@ -272,7 +272,7 @@ Defined in: [src/core/table.js:368](https://github.com/tangent-to/ds/blob/2e2217
 _encoders: Map<any, any> | undefined;
 ```
 
-Defined in: [src/core/table.js:369](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L369)
+Defined in: [src/core/table.js:369](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L369)
 
 #### Methods
 
@@ -282,7 +282,7 @@ Defined in: [src/core/table.js:369](https://github.com/tangent-to/ds/blob/2e2217
 fit(values?): OneHotEncoder;
 ```
 
-Defined in: [src/core/table.js:307](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L307)
+Defined in: [src/core/table.js:307](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L307)
 
 ###### Parameters
 
@@ -300,7 +300,7 @@ Defined in: [src/core/table.js:307](https://github.com/tangent-to/ds/blob/2e2217
 transform(values?): any[][];
 ```
 
-Defined in: [src/core/table.js:320](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L320)
+Defined in: [src/core/table.js:320](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L320)
 
 ###### Parameters
 
@@ -318,7 +318,7 @@ Defined in: [src/core/table.js:320](https://github.com/tangent-to/ds/blob/2e2217
 fitTransform(valuesOrOptions?): Object[];
 ```
 
-Defined in: [src/core/table.js:341](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L341)
+Defined in: [src/core/table.js:341](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L341)
 
 ###### Parameters
 
@@ -336,7 +336,7 @@ Defined in: [src/core/table.js:341](https://github.com/tangent-to/ds/blob/2e2217
 _fitDeclarative(options): OneHotEncoder;
 ```
 
-Defined in: [src/core/table.js:359](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L359)
+Defined in: [src/core/table.js:359](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L359)
 
 Declarative API for fit
 
@@ -360,7 +360,7 @@ this
 _transformDeclarative(options): Object[];
 ```
 
-Defined in: [src/core/table.js:391](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L391)
+Defined in: [src/core/table.js:391](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L391)
 
 Declarative API for transform
 
@@ -384,7 +384,7 @@ Array of objects with one-hot encoded columns
 _fitTransformDeclarative(options): Object[];
 ```
 
-Defined in: [src/core/table.js:424](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L424)
+Defined in: [src/core/table.js:424](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L424)
 
 Declarative API for fitTransform
 
@@ -408,7 +408,7 @@ Array of objects with one-hot encoded columns
 getFeatureNames(prefix?): string[];
 ```
 
-Defined in: [src/core/table.js:433](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L433)
+Defined in: [src/core/table.js:433](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L433)
 
 Get all feature names for declarative API
 
@@ -430,7 +430,7 @@ All feature names across all columns
 toJSON(): object;
 ```
 
-Defined in: [src/core/table.js:450](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L450)
+Defined in: [src/core/table.js:450](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L450)
 
 ###### Returns
 
@@ -454,7 +454,7 @@ categories: any[];
 static fromJSON(obj?): OneHotEncoder;
 ```
 
-Defined in: [src/core/table.js:454](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L454)
+Defined in: [src/core/table.js:454](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L454)
 
 ###### Parameters
 
@@ -472,7 +472,7 @@ Defined in: [src/core/table.js:454](https://github.com/tangent-to/ds/blob/2e2217
 function normalizeNaOmit(options?): boolean;
 ```
 
-Defined in: [src/core/table.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L14)
+Defined in: [src/core/table.js:14](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L14)
 
 Normalize naOmit/omit_missing parameter names
 Accepts both R-style (naOmit) and Python-style (omit_missing)
@@ -499,7 +499,7 @@ The normalized boolean value (defaults to true)
 function normalize(data): Object[];
 ```
 
-Defined in: [src/core/table.js:39](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L39)
+Defined in: [src/core/table.js:39](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L39)
 
 Normalize input to array of objects
 
@@ -525,7 +525,7 @@ Array of row objects
 function toMatrix(data, columns): Matrix;
 ```
 
-Defined in: [src/core/table.js:55](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L55)
+Defined in: [src/core/table.js:55](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L55)
 
 Convert table data to matrix
 
@@ -557,7 +557,7 @@ Matrix with selected columns
 function toVector(data, column): number[];
 ```
 
-Defined in: [src/core/table.js:87](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L87)
+Defined in: [src/core/table.js:87](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L87)
 
 Convert table column to vector
 
@@ -589,7 +589,7 @@ Column name
 function toColumns(data, columns): Object;
 ```
 
-Defined in: [src/core/table.js:109](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L109)
+Defined in: [src/core/table.js:109](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L109)
 
 Extract multiple columns as arrays
 
@@ -621,7 +621,7 @@ Object with column names as keys and arrays as values
 function getColumns(data): string[];
 ```
 
-Defined in: [src/core/table.js:125](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L125)
+Defined in: [src/core/table.js:125](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L125)
 
 Get column names from data
 
@@ -647,7 +647,7 @@ Column names
 function filter(data, predicate): Object[];
 ```
 
-Defined in: [src/core/table.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L139)
+Defined in: [src/core/table.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L139)
 
 Filter rows based on predicate
 
@@ -679,7 +679,7 @@ Filtered rows
 function select(data, columns): Object[];
 ```
 
-Defined in: [src/core/table.js:149](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L149)
+Defined in: [src/core/table.js:149](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L149)
 
 Select specific columns
 
@@ -715,7 +715,7 @@ function applyColumns(
    options?): Object[];
 ```
 
-Defined in: [src/core/table.js:170](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L170)
+Defined in: [src/core/table.js:170](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L170)
 
 Apply a matrix of values to specific columns on each row.
 Useful for re-attaching transformed feature matrices to table rows.
@@ -760,7 +760,7 @@ Rows with columns assigned
 function prepareX(__namedParameters?): object;
 ```
 
-Defined in: [src/core/table.js:478](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L478)
+Defined in: [src/core/table.js:478](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L478)
 
 Prepare feature matrix X from table-like data.
 Supports optional categorical encoding:
@@ -841,7 +841,7 @@ encoders: object = resolvedEncoders;
 function attachSourceRows(model, prepared): Object;
 ```
 
-Defined in: [src/core/table.js:646](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L646)
+Defined in: [src/core/table.js:646](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L646)
 
 Attach naOmit alignment metadata to a fitted model as non-enumerable
 properties, so plot helpers can realign external per-row values (colorBy,
@@ -875,7 +875,7 @@ The same model
 function oneHotEncodeTable(options?): Object;
 ```
 
-Defined in: [src/core/table.js:676](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L676)
+Defined in: [src/core/table.js:676](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L676)
 
 Utility to one-hot encode columns in a table-like object.
 
@@ -933,7 +933,7 @@ Behaviour for unseen categories
 function prepareXY(__namedParameters?): object;
 ```
 
-Defined in: [src/core/table.js:751](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/table.js#L751)
+Defined in: [src/core/table.js:751](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/table.js#L751)
 
 Prepare feature matrix X and response vector y from table-like data.
 Supports categorical encoding for X and y via `encode` option:

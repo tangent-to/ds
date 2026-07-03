@@ -20,7 +20,7 @@ function featureImportance(
    options?): Object[];
 ```
 
-Defined in: [src/ml/interpret.js:18](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/interpret.js#L18)
+Defined in: [src/ml/interpret.js:18](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/interpret.js#L18)
 
 Compute feature importance via permutation
 
@@ -70,7 +70,7 @@ Feature importance scores
 function coefficientImportance(model, featureNames?): Object[];
 ```
 
-Defined in: [src/ml/interpret.js:71](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/interpret.js#L71)
+Defined in: [src/ml/interpret.js:71](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/interpret.js#L71)
 
 Compute coefficient-based feature importance (for linear models)
 
@@ -106,7 +106,7 @@ function partialDependence(
    options?): Object;
 ```
 
-Defined in: [src/ml/interpret.js:101](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/interpret.js#L101)
+Defined in: [src/ml/interpret.js:101](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/interpret.js#L101)
 
 Compute partial dependence for a feature
 
@@ -153,7 +153,7 @@ function residualPlotData(
    y): Object;
 ```
 
-Defined in: [src/ml/interpret.js:155](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/interpret.js#L155)
+Defined in: [src/ml/interpret.js:155](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/interpret.js#L155)
 
 Compute residual plot data
 
@@ -191,7 +191,7 @@ Target values
 function correlationMatrix(X, featureNames?): Object;
 ```
 
-Defined in: [src/ml/interpret.js:185](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/interpret.js#L185)
+Defined in: [src/ml/interpret.js:185](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/interpret.js#L185)
 
 Compute correlation matrix
 
@@ -228,7 +228,7 @@ function learningCurve(
    options?): Object;
 ```
 
-Defined in: [src/ml/interpret.js:244](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/interpret.js#L244)
+Defined in: [src/ml/interpret.js:244](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/interpret.js#L244)
 
 Learning curve data (performance vs training size)
 

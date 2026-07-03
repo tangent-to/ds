@@ -19,9 +19,12 @@ Analyze data, build models, visualize results—all in JavaScript.
 
 ## Quick example
 
+No install and no build step - import straight from a CDN and run it in the browser or
+an Observable cell:
+
 ```javascript
-import * as ds from '@tangent/ds';
-import * as Plot from '@observablehq/plot';
+import * as ds from 'https://esm.sh/@tangent.to/ds';
+import * as Plot from 'https://esm.sh/@observablehq/plot';
 
 // Run PCA in 3 lines
 const pca = new ds.mva.PCA({ center: true, scale: true });
@@ -76,12 +79,17 @@ Publication-ready plots powered by Observable Plot. Create biplots, confusion ma
 
 ## Installation
 
-```bash
-# npm
-npm install @tangent/ds
+No build step needed - import from a CDN in the browser or an Observable cell:
 
-# deno
-deno add @tangent/ds
+```javascript
+import * as ds from 'https://esm.sh/@tangent.to/ds';
+```
+
+For a bundler or local project, install from npm or JSR:
+
+```bash
+npm install @tangent.to/ds      # npm
+deno add jsr:@tangent/ds        # deno / JSR
 ```
 
 [Read the full guide →](getting-started)

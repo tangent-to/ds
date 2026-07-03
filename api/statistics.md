@@ -12,7 +12,7 @@ permalink: /api/statistics
 
 ### GLM
 
-Defined in: [src/stats/estimators/GLM.js:19](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L19)
+Defined in: [src/stats/estimators/GLM.js:19](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L19)
 
 #### Extends
 
@@ -26,7 +26,7 @@ Defined in: [src/stats/estimators/GLM.js:19](https://github.com/tangent-to/ds/bl
 new GLM(params?): GLM;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:38](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L38)
+Defined in: [src/stats/estimators/GLM.js:38](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L38)
 
 ###### Parameters
 
@@ -142,7 +142,7 @@ Estimator.constructor
 fitted: boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L25)
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L25)
 
 ###### Inherited from
 
@@ -154,7 +154,7 @@ Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/
 _state: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L27)
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L27)
 
 ###### Inherited from
 
@@ -168,7 +168,7 @@ Estimator._state
 _warnings: any[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L29)
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L29)
 
 ###### Inherited from
 
@@ -180,7 +180,7 @@ Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/
 params: object;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:42](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L42)
+Defined in: [src/stats/estimators/GLM.js:42](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L42)
 
 ###### family
 
@@ -284,7 +284,7 @@ Estimator.params
 _model: Object | null;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:71](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L71)
+Defined in: [src/stats/estimators/GLM.js:71](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L71)
 
 ##### \_models
 
@@ -295,7 +295,7 @@ _models:
   | null;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:72](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L72)
+Defined in: [src/stats/estimators/GLM.js:72](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L72)
 
 ##### \_classes
 
@@ -303,7 +303,7 @@ Defined in: [src/stats/estimators/GLM.js:72](https://github.com/tangent-to/ds/bl
 _classes: any[] | null;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:73](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L73)
+Defined in: [src/stats/estimators/GLM.js:73](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L73)
 
 ##### \_targetNames
 
@@ -311,7 +311,7 @@ Defined in: [src/stats/estimators/GLM.js:73](https://github.com/tangent-to/ds/bl
 _targetNames: any;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:74](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L74)
+Defined in: [src/stats/estimators/GLM.js:74](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L74)
 
 ##### \_isMulticlass
 
@@ -319,7 +319,7 @@ Defined in: [src/stats/estimators/GLM.js:74](https://github.com/tangent-to/ds/bl
 _isMulticlass: boolean;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:75](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L75)
+Defined in: [src/stats/estimators/GLM.js:75](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L75)
 
 ##### \_isMultiOutput
 
@@ -327,7 +327,7 @@ Defined in: [src/stats/estimators/GLM.js:75](https://github.com/tangent-to/ds/bl
 _isMultiOutput: boolean;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:76](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L76)
+Defined in: [src/stats/estimators/GLM.js:76](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L76)
 
 ##### \_isMixed
 
@@ -335,7 +335,7 @@ Defined in: [src/stats/estimators/GLM.js:76](https://github.com/tangent-to/ds/bl
 _isMixed: boolean;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:77](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L77)
+Defined in: [src/stats/estimators/GLM.js:77](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L77)
 
 ##### \_columnsX
 
@@ -343,7 +343,7 @@ Defined in: [src/stats/estimators/GLM.js:77](https://github.com/tangent-to/ds/bl
 _columnsX: any;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:78](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L78)
+Defined in: [src/stats/estimators/GLM.js:78](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L78)
 
 ##### \_columnY
 
@@ -351,7 +351,7 @@ Defined in: [src/stats/estimators/GLM.js:78](https://github.com/tangent-to/ds/bl
 _columnY: any;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:79](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L79)
+Defined in: [src/stats/estimators/GLM.js:79](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L79)
 
 ##### \_formula
 
@@ -359,7 +359,7 @@ Defined in: [src/stats/estimators/GLM.js:79](https://github.com/tangent-to/ds/bl
 _formula: any;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:208](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L208)
+Defined in: [src/stats/estimators/GLM.js:208](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L208)
 
 ##### \_indicatorColumns
 
@@ -367,7 +367,7 @@ Defined in: [src/stats/estimators/GLM.js:208](https://github.com/tangent-to/ds/b
 _indicatorColumns: string[] | undefined;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:382](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L382)
+Defined in: [src/stats/estimators/GLM.js:382](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L382)
 
 ##### \_isMultinomial
 
@@ -375,7 +375,7 @@ Defined in: [src/stats/estimators/GLM.js:382](https://github.com/tangent-to/ds/b
 _isMultinomial: boolean | undefined;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:448](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L448)
+Defined in: [src/stats/estimators/GLM.js:448](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L448)
 
 #### Accessors
 
@@ -387,7 +387,7 @@ Defined in: [src/stats/estimators/GLM.js:448](https://github.com/tangent-to/ds/b
 get coefficients(): any;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:85](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L85)
+Defined in: [src/stats/estimators/GLM.js:85](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L85)
 
 Get coefficients (for backward compatibility with lm interface)
 
@@ -403,7 +403,7 @@ Get coefficients (for backward compatibility with lm interface)
 get intercept(): boolean;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:93](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L93)
+Defined in: [src/stats/estimators/GLM.js:93](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L93)
 
 Get intercept flag (for backward compatibility)
 
@@ -419,7 +419,7 @@ Get intercept flag (for backward compatibility)
 isFitted(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L36)
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L36)
 
 Check if model is fitted
 
@@ -439,7 +439,7 @@ Estimator.isFitted
 getState(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L65)
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L65)
 
 Get comprehensive model state
 
@@ -461,7 +461,7 @@ Estimator.getState
 getMemoryUsage(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L97)
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L97)
 
 Get memory usage in human-readable format
 
@@ -483,7 +483,7 @@ Estimator.getMemoryUsage
 getWarnings(): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L124)
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L124)
 
 Get all warnings
 
@@ -505,7 +505,7 @@ Estimator.getWarnings
 hasWarnings(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L132)
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L132)
 
 Check if model has warnings
 
@@ -525,7 +525,7 @@ Estimator.hasWarnings
 clearWarnings(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L139)
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L139)
 
 Clear all warnings
 
@@ -545,7 +545,7 @@ Estimator.clearWarnings
 getWarningsByType(type): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L148)
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L148)
 
 Get warnings of a specific type
 
@@ -575,7 +575,7 @@ Estimator.getWarningsByType
 setParams(params?): GLM;
 ```
 
-Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L285)
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L285)
 
 Set parameters (mutates instance).
 
@@ -601,7 +601,7 @@ Estimator.setParams
 getParams(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L294)
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L294)
 
 Get a shallow copy of parameters.
 
@@ -621,7 +621,7 @@ Estimator.getParams
 save(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L329)
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L329)
 
 Save model to JSON string
 
@@ -643,7 +643,7 @@ Estimator.save
 static load(jsonString): Estimator;
 ```
 
-Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L346)
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L346)
 
 Load model from JSON string
 
@@ -700,7 +700,7 @@ _prepareArgsForFit(args?):
 };
 ```
 
-Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L367)
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L367)
 
 Convenience helper: parse arguments passed to fit/predict/transform.
 
@@ -762,7 +762,7 @@ Estimator._prepareArgsForFit
 transform(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L431)
+Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L431)
 
 Transform should be implemented by transformers.
 
@@ -782,7 +782,7 @@ Estimator.transform
 fit(...args): GLM;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:108](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L108)
+Defined in: [src/stats/estimators/GLM.js:108](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L108)
 
 Fit the GLM or GLMM
 
@@ -816,7 +816,7 @@ Estimator.fit
 _parseRandomEffects(opts, rows): object;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:686](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L686)
+Defined in: [src/stats/estimators/GLM.js:686](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L686)
 
 Parse random effects specification from table-style input
 
@@ -855,7 +855,7 @@ _extractColumn(
    rows): any;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:713](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L713)
+Defined in: [src/stats/estimators/GLM.js:713](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L713)
 
 Extract a column from table data
 
@@ -883,7 +883,7 @@ Extract a column from table data
 predict(X, options?): any[];
 ```
 
-Defined in: [src/stats/estimators/GLM.js:941](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L941)
+Defined in: [src/stats/estimators/GLM.js:941](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L941)
 
 Predict from the fitted model
 
@@ -941,7 +941,7 @@ Estimator.predict
 summary(options?): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1015](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1015)
+Defined in: [src/stats/estimators/GLM.js:1015](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1015)
 
 Get model summary (lme4-style for mixed models)
 
@@ -967,7 +967,7 @@ Significance level for CIs (default: from constructor)
 confint(alpha?): Object[];
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1036](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1036)
+Defined in: [src/stats/estimators/GLM.js:1036](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1036)
 
 Compute confidence intervals for coefficients
 
@@ -991,7 +991,7 @@ Array of {lower, upper} for each coefficient
 pvalues(): number[];
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1059](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1059)
+Defined in: [src/stats/estimators/GLM.js:1059](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1059)
 
 Compute p-values for coefficients (Wald test)
 
@@ -1010,7 +1010,7 @@ P-values for each coefficient
 _repr_html_(): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1138](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1138)
+Defined in: [src/stats/estimators/GLM.js:1138](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1138)
 
 Jupyter notebook display support
 Returns HTML representation for better notebook rendering
@@ -1031,7 +1031,7 @@ Estimator._repr_html_
 _summaryGLM(alpha?): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1161](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1161)
+Defined in: [src/stats/estimators/GLM.js:1161](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1161)
 
 Format GLM summary
 
@@ -1051,7 +1051,7 @@ Format GLM summary
 _summaryMulticlass(alpha?): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1225](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1225)
+Defined in: [src/stats/estimators/GLM.js:1225](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1225)
 
 Format multiclass GLM summary
 
@@ -1071,7 +1071,7 @@ Format multiclass GLM summary
 _summaryMultiOutput(alpha?): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1248](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1248)
+Defined in: [src/stats/estimators/GLM.js:1248](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1248)
 
 Format multi-output GLM summary
 
@@ -1091,7 +1091,7 @@ Format multi-output GLM summary
 _summaryTrueMultinomial(alpha?): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1289](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1289)
+Defined in: [src/stats/estimators/GLM.js:1289](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1289)
 
 Format true multinomial logistic regression summary
 
@@ -1111,7 +1111,7 @@ Format true multinomial logistic regression summary
 _summaryGLMHTML(): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1373](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1373)
+Defined in: [src/stats/estimators/GLM.js:1373](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1373)
 
 Format GLM summary as HTML for Jupyter
 
@@ -1125,7 +1125,7 @@ Format GLM summary as HTML for Jupyter
 _summaryGLMM(alpha?): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1448](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1448)
+Defined in: [src/stats/estimators/GLM.js:1448](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1448)
 
 Format GLMM summary (lme4-style, no p-values)
 
@@ -1145,7 +1145,7 @@ Format GLMM summary (lme4-style, no p-values)
 _summaryGLMMHTML(): string;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1528](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1528)
+Defined in: [src/stats/estimators/GLM.js:1528](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1528)
 
 Format GLMM summary as HTML for Jupyter
 
@@ -1159,7 +1159,7 @@ Format GLMM summary as HTML for Jupyter
 _getCoefLabels(): any[];
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1632](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1632)
+Defined in: [src/stats/estimators/GLM.js:1632](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1632)
 
 Get coefficient labels
 
@@ -1176,7 +1176,7 @@ score(
    args): number;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1660](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1660)
+Defined in: [src/stats/estimators/GLM.js:1660](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1660)
 
 Score the model (R² for regression families, accuracy for binomial/multiclass)
 
@@ -1204,7 +1204,7 @@ Score the model (R² for regression families, accuracy for binomial/multiclass)
 toJSON(): object;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1709](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1709)
+Defined in: [src/stats/estimators/GLM.js:1709](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1709)
 
 Serialize to JSON
 
@@ -1396,7 +1396,7 @@ Estimator.toJSON
 static fromJSON(obj): GLM;
 ```
 
-Defined in: [src/stats/estimators/GLM.js:1734](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/GLM.js#L1734)
+Defined in: [src/stats/estimators/GLM.js:1734](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/GLM.js#L1734)
 
 Deserialize from JSON
 
@@ -1420,7 +1420,7 @@ Estimator.fromJSON
 
 ### OneSampleTTest
 
-Defined in: [src/stats/estimators/tests.js:69](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L69)
+Defined in: [src/stats/estimators/tests.js:69](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L69)
 
 #### Extends
 
@@ -1434,7 +1434,7 @@ Defined in: [src/stats/estimators/tests.js:69](https://github.com/tangent-to/ds/
 new OneSampleTTest(params?): OneSampleTTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L32)
+Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L32)
 
 ###### Parameters
 
@@ -1458,7 +1458,7 @@ StatisticalTest.constructor
 params: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L24)
+Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L24)
 
 ###### constructor
 
@@ -1576,7 +1576,7 @@ StatisticalTest.params
 fitted: boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L25)
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L25)
 
 ###### Inherited from
 
@@ -1590,7 +1590,7 @@ StatisticalTest.fitted
 _state: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L27)
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L27)
 
 ###### Inherited from
 
@@ -1604,7 +1604,7 @@ StatisticalTest._state
 _warnings: any[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L29)
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L29)
 
 ###### Inherited from
 
@@ -1618,7 +1618,7 @@ StatisticalTest._warnings
 result: any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L34)
+Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L34)
 
 ###### Inherited from
 
@@ -1632,7 +1632,7 @@ Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/
 isFitted(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L36)
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L36)
 
 Check if model is fitted
 
@@ -1652,7 +1652,7 @@ StatisticalTest.isFitted
 getState(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L65)
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L65)
 
 Get comprehensive model state
 
@@ -1674,7 +1674,7 @@ StatisticalTest.getState
 getMemoryUsage(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L97)
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L97)
 
 Get memory usage in human-readable format
 
@@ -1696,7 +1696,7 @@ StatisticalTest.getMemoryUsage
 getWarnings(): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L124)
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L124)
 
 Get all warnings
 
@@ -1718,7 +1718,7 @@ StatisticalTest.getWarnings
 hasWarnings(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L132)
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L132)
 
 Check if model has warnings
 
@@ -1738,7 +1738,7 @@ StatisticalTest.hasWarnings
 clearWarnings(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L139)
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L139)
 
 Clear all warnings
 
@@ -1758,7 +1758,7 @@ StatisticalTest.clearWarnings
 getWarningsByType(type): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L148)
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L148)
 
 Get warnings of a specific type
 
@@ -1788,7 +1788,7 @@ StatisticalTest.getWarningsByType
 _repr_html_(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L201)
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L201)
 
 Observable/Jupyter HTML representation
 
@@ -1810,7 +1810,7 @@ StatisticalTest._repr_html_
 setParams(params?): OneSampleTTest;
 ```
 
-Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L285)
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L285)
 
 Set parameters (mutates instance).
 
@@ -1836,7 +1836,7 @@ StatisticalTest.setParams
 getParams(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L294)
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L294)
 
 Get a shallow copy of parameters.
 
@@ -1856,7 +1856,7 @@ StatisticalTest.getParams
 save(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L329)
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L329)
 
 Save model to JSON string
 
@@ -1878,7 +1878,7 @@ StatisticalTest.save
 static load(jsonString): Estimator;
 ```
 
-Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L346)
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L346)
 
 Load model from JSON string
 
@@ -1935,7 +1935,7 @@ _prepareArgsForFit(args?):
 };
 ```
 
-Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L367)
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L367)
 
 Convenience helper: parse arguments passed to fit/predict/transform.
 
@@ -1997,7 +1997,7 @@ StatisticalTest._prepareArgsForFit
 predict(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L424)
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L424)
 
 Predict should be implemented by supervised estimators.
 
@@ -2017,7 +2017,7 @@ StatisticalTest.predict
 transform(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L431)
+Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L431)
 
 Transform should be implemented by transformers.
 
@@ -2037,7 +2037,7 @@ StatisticalTest.transform
 summary(): any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L37)
+Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L37)
 
 ###### Returns
 
@@ -2055,7 +2055,7 @@ StatisticalTest.summary
 toJSON(): object;
 ```
 
-Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L44)
+Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L44)
 
 Serialize minimal model metadata.
 Subclasses may override to include learned parameters.
@@ -2100,7 +2100,7 @@ StatisticalTest.toJSON
 static fromJSON(obj?): StatisticalTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L53)
+Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L53)
 
 Basic deserialization. Subclasses should override if they need
 to restore learned arrays / matrices.
@@ -2125,7 +2125,7 @@ StatisticalTest.fromJSON
 fit(sample, opts?): OneSampleTTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:70](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L70)
+Defined in: [src/stats/estimators/tests.js:70](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L70)
 
 Fit should be implemented by subclasses.
 Return `this` for chaining.
@@ -2152,7 +2152,7 @@ StatisticalTest.fit
 
 ### TwoSampleTTest
 
-Defined in: [src/stats/estimators/tests.js:126](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L126)
+Defined in: [src/stats/estimators/tests.js:126](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L126)
 
 #### Extends
 
@@ -2166,7 +2166,7 @@ Defined in: [src/stats/estimators/tests.js:126](https://github.com/tangent-to/ds
 new TwoSampleTTest(params?): TwoSampleTTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L32)
+Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L32)
 
 ###### Parameters
 
@@ -2190,7 +2190,7 @@ StatisticalTest.constructor
 params: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L24)
+Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L24)
 
 ###### constructor
 
@@ -2308,7 +2308,7 @@ StatisticalTest.params
 fitted: boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L25)
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L25)
 
 ###### Inherited from
 
@@ -2322,7 +2322,7 @@ StatisticalTest.fitted
 _state: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L27)
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L27)
 
 ###### Inherited from
 
@@ -2336,7 +2336,7 @@ StatisticalTest._state
 _warnings: any[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L29)
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L29)
 
 ###### Inherited from
 
@@ -2350,7 +2350,7 @@ StatisticalTest._warnings
 result: any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L34)
+Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L34)
 
 ###### Inherited from
 
@@ -2366,7 +2366,7 @@ StatisticalTest.result
 isFitted(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L36)
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L36)
 
 Check if model is fitted
 
@@ -2386,7 +2386,7 @@ StatisticalTest.isFitted
 getState(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L65)
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L65)
 
 Get comprehensive model state
 
@@ -2408,7 +2408,7 @@ StatisticalTest.getState
 getMemoryUsage(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L97)
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L97)
 
 Get memory usage in human-readable format
 
@@ -2430,7 +2430,7 @@ StatisticalTest.getMemoryUsage
 getWarnings(): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L124)
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L124)
 
 Get all warnings
 
@@ -2452,7 +2452,7 @@ StatisticalTest.getWarnings
 hasWarnings(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L132)
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L132)
 
 Check if model has warnings
 
@@ -2472,7 +2472,7 @@ StatisticalTest.hasWarnings
 clearWarnings(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L139)
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L139)
 
 Clear all warnings
 
@@ -2492,7 +2492,7 @@ StatisticalTest.clearWarnings
 getWarningsByType(type): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L148)
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L148)
 
 Get warnings of a specific type
 
@@ -2522,7 +2522,7 @@ StatisticalTest.getWarningsByType
 _repr_html_(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L201)
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L201)
 
 Observable/Jupyter HTML representation
 
@@ -2544,7 +2544,7 @@ StatisticalTest._repr_html_
 setParams(params?): TwoSampleTTest;
 ```
 
-Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L285)
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L285)
 
 Set parameters (mutates instance).
 
@@ -2570,7 +2570,7 @@ StatisticalTest.setParams
 getParams(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L294)
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L294)
 
 Get a shallow copy of parameters.
 
@@ -2590,7 +2590,7 @@ StatisticalTest.getParams
 save(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L329)
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L329)
 
 Save model to JSON string
 
@@ -2612,7 +2612,7 @@ StatisticalTest.save
 static load(jsonString): Estimator;
 ```
 
-Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L346)
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L346)
 
 Load model from JSON string
 
@@ -2669,7 +2669,7 @@ _prepareArgsForFit(args?):
 };
 ```
 
-Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L367)
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L367)
 
 Convenience helper: parse arguments passed to fit/predict/transform.
 
@@ -2731,7 +2731,7 @@ StatisticalTest._prepareArgsForFit
 predict(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L424)
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L424)
 
 Predict should be implemented by supervised estimators.
 
@@ -2751,7 +2751,7 @@ StatisticalTest.predict
 transform(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L431)
+Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L431)
 
 Transform should be implemented by transformers.
 
@@ -2771,7 +2771,7 @@ StatisticalTest.transform
 summary(): any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L37)
+Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L37)
 
 ###### Returns
 
@@ -2789,7 +2789,7 @@ StatisticalTest.summary
 toJSON(): object;
 ```
 
-Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L44)
+Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L44)
 
 Serialize minimal model metadata.
 Subclasses may override to include learned parameters.
@@ -2834,7 +2834,7 @@ StatisticalTest.toJSON
 static fromJSON(obj?): StatisticalTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L53)
+Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L53)
 
 Basic deserialization. Subclasses should override if they need
 to restore learned arrays / matrices.
@@ -2862,7 +2862,7 @@ fit(
    opts?): TwoSampleTTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:127](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L127)
+Defined in: [src/stats/estimators/tests.js:127](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L127)
 
 Fit should be implemented by subclasses.
 Return `this` for chaining.
@@ -2893,7 +2893,7 @@ StatisticalTest.fit
 
 ### OneWayAnova
 
-Defined in: [src/stats/estimators/tests.js:191](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L191)
+Defined in: [src/stats/estimators/tests.js:191](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L191)
 
 #### Extends
 
@@ -2907,7 +2907,7 @@ Defined in: [src/stats/estimators/tests.js:191](https://github.com/tangent-to/ds
 new OneWayAnova(params?): OneWayAnova;
 ```
 
-Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L32)
+Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L32)
 
 ###### Parameters
 
@@ -2931,7 +2931,7 @@ StatisticalTest.constructor
 params: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L24)
+Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L24)
 
 ###### constructor
 
@@ -3049,7 +3049,7 @@ StatisticalTest.params
 fitted: boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L25)
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L25)
 
 ###### Inherited from
 
@@ -3063,7 +3063,7 @@ StatisticalTest.fitted
 _state: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L27)
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L27)
 
 ###### Inherited from
 
@@ -3077,7 +3077,7 @@ StatisticalTest._state
 _warnings: any[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L29)
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L29)
 
 ###### Inherited from
 
@@ -3091,7 +3091,7 @@ StatisticalTest._warnings
 result: any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L34)
+Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L34)
 
 ###### Inherited from
 
@@ -3107,7 +3107,7 @@ StatisticalTest.result
 isFitted(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L36)
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L36)
 
 Check if model is fitted
 
@@ -3127,7 +3127,7 @@ StatisticalTest.isFitted
 getState(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L65)
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L65)
 
 Get comprehensive model state
 
@@ -3149,7 +3149,7 @@ StatisticalTest.getState
 getMemoryUsage(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L97)
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L97)
 
 Get memory usage in human-readable format
 
@@ -3171,7 +3171,7 @@ StatisticalTest.getMemoryUsage
 getWarnings(): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L124)
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L124)
 
 Get all warnings
 
@@ -3193,7 +3193,7 @@ StatisticalTest.getWarnings
 hasWarnings(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L132)
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L132)
 
 Check if model has warnings
 
@@ -3213,7 +3213,7 @@ StatisticalTest.hasWarnings
 clearWarnings(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L139)
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L139)
 
 Clear all warnings
 
@@ -3233,7 +3233,7 @@ StatisticalTest.clearWarnings
 getWarningsByType(type): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L148)
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L148)
 
 Get warnings of a specific type
 
@@ -3263,7 +3263,7 @@ StatisticalTest.getWarningsByType
 _repr_html_(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L201)
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L201)
 
 Observable/Jupyter HTML representation
 
@@ -3285,7 +3285,7 @@ StatisticalTest._repr_html_
 setParams(params?): OneWayAnova;
 ```
 
-Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L285)
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L285)
 
 Set parameters (mutates instance).
 
@@ -3311,7 +3311,7 @@ StatisticalTest.setParams
 getParams(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L294)
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L294)
 
 Get a shallow copy of parameters.
 
@@ -3331,7 +3331,7 @@ StatisticalTest.getParams
 save(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L329)
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L329)
 
 Save model to JSON string
 
@@ -3353,7 +3353,7 @@ StatisticalTest.save
 static load(jsonString): Estimator;
 ```
 
-Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L346)
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L346)
 
 Load model from JSON string
 
@@ -3410,7 +3410,7 @@ _prepareArgsForFit(args?):
 };
 ```
 
-Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L367)
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L367)
 
 Convenience helper: parse arguments passed to fit/predict/transform.
 
@@ -3472,7 +3472,7 @@ StatisticalTest._prepareArgsForFit
 predict(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L424)
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L424)
 
 Predict should be implemented by supervised estimators.
 
@@ -3492,7 +3492,7 @@ StatisticalTest.predict
 transform(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L431)
+Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L431)
 
 Transform should be implemented by transformers.
 
@@ -3512,7 +3512,7 @@ StatisticalTest.transform
 summary(): any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L37)
+Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L37)
 
 ###### Returns
 
@@ -3530,7 +3530,7 @@ StatisticalTest.summary
 toJSON(): object;
 ```
 
-Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L44)
+Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L44)
 
 Serialize minimal model metadata.
 Subclasses may override to include learned parameters.
@@ -3575,7 +3575,7 @@ StatisticalTest.toJSON
 static fromJSON(obj?): StatisticalTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L53)
+Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L53)
 
 Basic deserialization. Subclasses should override if they need
 to restore learned arrays / matrices.
@@ -3600,7 +3600,7 @@ StatisticalTest.fromJSON
 fit(groups, opts?): OneWayAnova;
 ```
 
-Defined in: [src/stats/estimators/tests.js:192](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L192)
+Defined in: [src/stats/estimators/tests.js:192](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L192)
 
 Fit should be implemented by subclasses.
 Return `this` for chaining.
@@ -3627,7 +3627,7 @@ StatisticalTest.fit
 
 ### ChiSquareTest
 
-Defined in: [src/stats/estimators/tests.js:223](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L223)
+Defined in: [src/stats/estimators/tests.js:223](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L223)
 
 #### Extends
 
@@ -3641,7 +3641,7 @@ Defined in: [src/stats/estimators/tests.js:223](https://github.com/tangent-to/ds
 new ChiSquareTest(params?): ChiSquareTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L32)
+Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L32)
 
 ###### Parameters
 
@@ -3665,7 +3665,7 @@ StatisticalTest.constructor
 params: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L24)
+Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L24)
 
 ###### constructor
 
@@ -3783,7 +3783,7 @@ StatisticalTest.params
 fitted: boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L25)
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L25)
 
 ###### Inherited from
 
@@ -3797,7 +3797,7 @@ StatisticalTest.fitted
 _state: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L27)
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L27)
 
 ###### Inherited from
 
@@ -3811,7 +3811,7 @@ StatisticalTest._state
 _warnings: any[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L29)
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L29)
 
 ###### Inherited from
 
@@ -3825,7 +3825,7 @@ StatisticalTest._warnings
 result: any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L34)
+Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L34)
 
 ###### Inherited from
 
@@ -3841,7 +3841,7 @@ StatisticalTest.result
 isFitted(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L36)
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L36)
 
 Check if model is fitted
 
@@ -3861,7 +3861,7 @@ StatisticalTest.isFitted
 getState(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L65)
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L65)
 
 Get comprehensive model state
 
@@ -3883,7 +3883,7 @@ StatisticalTest.getState
 getMemoryUsage(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L97)
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L97)
 
 Get memory usage in human-readable format
 
@@ -3905,7 +3905,7 @@ StatisticalTest.getMemoryUsage
 getWarnings(): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L124)
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L124)
 
 Get all warnings
 
@@ -3927,7 +3927,7 @@ StatisticalTest.getWarnings
 hasWarnings(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L132)
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L132)
 
 Check if model has warnings
 
@@ -3947,7 +3947,7 @@ StatisticalTest.hasWarnings
 clearWarnings(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L139)
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L139)
 
 Clear all warnings
 
@@ -3967,7 +3967,7 @@ StatisticalTest.clearWarnings
 getWarningsByType(type): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L148)
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L148)
 
 Get warnings of a specific type
 
@@ -3997,7 +3997,7 @@ StatisticalTest.getWarningsByType
 _repr_html_(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L201)
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L201)
 
 Observable/Jupyter HTML representation
 
@@ -4019,7 +4019,7 @@ StatisticalTest._repr_html_
 setParams(params?): ChiSquareTest;
 ```
 
-Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L285)
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L285)
 
 Set parameters (mutates instance).
 
@@ -4045,7 +4045,7 @@ StatisticalTest.setParams
 getParams(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L294)
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L294)
 
 Get a shallow copy of parameters.
 
@@ -4065,7 +4065,7 @@ StatisticalTest.getParams
 save(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L329)
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L329)
 
 Save model to JSON string
 
@@ -4087,7 +4087,7 @@ StatisticalTest.save
 static load(jsonString): Estimator;
 ```
 
-Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L346)
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L346)
 
 Load model from JSON string
 
@@ -4144,7 +4144,7 @@ _prepareArgsForFit(args?):
 };
 ```
 
-Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L367)
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L367)
 
 Convenience helper: parse arguments passed to fit/predict/transform.
 
@@ -4206,7 +4206,7 @@ StatisticalTest._prepareArgsForFit
 predict(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L424)
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L424)
 
 Predict should be implemented by supervised estimators.
 
@@ -4226,7 +4226,7 @@ StatisticalTest.predict
 transform(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L431)
+Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L431)
 
 Transform should be implemented by transformers.
 
@@ -4246,7 +4246,7 @@ StatisticalTest.transform
 summary(): any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L37)
+Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L37)
 
 ###### Returns
 
@@ -4264,7 +4264,7 @@ StatisticalTest.summary
 toJSON(): object;
 ```
 
-Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L44)
+Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L44)
 
 Serialize minimal model metadata.
 Subclasses may override to include learned parameters.
@@ -4309,7 +4309,7 @@ StatisticalTest.toJSON
 static fromJSON(obj?): StatisticalTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L53)
+Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L53)
 
 Basic deserialization. Subclasses should override if they need
 to restore learned arrays / matrices.
@@ -4337,7 +4337,7 @@ fit(
    opts?): ChiSquareTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:224](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L224)
+Defined in: [src/stats/estimators/tests.js:224](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L224)
 
 Fit should be implemented by subclasses.
 Return `this` for chaining.
@@ -4368,7 +4368,7 @@ StatisticalTest.fit
 
 ### TukeyHSD
 
-Defined in: [src/stats/estimators/tests.js:273](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L273)
+Defined in: [src/stats/estimators/tests.js:273](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L273)
 
 #### Extends
 
@@ -4382,7 +4382,7 @@ Defined in: [src/stats/estimators/tests.js:273](https://github.com/tangent-to/ds
 new TukeyHSD(params?): TukeyHSD;
 ```
 
-Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L32)
+Defined in: [src/stats/estimators/tests.js:32](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L32)
 
 ###### Parameters
 
@@ -4406,7 +4406,7 @@ StatisticalTest.constructor
 params: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L24)
+Defined in: [src/core/estimators/estimator.js:24](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L24)
 
 ###### constructor
 
@@ -4524,7 +4524,7 @@ StatisticalTest.params
 fitted: boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L25)
+Defined in: [src/core/estimators/estimator.js:25](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L25)
 
 ###### Inherited from
 
@@ -4538,7 +4538,7 @@ StatisticalTest.fitted
 _state: object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L27)
+Defined in: [src/core/estimators/estimator.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L27)
 
 ###### Inherited from
 
@@ -4552,7 +4552,7 @@ StatisticalTest._state
 _warnings: any[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L29)
+Defined in: [src/core/estimators/estimator.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L29)
 
 ###### Inherited from
 
@@ -4566,7 +4566,7 @@ StatisticalTest._warnings
 result: any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L34)
+Defined in: [src/stats/estimators/tests.js:34](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L34)
 
 ###### Inherited from
 
@@ -4582,7 +4582,7 @@ StatisticalTest.result
 isFitted(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L36)
+Defined in: [src/core/estimators/estimator.js:36](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L36)
 
 Check if model is fitted
 
@@ -4602,7 +4602,7 @@ StatisticalTest.isFitted
 getState(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L65)
+Defined in: [src/core/estimators/estimator.js:65](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L65)
 
 Get comprehensive model state
 
@@ -4624,7 +4624,7 @@ StatisticalTest.getState
 getMemoryUsage(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L97)
+Defined in: [src/core/estimators/estimator.js:97](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L97)
 
 Get memory usage in human-readable format
 
@@ -4646,7 +4646,7 @@ StatisticalTest.getMemoryUsage
 getWarnings(): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L124)
+Defined in: [src/core/estimators/estimator.js:124](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L124)
 
 Get all warnings
 
@@ -4668,7 +4668,7 @@ StatisticalTest.getWarnings
 hasWarnings(): boolean;
 ```
 
-Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L132)
+Defined in: [src/core/estimators/estimator.js:132](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L132)
 
 Check if model has warnings
 
@@ -4688,7 +4688,7 @@ StatisticalTest.hasWarnings
 clearWarnings(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L139)
+Defined in: [src/core/estimators/estimator.js:139](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L139)
 
 Clear all warnings
 
@@ -4708,7 +4708,7 @@ StatisticalTest.clearWarnings
 getWarningsByType(type): Object[];
 ```
 
-Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L148)
+Defined in: [src/core/estimators/estimator.js:148](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L148)
 
 Get warnings of a specific type
 
@@ -4738,7 +4738,7 @@ StatisticalTest.getWarningsByType
 _repr_html_(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L201)
+Defined in: [src/core/estimators/estimator.js:201](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L201)
 
 Observable/Jupyter HTML representation
 
@@ -4760,7 +4760,7 @@ StatisticalTest._repr_html_
 setParams(params?): TukeyHSD;
 ```
 
-Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L285)
+Defined in: [src/core/estimators/estimator.js:285](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L285)
 
 Set parameters (mutates instance).
 
@@ -4786,7 +4786,7 @@ StatisticalTest.setParams
 getParams(): Object;
 ```
 
-Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L294)
+Defined in: [src/core/estimators/estimator.js:294](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L294)
 
 Get a shallow copy of parameters.
 
@@ -4806,7 +4806,7 @@ StatisticalTest.getParams
 save(): string;
 ```
 
-Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L329)
+Defined in: [src/core/estimators/estimator.js:329](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L329)
 
 Save model to JSON string
 
@@ -4828,7 +4828,7 @@ StatisticalTest.save
 static load(jsonString): Estimator;
 ```
 
-Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L346)
+Defined in: [src/core/estimators/estimator.js:346](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L346)
 
 Load model from JSON string
 
@@ -4885,7 +4885,7 @@ _prepareArgsForFit(args?):
 };
 ```
 
-Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L367)
+Defined in: [src/core/estimators/estimator.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L367)
 
 Convenience helper: parse arguments passed to fit/predict/transform.
 
@@ -4947,7 +4947,7 @@ StatisticalTest._prepareArgsForFit
 predict(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L424)
+Defined in: [src/core/estimators/estimator.js:424](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L424)
 
 Predict should be implemented by supervised estimators.
 
@@ -4967,7 +4967,7 @@ StatisticalTest.predict
 transform(): void;
 ```
 
-Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/core/estimators/estimator.js#L431)
+Defined in: [src/core/estimators/estimator.js:431](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/core/estimators/estimator.js#L431)
 
 Transform should be implemented by transformers.
 
@@ -4987,7 +4987,7 @@ StatisticalTest.transform
 summary(): any;
 ```
 
-Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L37)
+Defined in: [src/stats/estimators/tests.js:37](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L37)
 
 ###### Returns
 
@@ -5005,7 +5005,7 @@ StatisticalTest.summary
 toJSON(): object;
 ```
 
-Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L44)
+Defined in: [src/stats/estimators/tests.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L44)
 
 Serialize minimal model metadata.
 Subclasses may override to include learned parameters.
@@ -5050,7 +5050,7 @@ StatisticalTest.toJSON
 static fromJSON(obj?): StatisticalTest;
 ```
 
-Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L53)
+Defined in: [src/stats/estimators/tests.js:53](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L53)
 
 Basic deserialization. Subclasses should override if they need
 to restore learned arrays / matrices.
@@ -5075,7 +5075,7 @@ StatisticalTest.fromJSON
 fit(groups, opts?): TukeyHSD;
 ```
 
-Defined in: [src/stats/estimators/tests.js:274](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/estimators/tests.js#L274)
+Defined in: [src/stats/estimators/tests.js:274](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/estimators/tests.js#L274)
 
 Fit should be implemented by subclasses.
 Return `this` for chaining.
@@ -5106,7 +5106,7 @@ StatisticalTest.fit
 const normal: object;
 ```
 
-Defined in: [src/stats/distribution.js:27](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/distribution.js#L27)
+Defined in: [src/stats/distribution.js:27](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/distribution.js#L27)
 
 Normal distribution
 
@@ -5204,7 +5204,7 @@ Quantile
 const uniform: object;
 ```
 
-Defined in: [src/stats/distribution.js:67](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/distribution.js#L67)
+Defined in: [src/stats/distribution.js:67](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/distribution.js#L67)
 
 #### Type Declaration
 
@@ -5300,7 +5300,7 @@ Quantile
 const gamma: object;
 ```
 
-Defined in: [src/stats/distribution.js:120](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/distribution.js#L120)
+Defined in: [src/stats/distribution.js:120](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/distribution.js#L120)
 
 #### Type Declaration
 
@@ -5396,7 +5396,7 @@ Quantile
 const beta: object;
 ```
 
-Defined in: [src/stats/distribution.js:244](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/distribution.js#L244)
+Defined in: [src/stats/distribution.js:244](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/distribution.js#L244)
 
 #### Type Declaration
 
@@ -5492,7 +5492,7 @@ Quantile
 const chisq: object;
 ```
 
-Defined in: [src/stats/distribution.js:336](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/distribution.js#L336)
+Defined in: [src/stats/distribution.js:336](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/distribution.js#L336)
 
 Chi-squared distribution (special case of gamma with shape=df/2, scale=2)
 
@@ -5590,7 +5590,7 @@ Quantile
 const oneSampleTTest: typeof OneSampleTTest = OneSampleTTest;
 ```
 
-Defined in: [src/stats/index.js:48](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L48)
+Defined in: [src/stats/index.js:48](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L48)
 
 ***
 
@@ -5600,7 +5600,7 @@ Defined in: [src/stats/index.js:48](https://github.com/tangent-to/ds/blob/2e2217
 const twoSampleTTest: typeof TwoSampleTTest = TwoSampleTTest;
 ```
 
-Defined in: [src/stats/index.js:49](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L49)
+Defined in: [src/stats/index.js:49](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L49)
 
 ***
 
@@ -5610,7 +5610,7 @@ Defined in: [src/stats/index.js:49](https://github.com/tangent-to/ds/blob/2e2217
 const chiSquareTest: typeof ChiSquareTest = ChiSquareTest;
 ```
 
-Defined in: [src/stats/index.js:50](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L50)
+Defined in: [src/stats/index.js:50](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L50)
 
 ***
 
@@ -5620,7 +5620,7 @@ Defined in: [src/stats/index.js:50](https://github.com/tangent-to/ds/blob/2e2217
 const oneWayAnova: typeof OneWayAnova = OneWayAnova;
 ```
 
-Defined in: [src/stats/index.js:51](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L51)
+Defined in: [src/stats/index.js:51](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L51)
 
 ***
 
@@ -5630,7 +5630,7 @@ Defined in: [src/stats/index.js:51](https://github.com/tangent-to/ds/blob/2e2217
 const tukeyHSD: typeof TukeyHSD = TukeyHSD;
 ```
 
-Defined in: [src/stats/index.js:52](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L52)
+Defined in: [src/stats/index.js:52](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L52)
 
 ***
 
@@ -5640,7 +5640,7 @@ Defined in: [src/stats/index.js:52](https://github.com/tangent-to/ds/blob/2e2217
 const pairedTTest: (sample1, sample2, options) => Object = pairedTTestFn;
 ```
 
-Defined in: [src/stats/index.js:55](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L55)
+Defined in: [src/stats/index.js:55](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L55)
 
 Paired t-test for dependent samples
 
@@ -5678,7 +5678,7 @@ Second sample (after)
 const mannWhitneyU: (sample1, sample2, options) => Object = mannWhitneyUFn;
 ```
 
-Defined in: [src/stats/index.js:56](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L56)
+Defined in: [src/stats/index.js:56](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L56)
 
 Mann-Whitney U test (Wilcoxon rank-sum test)
 Non-parametric alternative to two-sample t-test
@@ -5717,7 +5717,7 @@ Second sample
 const kruskalWallis: (groups) => Object = kruskalWallisFn;
 ```
 
-Defined in: [src/stats/index.js:57](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L57)
+Defined in: [src/stats/index.js:57](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L57)
 
 Kruskal-Wallis H test
 Non-parametric alternative to one-way ANOVA
@@ -5744,7 +5744,7 @@ Array of group samples
 const hypothesis: object;
 ```
 
-Defined in: [src/stats/index.js:60](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/index.js#L60)
+Defined in: [src/stats/index.js:60](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/index.js#L60)
 
 #### Type Declaration
 
@@ -5996,7 +5996,7 @@ Array of group samples
 function qchisq(p, df): number;
 ```
 
-Defined in: [src/stats/distribution.js:378](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/distribution.js#L378)
+Defined in: [src/stats/distribution.js:378](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/distribution.js#L378)
 
 Shorthand for chi-squared quantile function (R-like API)
 
@@ -6028,7 +6028,7 @@ Quantile
 function compareModels(models, options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:14](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L14)
+Defined in: [src/stats/model\_comparison.js:14](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L14)
 
 Compare multiple models with information criteria
 
@@ -6063,7 +6063,7 @@ function likelihoodRatioTest(
    _options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:115](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L115)
+Defined in: [src/stats/model\_comparison.js:115](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L115)
 
 Perform likelihood ratio test for nested models
 
@@ -6097,7 +6097,7 @@ Test results
 function pairwiseLRT(models, _options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:177](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L177)
+Defined in: [src/stats/model\_comparison.js:177](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L177)
 
 Compare multiple models and perform pairwise LRT
 
@@ -6125,7 +6125,7 @@ Matrix of pairwise comparisons
 function modelSelectionPlot(models, options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:245](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L245)
+Defined in: [src/stats/model\_comparison.js:245](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L245)
 
 Generate model selection plot specification
 
@@ -6157,7 +6157,7 @@ Observable Plot specification
 function aicWeightPlot(models, options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:330](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L330)
+Defined in: [src/stats/model\_comparison.js:330](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L330)
 
 Generate AIC weight visualization
 
@@ -6189,7 +6189,7 @@ Observable Plot specification
 function coefficientComparisonPlot(models, options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:367](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L367)
+Defined in: [src/stats/model\_comparison.js:367](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L367)
 
 Generate coefficient comparison plot across models
 
@@ -6225,7 +6225,7 @@ function crossValidate(
    options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:438](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L438)
+Defined in: [src/stats/model\_comparison.js:438](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L438)
 
 K-fold cross-validation for model selection
 
@@ -6273,7 +6273,7 @@ function crossValidateModels(
    options?): Object;
 ```
 
-Defined in: [src/stats/model\_comparison.js:504](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/model_comparison.js#L504)
+Defined in: [src/stats/model\_comparison.js:504](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/model_comparison.js#L504)
 
 Compare models using cross-validation
 
@@ -6320,7 +6320,7 @@ function cohensD(
    options?): number;
 ```
 
-Defined in: [src/stats/tests.js:660](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L660)
+Defined in: [src/stats/tests.js:660](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L660)
 
 Cohen's d effect size for two samples
 Standardized mean difference
@@ -6359,7 +6359,7 @@ Cohen's d
 function etaSquared(anovaResult): number;
 ```
 
-Defined in: [src/stats/tests.js:686](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L686)
+Defined in: [src/stats/tests.js:686](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L686)
 
 Eta-squared effect size for ANOVA
 Proportion of total variance explained by group differences
@@ -6386,7 +6386,7 @@ Eta-squared
 function omegaSquared(anovaResult): number;
 ```
 
-Defined in: [src/stats/tests.js:704](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L704)
+Defined in: [src/stats/tests.js:704](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L704)
 
 Omega-squared effect size for ANOVA
 Less biased estimate than eta-squared
@@ -6413,7 +6413,7 @@ Omega-squared
 function leveneTest(groups, options?): Object;
 ```
 
-Defined in: [src/stats/tests.js:723](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L723)
+Defined in: [src/stats/tests.js:723](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L723)
 
 Levene's test for equality of variances
 Tests homogeneity of variance assumption (homoscedasticity)
@@ -6446,7 +6446,7 @@ Array of group samples
 function pearsonCorrelation(x, y): Object;
 ```
 
-Defined in: [src/stats/tests.js:776](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L776)
+Defined in: [src/stats/tests.js:776](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L776)
 
 Pearson correlation coefficient with significance test
 
@@ -6478,7 +6478,7 @@ Second variable
 function spearmanCorrelation(x, y): Object;
 ```
 
-Defined in: [src/stats/tests.js:862](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L862)
+Defined in: [src/stats/tests.js:862](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L862)
 
 Spearman rank correlation coefficient with significance test
 
@@ -6510,7 +6510,7 @@ Second variable
 function fisherExactTest(table, options?): Object;
 ```
 
-Defined in: [src/stats/tests.js:922](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L922)
+Defined in: [src/stats/tests.js:922](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L922)
 
 Fisher's exact test for 2x2 contingency tables
 
@@ -6542,7 +6542,7 @@ Fisher's exact test for 2x2 contingency tables
 function bonferroni(pValues, alpha?): Object;
 ```
 
-Defined in: [src/stats/tests.js:1036](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L1036)
+Defined in: [src/stats/tests.js:1036](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L1036)
 
 Bonferroni correction for multiple testing
 
@@ -6574,7 +6574,7 @@ Family-wise error rate (default 0.05)
 function holmBonferroni(pValues, alpha?): Object;
 ```
 
-Defined in: [src/stats/tests.js:1056](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L1056)
+Defined in: [src/stats/tests.js:1056](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L1056)
 
 Holm-Bonferroni correction for multiple testing
 Sequentially rejective Bonferroni procedure (more powerful)
@@ -6607,7 +6607,7 @@ Family-wise error rate (default 0.05)
 function fdr(pValues, alpha?): Object;
 ```
 
-Defined in: [src/stats/tests.js:1097](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/stats/tests.js#L1097)
+Defined in: [src/stats/tests.js:1097](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/stats/tests.js#L1097)
 
 Benjamini-Hochberg FDR correction
 Controls false discovery rate

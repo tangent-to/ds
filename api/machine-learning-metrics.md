@@ -15,7 +15,7 @@ permalink: /api/machine-learning/metrics
 function mse(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:16](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L16)
+Defined in: [src/ml/metrics.js:16](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L16)
 
 Mean Squared Error
 
@@ -47,7 +47,7 @@ MSE
 function rmse(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:34](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L34)
+Defined in: [src/ml/metrics.js:34](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L34)
 
 Root Mean Squared Error
 
@@ -79,7 +79,7 @@ RMSE
 function mae(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:44](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L44)
+Defined in: [src/ml/metrics.js:44](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L44)
 
 Mean Absolute Error
 
@@ -111,7 +111,7 @@ MAE
 function r2(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:62](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L62)
+Defined in: [src/ml/metrics.js:62](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L62)
 
 R² (coefficient of determination)
 
@@ -143,7 +143,7 @@ R²
 function accuracy(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:88](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L88)
+Defined in: [src/ml/metrics.js:88](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L88)
 
 Accuracy score
 
@@ -175,7 +175,7 @@ Accuracy
 function confusionMatrix(yTrue, yPred): Object;
 ```
 
-Defined in: [src/ml/metrics.js:107](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L107)
+Defined in: [src/ml/metrics.js:107](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L107)
 
 Confusion matrix
 
@@ -207,7 +207,7 @@ Predicted labels
 function confusionMatrixText(yTrue, yPred): string;
 ```
 
-Defined in: [src/ml/metrics.js:129](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L129)
+Defined in: [src/ml/metrics.js:129](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L129)
 
 Format confusion matrix as text
 
@@ -242,7 +242,7 @@ function precision(
    positiveLabel?): number;
 ```
 
-Defined in: [src/ml/metrics.js:180](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L180)
+Defined in: [src/ml/metrics.js:180](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L180)
 
 Precision score (for binary classification)
 
@@ -283,7 +283,7 @@ function recall(
    positiveLabel?): number;
 ```
 
-Defined in: [src/ml/metrics.js:204](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L204)
+Defined in: [src/ml/metrics.js:204](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L204)
 
 Recall score (for binary classification)
 
@@ -324,7 +324,7 @@ function f1(
    positiveLabel?): number;
 ```
 
-Defined in: [src/ml/metrics.js:228](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L228)
+Defined in: [src/ml/metrics.js:228](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L228)
 
 F1 score
 
@@ -365,7 +365,7 @@ function logLoss(
    eps?): number;
 ```
 
-Defined in: [src/ml/metrics.js:242](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L242)
+Defined in: [src/ml/metrics.js:242](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L242)
 
 Log loss (cross-entropy loss)
 
@@ -403,7 +403,7 @@ Log loss
 function rocAuc(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:262](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L262)
+Defined in: [src/ml/metrics.js:262](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L262)
 
 ROC AUC score (simplified for binary classification)
 
@@ -435,7 +435,7 @@ AUC
 function cohenKappa(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:302](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L302)
+Defined in: [src/ml/metrics.js:302](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L302)
 
 Cohen's Kappa coefficient
 
@@ -467,7 +467,7 @@ Kappa
 function adjustedRandIndex(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/metrics.js:331](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/metrics.js#L331)
+Defined in: [src/ml/metrics.js:331](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/metrics.js#L331)
 
 Adjusted Rand Index
 

@@ -15,7 +15,7 @@ permalink: /api/machine-learning/distances
 function euclidean(a, b): number;
 ```
 
-Defined in: [src/ml/distances.js:12](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L12)
+Defined in: [src/ml/distances.js:12](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L12)
 
 Euclidean distance (L2 norm)
 
@@ -47,7 +47,7 @@ Euclidean distance
 function manhattan(a, b): number;
 ```
 
-Defined in: [src/ml/distances.js:31](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L31)
+Defined in: [src/ml/distances.js:31](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L31)
 
 Manhattan distance (L1 norm, taxicab distance)
 
@@ -82,7 +82,7 @@ function minkowski(
    p?): number;
 ```
 
-Defined in: [src/ml/distances.js:50](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L50)
+Defined in: [src/ml/distances.js:50](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L50)
 
 Minkowski distance (generalized Lp norm)
 
@@ -120,7 +120,7 @@ Minkowski distance
 function chebyshev(a, b): number;
 ```
 
-Defined in: [src/ml/distances.js:72](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L72)
+Defined in: [src/ml/distances.js:72](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L72)
 
 Chebyshev distance (L∞ norm, maximum metric)
 
@@ -152,7 +152,7 @@ Chebyshev distance
 function cosine(a, b): number;
 ```
 
-Defined in: [src/ml/distances.js:93](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L93)
+Defined in: [src/ml/distances.js:93](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L93)
 
 Cosine distance (1 - cosine similarity)
 
@@ -184,7 +184,7 @@ Cosine distance (0 = identical direction, 2 = opposite)
 function hamming(a, b): number;
 ```
 
-Defined in: [src/ml/distances.js:126](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L126)
+Defined in: [src/ml/distances.js:126](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L126)
 
 Hamming distance (for categorical/binary data)
 Counts the number of positions where elements differ
@@ -217,7 +217,7 @@ Hamming distance
 function canberra(a, b): number;
 ```
 
-Defined in: [src/ml/distances.js:146](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L146)
+Defined in: [src/ml/distances.js:146](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L146)
 
 Canberra distance (weighted version of Manhattan distance)
 
@@ -252,7 +252,7 @@ function gower(
    options?): number;
 ```
 
-Defined in: [src/ml/distances.js:172](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L172)
+Defined in: [src/ml/distances.js:172](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L172)
 
 Gower distance for mixed-type data (numeric + categorical)
 Handles missing values gracefully
@@ -301,7 +301,7 @@ Gower distance (0 = identical, 1 = maximally different)
 function createGowerDistance(data, types?): Function;
 ```
 
-Defined in: [src/ml/distances.js:231](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L231)
+Defined in: [src/ml/distances.js:231](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L231)
 
 Create a Gower distance function with pre-computed ranges
 Useful for KNN when you want to compute ranges once from training data
@@ -334,7 +334,7 @@ Configured Gower distance function
 function getDistanceFunction(metric): Function;
 ```
 
-Defined in: [src/ml/distances.js:283](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/distances.js#L283)
+Defined in: [src/ml/distances.js:283](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/distances.js#L283)
 
 Get distance function by name
 

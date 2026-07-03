@@ -15,7 +15,7 @@ permalink: /api/machine-learning/dbscan
 function fit(X, options?): Object;
 ```
 
-Defined in: [src/ml/dbscan.js:108](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/dbscan.js#L108)
+Defined in: [src/ml/dbscan.js:108](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/dbscan.js#L108)
 
 Fit DBSCAN clustering model
 
@@ -51,7 +51,7 @@ function predict(
    eps): number[];
 ```
 
-Defined in: [src/ml/dbscan.js:205](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/ml/dbscan.js#L205)
+Defined in: [src/ml/dbscan.js:205](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/ml/dbscan.js#L205)
 
 Predict cluster labels for new data points
 Note: DBSCAN doesn't naturally support prediction on new points.

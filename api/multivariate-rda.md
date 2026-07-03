@@ -18,7 +18,7 @@ function fit(
    options?): Object;
 ```
 
-Defined in: [src/mva/rda.js:29](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/rda.js#L29)
+Defined in: [src/mva/rda.js:29](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/mva/rda.js#L29)
 
 Fit RDA model.
 
@@ -67,7 +67,7 @@ function transform(
    X): Object[];
 ```
 
-Defined in: [src/mva/rda.js:302](https://github.com/tangent-to/ds/blob/2e2217c296d90f7a4afa5d8795d35e61ab8d6294/src/mva/rda.js#L302)
+Defined in: [src/mva/rda.js:302](https://github.com/tangent-to/ds/blob/fd643fde6ff506706e9da35a1f25e91a0026b50f/src/mva/rda.js#L302)
 
 Transform new data using fitted RDA model
 
