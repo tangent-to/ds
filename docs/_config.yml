@@ -11,7 +11,7 @@ repository: tangent-to/ds
 
 # Theme
 remote_theme: just-the-docs/just-the-docs
-color_scheme: light
+color_scheme: teal
 
 # Logo
 logo: "/ds/assets/images/logo.png"
