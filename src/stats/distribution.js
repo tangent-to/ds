@@ -1,25 +1,18 @@
 /**
  * Statistical distributions
- * Provides PDF, CDF, and quantile functions
+ * Provides PDF, CDF, and quantile functions.
+ *
+ * Since 0.7.0 these delegate to @tangent.to/proba (the tangent suite's
+ * scipy.stats-validated distribution package) while preserving the ds
+ * parameter conventions ({mean, sd}, {min, max}, {shape, scale}, ...).
+ * This replaced the previous approximations (bisection quantiles,
+ * normal-approximation tails) with machine-precision implementations.
  */
 
-import { 
-  cumulativeStdNormalProbability,
-  probit,
-  gamma as gammaFunc
-} from 'simple-statistics';
+import { beta as probaBeta, chi2, gamma as probaGamma, normal as probaNormal, uniform as probaUniform } from '@tangent.to/proba';
 import { guardPositive, guardProbability } from '../core/math.js';
 
 // ============= Normal Distribution =============
-
-/**
- * Standard normal PDF
- * @param {number} x - Value
- * @returns {number} Probability density
- */
-function stdNormalPDF(x) {
-  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
-}
 
 /**
  * Normal distribution
@@ -33,8 +26,7 @@ export const normal = {
    */
   pdf(x, { mean = 0, sd = 1 } = {}) {
     guardPositive(sd, 'sd');
-    const z = (x - mean) / sd;
-    return stdNormalPDF(z) / sd;
+    return probaNormal.pdf(x, { mu: mean, sigma: sd });
   },
 
   /**
@@ -45,8 +37,7 @@ export const normal = {
    */
   cdf(x, { mean = 0, sd = 1 } = {}) {
     guardPositive(sd, 'sd');
-    const z = (x - mean) / sd;
-    return cumulativeStdNormalProbability(z);
+    return probaNormal.cdf(x, { mu: mean, sigma: sd });
   },
 
   /**
@@ -58,7 +49,7 @@ export const normal = {
   quantile(p, { mean = 0, sd = 1 } = {}) {
     guardProbability(p, 'p');
     guardPositive(sd, 'sd');
-    return mean + sd * probit(p);
+    return probaNormal.quantile(p, { mu: mean, sigma: sd });
   }
 };
 
@@ -75,7 +66,7 @@ export const uniform = {
     if (max <= min) {
       throw new Error('max must be greater than min');
     }
-    return (x >= min && x <= max) ? 1 / (max - min) : 0;
+    return probaUniform.pdf(x, { low: min, high: max });
   },
 
   /**
@@ -88,9 +79,7 @@ export const uniform = {
     if (max <= min) {
       throw new Error('max must be greater than min');
     }
-    if (x < min) return 0;
-    if (x > max) return 1;
-    return (x - min) / (max - min);
+    return probaUniform.cdf(x, { low: min, high: max });
   },
 
   /**
@@ -104,18 +93,12 @@ export const uniform = {
     if (max <= min) {
       throw new Error('max must be greater than min');
     }
-    return min + p * (max - min);
+    return probaUniform.quantile(p, { low: min, high: max });
   }
 };
 
 // ============= Gamma Distribution =============
-
-/**
- * Log gamma function
- */
-function logGamma(x) {
-  return Math.log(gammaFunc(x));
-}
+// ds uses the shape/SCALE convention; proba uses shape/RATE (beta = 1/scale).
 
 export const gamma = {
   /**
@@ -127,15 +110,11 @@ export const gamma = {
   pdf(x, { shape = 1, scale = 1 } = {}) {
     guardPositive(shape, 'shape');
     guardPositive(scale, 'scale');
-    
-    if (x <= 0) return 0;
-    
-    const logPdf = (shape - 1) * Math.log(x) - x / scale - shape * Math.log(scale) - logGamma(shape);
-    return Math.exp(logPdf);
+    return probaGamma.pdf(x, { alpha: shape, beta: 1 / scale });
   },
 
   /**
-   * Cumulative distribution function (approximation)
+   * Cumulative distribution function
    * @param {number} x - Value
    * @param {Object} params - {shape, scale}
    * @returns {number} Cumulative probability
@@ -143,15 +122,11 @@ export const gamma = {
   cdf(x, { shape = 1, scale = 1 } = {}) {
     guardPositive(shape, 'shape');
     guardPositive(scale, 'scale');
-    
-    if (x <= 0) return 0;
-
-    // Regularized lower incomplete gamma P(shape, x/scale).
-    return regularizedGammaP(shape, x / scale);
+    return probaGamma.cdf(x, { alpha: shape, beta: 1 / scale });
   },
 
   /**
-   * Quantile function (numerical approximation)
+   * Quantile function (inverse CDF)
    * @param {number} p - Probability
    * @param {Object} params - {shape, scale}
    * @returns {number} Quantile
@@ -160,125 +135,39 @@ export const gamma = {
     guardProbability(p, 'p');
     guardPositive(shape, 'shape');
     guardPositive(scale, 'scale');
-    
-    // Simple numerical inversion using bisection
-    let low = 0;
-    let high = shape * scale * 10; // reasonable upper bound
-    const tolerance = 1e-8;
-    
-    while (high - low > tolerance) {
-      const mid = (low + high) / 2;
-      const cdfVal = gamma.cdf(mid, { shape, scale });
-      if (cdfVal < p) {
-        low = mid;
-      } else {
-        high = mid;
-      }
-    }
-    
-    return (low + high) / 2;
+    return probaGamma.quantile(p, { alpha: shape, beta: 1 / scale });
   }
 };
 
-// Helper: incomplete gamma function (lower)
-/**
- * Regularized lower incomplete gamma function P(s, x) = γ(s, x) / Γ(s) ∈ [0, 1].
- *
- * Uses the power series for x < s + 1 and the Lentz continued fraction for the
- * upper tail (x ≥ s + 1), which keeps it numerically stable for all x — the
- * bare series alone underflows to NaN when x ≫ s. (Press et al., Numerical
- * Recipes, §6.2.)
- *
- * @param {number} s - Shape parameter (> 0)
- * @param {number} x - Argument (≥ 0)
- * @returns {number} P(s, x)
- */
-function regularizedGammaP(s, x, maxIter = 300) {
-  if (x <= 0) return 0;
-  const logGammaS = logGamma(s);
-
-  if (x < s + 1) {
-    // Series for P.
-    let term = 1 / s;
-    let sum = term;
-    for (let n = 1; n < maxIter; n++) {
-      term *= x / (s + n);
-      sum += term;
-      if (Math.abs(term) < Math.abs(sum) * 1e-15) break;
-    }
-    const p = sum * Math.exp(-x + s * Math.log(x) - logGammaS);
-    return Math.min(1, Math.max(0, p));
-  }
-
-  // Continued fraction for Q = 1 - P (modified Lentz).
-  const tiny = 1e-300;
-  let b = x + 1 - s;
-  let c = 1 / tiny;
-  let d = 1 / b;
-  let h = d;
-  for (let i = 1; i < maxIter; i++) {
-    const an = -i * (i - s);
-    b += 2;
-    d = an * d + b;
-    if (Math.abs(d) < tiny) d = tiny;
-    c = b + an / c;
-    if (Math.abs(c) < tiny) c = tiny;
-    d = 1 / d;
-    const del = d * c;
-    h *= del;
-    if (Math.abs(del - 1) < 1e-15) break;
-  }
-  const q = Math.exp(-x + s * Math.log(x) - logGammaS) * h;
-  return Math.min(1, Math.max(0, 1 - q));
-}
-
 // ============= Beta Distribution =============
-
-/**
- * Beta function B(a,b) = Gamma(a)*Gamma(b)/Gamma(a+b)
- */
-function betaFunc(a, b) {
-  return Math.exp(logGamma(a) + logGamma(b) - logGamma(a + b));
-}
 
 export const beta = {
   /**
    * Probability density function
-   * @param {number} x - Value (0 <= x <= 1)
+   * @param {number} x - Value in [0, 1]
    * @param {Object} params - {alpha, beta}
    * @returns {number} Probability density
    */
   pdf(x, { alpha = 1, beta: betaParam = 1 } = {}) {
     guardPositive(alpha, 'alpha');
     guardPositive(betaParam, 'beta');
-    
-    if (x < 0 || x > 1) return 0;
-    if (x === 0) return alpha === 1 ? 1 / betaFunc(alpha, betaParam) : 0;
-    if (x === 1) return betaParam === 1 ? 1 / betaFunc(alpha, betaParam) : 0;
-    
-    const logPdf = (alpha - 1) * Math.log(x) + (betaParam - 1) * Math.log(1 - x) - Math.log(betaFunc(alpha, betaParam));
-    return Math.exp(logPdf);
+    return probaBeta.pdf(x, { alpha, beta: betaParam });
   },
 
   /**
-   * Cumulative distribution function (approximation)
-   * @param {number} x - Value
+   * Cumulative distribution function
+   * @param {number} x - Value in [0, 1]
    * @param {Object} params - {alpha, beta}
    * @returns {number} Cumulative probability
    */
   cdf(x, { alpha = 1, beta: betaParam = 1 } = {}) {
     guardPositive(alpha, 'alpha');
     guardPositive(betaParam, 'beta');
-    
-    if (x <= 0) return 0;
-    if (x >= 1) return 1;
-    
-    // Regularized incomplete beta function approximation
-    return incompleteBeta(x, alpha, betaParam) / betaFunc(alpha, betaParam);
+    return probaBeta.cdf(x, { alpha, beta: betaParam });
   },
 
   /**
-   * Quantile function (numerical approximation)
+   * Quantile function (inverse CDF)
    * @param {number} p - Probability
    * @param {Object} params - {alpha, beta}
    * @returns {number} Quantile
@@ -287,90 +176,50 @@ export const beta = {
     guardProbability(p, 'p');
     guardPositive(alpha, 'alpha');
     guardPositive(betaParam, 'beta');
-    
-    // Numerical inversion using bisection
-    let low = 0;
-    let high = 1;
-    const tolerance = 1e-8;
-    
-    while (high - low > tolerance) {
-      const mid = (low + high) / 2;
-      const cdfVal = beta.cdf(mid, { alpha, beta: betaParam });
-      if (cdfVal < p) {
-        low = mid;
-      } else {
-        high = mid;
-      }
-    }
-    
-    return (low + high) / 2;
+    return probaBeta.quantile(p, { alpha, beta: betaParam });
   }
 };
 
-// Helper: incomplete beta function
-function incompleteBeta(x, a, b, maxIter = 100) {
-  if (x === 0) return 0;
-  if (x === 1) return betaFunc(a, b);
+// ============= Chi-square Distribution =============
 
-  // Series expansion
-  const logBeta = logGamma(a) + logGamma(b) - logGamma(a + b);
-  const front = Math.exp(a * Math.log(x) + b * Math.log(1 - x) - logBeta) / a;
-
-  let sum = 1.0;
-  let term = 1.0;
-
-  for (let n = 0; n < maxIter; n++) {
-    term *= (a + b + n) * x / (a + 1 + n);
-    sum += term;
-    if (Math.abs(term) < 1e-10) break;
-  }
-
-  return front * sum;
-}
-
-// ============= Chi-Squared Distribution =============
-
-/**
- * Chi-squared distribution (special case of gamma with shape=df/2, scale=2)
- */
 export const chisq = {
   /**
    * Probability density function
-   * @param {number} x - Value (x >= 0)
-   * @param {Object} params - {df} degrees of freedom
+   * @param {number} x - Value (x > 0)
+   * @param {Object} params - {df}
    * @returns {number} Probability density
    */
   pdf(x, { df = 1 } = {}) {
     guardPositive(df, 'df');
-    return gamma.pdf(x, { shape: df / 2, scale: 2 });
+    return chi2.pdf(x, { k: df });
   },
 
   /**
    * Cumulative distribution function
    * @param {number} x - Value
-   * @param {Object} params - {df} degrees of freedom
+   * @param {Object} params - {df}
    * @returns {number} Cumulative probability
    */
   cdf(x, { df = 1 } = {}) {
     guardPositive(df, 'df');
-    return gamma.cdf(x, { shape: df / 2, scale: 2 });
+    return chi2.cdf(x, { k: df });
   },
 
   /**
    * Quantile function (inverse CDF)
    * @param {number} p - Probability
-   * @param {Object} params - {df} degrees of freedom
+   * @param {Object} params - {df}
    * @returns {number} Quantile
    */
   quantile(p, { df = 1 } = {}) {
     guardProbability(p, 'p');
     guardPositive(df, 'df');
-    return gamma.quantile(p, { shape: df / 2, scale: 2 });
+    return chi2.quantile(p, { k: df });
   }
 };
 
 /**
- * Shorthand for chi-squared quantile function (R-like API)
+ * Chi-square quantile (convenience wrapper kept for backwards compatibility)
  * @param {number} p - Probability
  * @param {number} df - Degrees of freedom
  * @returns {number} Quantile
