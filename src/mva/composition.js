@@ -587,7 +587,11 @@ export class CompositionalImputer {
     return _restoreShape(out, was1d);
   }
 
-  /** Convenience: fit then transform the same matrix. */
+  /**
+   * Convenience: fit then transform the same matrix.
+   * @param {Array<Array<number>>} mat - Composition with zeros/missing values (n samples × D parts)
+   * @returns {Array<Array<number>>} Strictly-positive completed composition
+   */
   fitTransform(mat) {
     return this.fit(mat).transform(mat);
   }

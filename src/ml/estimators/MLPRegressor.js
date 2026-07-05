@@ -24,6 +24,20 @@ export class MLPRegressor extends Regressor {
     this.model = null;
   }
 
+  /**
+   * Fit the multilayer perceptron regressor on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p
+   *   features), or a declarative spec `{ X, columns, y, data, omit_missing }`
+   * @param {Array<number>} [y] - Target values (ignored when X is a spec)
+   * @param {Object} [opts] - Training hyperparameter overrides
+   * @param {Array<number>|null} [opts.layerSizes] - Hidden/output layer sizes
+   * @param {string} [opts.activation] - Activation function name
+   * @param {number} [opts.learningRate] - Learning rate
+   * @param {number} [opts.epochs] - Number of training epochs
+   * @param {number} [opts.batchSize] - Mini-batch size
+   * @param {boolean} [opts.verbose] - Log training progress
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null, opts = {}) {
     let dataX = X;
     let dataY = y;
@@ -81,6 +95,12 @@ export class MLPRegressor extends Regressor {
     return this;
   }
 
+  /**
+   * Predict target values for samples in X.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p
+   *   features), or a declarative spec `{ X, columns, data, omit_missing }`
+   * @returns {Array<number>} Predicted target values
+   */
   predict(X) {
     if (!this.fitted || !this.model) {
       throw new Error('MLPRegressor: estimator not fitted.');

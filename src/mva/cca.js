@@ -15,6 +15,15 @@ const EPSILON = 1e-10;
  *
  * Accepts either numeric matrices (fit(XMatrix, YMatrix, options)) or a declarative
  * object: fit({ X: ['col1', ...], Y: ['colA', ...], data, omit_missing, center, scale }).
+ *
+ * @param {Array<Array<number>>|Object} X - Design matrix (n × p) for the first dataset, or a declarative config object
+ * @param {Array<Array<number>>} Y - Design matrix (n × q) for the second dataset (ignored when X is declarative)
+ * @param {Object} options - Fitting options
+ * @param {boolean} [options.center] - Center columns to zero mean (default true)
+ * @param {boolean} [options.scale] - Scale columns to unit variance (default false)
+ * @param {Array<string>} [options.columnsX] - Column names for X
+ * @param {Array<string>} [options.columnsY] - Column names for Y
+ * @returns {Object} Fitted CCA model
  */
 export function fit(X, Y = null, options = {}) {
   if (
@@ -192,6 +201,13 @@ function computeCCA(X, Y, {
   };
 }
 
+/**
+ * Project new X data onto the fitted X canonical variates
+ * @param {Object} model - Fitted CCA model
+ * @param {Array<Array<number>>} X - New X data matrix (n × p)
+ * @param {Object} options - Transform options
+ * @returns {Array<Object>} Canonical score objects, one per row
+ */
 export function transformX(model, X, options = {}) {
   ensureModel(model);
   const matrix = prepareNewData(
@@ -209,6 +225,13 @@ export function transformX(model, X, options = {}) {
   return matrixToScoreObjects(scores, model.nComponents, 'cca');
 }
 
+/**
+ * Project new Y data onto the fitted Y canonical variates
+ * @param {Object} model - Fitted CCA model
+ * @param {Array<Array<number>>} Y - New Y data matrix (n × q)
+ * @param {Object} options - Transform options
+ * @returns {Array<Object>} Canonical score objects, one per row
+ */
 export function transformY(model, Y, options = {}) {
   ensureModel(model);
   const matrix = prepareNewData(
@@ -226,6 +249,14 @@ export function transformY(model, Y, options = {}) {
   return matrixToScoreObjects(scores, model.nComponents, 'cca');
 }
 
+/**
+ * Project new X and Y data onto their fitted canonical variates
+ * @param {Object} model - Fitted CCA model
+ * @param {Array<Array<number>>} X - New X data matrix (n × p)
+ * @param {Array<Array<number>>} Y - New Y data matrix (n × q)
+ * @param {Object} options - Transform options
+ * @returns {Object} Object with xScores and yScores arrays of score objects
+ */
 export function transform(model, X, Y, options = {}) {
   ensureModel(model);
   const xScores = transformX(model, X, options);

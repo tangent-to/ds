@@ -226,6 +226,12 @@ export class GAMRegressor extends Regressor {
     this.gam = new GAMBase({ ...opts, task: 'regression' });
   }
 
+  /**
+   * Fit the additive regression model on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, X/columns, y, ... }).
+   * @param {Array<number>} [y] - Continuous target values; omitted when using the declarative form.
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, y = null) {
     const prepared = prepareDataset(X, y);
     this.gam.columns = prepared.columns;
@@ -321,6 +327,11 @@ export class GAMRegressor extends Regressor {
     return S;
   }
 
+  /**
+   * Predict continuous target values for each sample.
+   * @param {Array<Array<number>>|Object} X - Feature matrix, or a declarative options object ({ data, X/columns, ... }).
+   * @returns {Array<number>} Predicted values (one per sample).
+   */
   predict(X) {
     this._ensureFitted('predict');
     const data = preparePredictInput(X, this.gam.columns);
@@ -392,6 +403,12 @@ export class GAMClassifier extends Classifier {
     this.gam = new GAMBase({ ...opts, task: 'classification' });
   }
 
+  /**
+   * Fit the additive classification model on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, X/columns, y, ... }).
+   * @param {Array<number>|Array<string>} [y] - Class labels; omitted when using the declarative form.
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, y = null) {
     const prepared = prepareDataset(X, y);
     const preparedY = prepared.y;
@@ -524,6 +541,11 @@ export class GAMClassifier extends Classifier {
     return probs;
   }
 
+  /**
+   * Predict class labels for each sample.
+   * @param {Array<Array<number>>|Object} X - Feature matrix, or a declarative options object ({ data, X/columns, ... }).
+   * @returns {Array<number>|Array<string>} Predicted class labels (the highest-probability class per sample).
+   */
   predict(X) {
     const probs = this.predictProba(X);
 

@@ -141,6 +141,12 @@ class DecisionTreeBase extends Estimator {
     this.nNodes = 0;
   }
 
+  /**
+   * Fit the decision tree on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, X/columns, y, ... }).
+   * @param {Array<number>|Array<string>} [y] - Target values (labels for classification, numbers for regression); omitted when using the declarative form.
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, y) {
     const prepared = buildPreparedData(X, y);
     return this._fitPrepared(prepared.X, prepared.y, prepared.columns);
@@ -330,6 +336,11 @@ class DecisionTreeBase extends Estimator {
     };
   }
 
+  /**
+   * Predict leaf values for each sample.
+   * @param {Array<Array<number>>|Object} X - Feature matrix, or a declarative options object ({ data, X/columns, ... }).
+   * @returns {Array<number>|Array<string>} Predicted values (majority-vote leaf label for classification, mean leaf value for regression).
+   */
   predict(X) {
     this._ensureFitted('predict');
     const data = preparePredictInput(X, this.columns);
@@ -529,6 +540,12 @@ export class DecisionTreeClassifier extends Classifier {
     this.tree = new DecisionTreeBase({ ...opts, task: "classification" });
   }
 
+  /**
+   * Fit the classifier on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, X/columns, y, ... }).
+   * @param {Array<number>|Array<string>} [y] - Class labels; omitted when using the declarative form.
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, y = null) {
     const prepared = buildPreparedData(X, y);
 
@@ -549,6 +566,11 @@ export class DecisionTreeClassifier extends Classifier {
     return this;
   }
 
+  /**
+   * Predict class labels for each sample.
+   * @param {Array<Array<number>>|Object} X - Feature matrix, or a declarative options object ({ data, X/columns, ... }).
+   * @returns {Array<number>|Array<string>} Predicted class labels (decoded to original label types).
+   */
   predict(X) {
     const predictions = this.tree.predict(X);
     // Use centralized label decoder
@@ -613,12 +635,23 @@ export class DecisionTreeRegressor extends Regressor {
     this.tree = new DecisionTreeBase({ ...opts, task: "regression" });
   }
 
+  /**
+   * Fit the regressor on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, X/columns, y, ... }).
+   * @param {Array<number>} [y] - Continuous target values; omitted when using the declarative form.
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, y = null) {
     this.tree.fit(X, y);
     this.fitted = true;
     return this;
   }
 
+  /**
+   * Predict continuous target values for each sample.
+   * @param {Array<Array<number>>|Object} X - Feature matrix, or a declarative options object ({ data, X/columns, ... }).
+   * @returns {Array<number>} Predicted values (mean leaf value for each sample).
+   */
   predict(X) {
     return this.tree.predict(X);
   }

@@ -38,6 +38,13 @@ export class KMeans extends Estimator {
    *  - declarative input: fit({ data: tableLike, columns: ['c1','c2'], k, ... })
    *
    * Returns this.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, columns, k, ... }).
+   * @param {Object} [opts] - Optional fitting overrides for the positional numeric form.
+   * @param {number} [opts.k] - Number of clusters.
+   * @param {number} [opts.maxIter] - Maximum number of iterations.
+   * @param {number} [opts.tol] - Convergence tolerance.
+   * @param {number|null} [opts.seed] - Random seed for centroid initialization.
+   * @returns {this} The fitted estimator (for chaining).
    */
   fit(X, opts = {}) {
     // If invoked with a single options-object that contains `data` or `columns`,
@@ -90,6 +97,8 @@ export class KMeans extends Estimator {
    * Accepts:
    *  - numeric array: predict([[x1,x2], [x1,x2], ...])
    *  - declarative: predict({ data: tableLike, columns: ['c1','c2'], omit_missing: true })
+   * @param {Array<Array<number>>|Object} X - Feature matrix to assign, or a declarative options object ({ data, columns, ... }).
+   * @returns {Array<number>} Predicted cluster labels (one integer index per sample).
    */
   predict(X) {
     this._ensureFitted('predict');

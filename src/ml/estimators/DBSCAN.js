@@ -39,6 +39,11 @@ export class DBSCAN extends Estimator {
    *  - declarative input: fit({ data: tableLike, columns: ['c1','c2'], eps, ... })
    *
    * Returns this.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, columns, eps, ... }).
+   * @param {Object} [opts] - Optional fitting overrides for the positional numeric form.
+   * @param {number} [opts.eps] - Maximum distance between two points for them to be neighbors.
+   * @param {number} [opts.minSamples] - Minimum number of points to form a dense region.
+   * @returns {this} The fitted estimator (for chaining).
    */
   fit(X, opts = {}) {
     // If invoked with a single options-object that contains `data` or `columns`,
@@ -102,6 +107,8 @@ export class DBSCAN extends Estimator {
    * Accepts:
    *  - numeric array: predict([[x1,x2], [x1,x2], ...])
    *  - declarative: predict({ data: tableLike, columns: ['c1','c2'], omit_missing: true })
+   * @param {Array<Array<number>>|Object} X - Feature matrix to assign, or a declarative options object ({ data, columns, ... }).
+   * @returns {Array<number>} Predicted cluster labels (cluster id >= 0, or -1 for noise) for each sample.
    */
   predict(X) {
     if (!this.fitted || !this.model) {

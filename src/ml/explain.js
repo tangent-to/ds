@@ -719,7 +719,17 @@ function _shuffle(arr, rand) {
 // Functional shortcuts
 // ---------------------------------------------------------------------------
 
-/** Convenience: KernelSHAP in one call. See {@link KernelExplainer}. */
+/**
+ * Convenience: KernelSHAP in one call. See {@link KernelExplainer}.
+ * @param {Object} spec - Explainer specification
+ * @param {Object} spec.model - Model object to explain (used when no predict function is supplied)
+ * @param {Function} spec.predict - Prediction function mapping instances to outputs
+ * @param {Array<Array<number>>} spec.background - Background/reference dataset (n × p)
+ * @param {Array<string>} spec.featureNames - Feature names for each column
+ * @param {Array<Array<number>>} X - Instances to explain (n × p)
+ * @param {Object} opts - Options forwarded to KernelExplainer.shapValues
+ * @returns {{values: Array<Array<number>>, featureNames?: Array<string>}} SHAP values per instance and feature
+ */
 export function kernelShap({ model, predict, background, featureNames }, X, opts) {
   return new KernelExplainer({ model, predict, background, featureNames }).shapValues(
     X,
@@ -727,7 +737,14 @@ export function kernelShap({ model, predict, background, featureNames }, X, opts
   );
 }
 
-/** Convenience: TreeSHAP in one call. See {@link TreeExplainer}. */
+/**
+ * Convenience: TreeSHAP in one call. See {@link TreeExplainer}.
+ * @param {Object} spec - Explainer specification
+ * @param {Object} spec.model - Tree model to explain
+ * @param {Array<string>} spec.featureNames - Feature names for each column
+ * @param {Array<Array<number>>} X - Instances to explain (n × p)
+ * @returns {{values: Array<Array<number>>, featureNames?: Array<string>}} SHAP values per instance and feature
+ */
 export function treeShap({ model, featureNames }, X) {
   return new TreeExplainer({ model, featureNames }).shapValues(X);
 }

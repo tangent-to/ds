@@ -41,11 +41,14 @@ export class LDA extends Classifier {
   /**
    * Fit the LDA model.
    *
-   * Supports:
-   *  - fit(Xarray, yarray)
-   *  - fit({ X: 'col'|'[cols]', y: 'label', data: tableLike, omit_missing, encoders })
-   *
-   * Returns: this
+   * Supports a positional numeric call (`fit(Xarray, yarray)`) or a declarative
+   * `{ X, y, data }` object (`fit({ X: 'col'|'[cols]', y: 'label', data: tableLike, omit_missing, encoders })`).
+   * @param {Array<Array<number>>|Object} X - Data matrix (n samples × p features), or a declarative `{ data, X, y }` object
+   * @param {Array<number>|Array<string>} [y] - Class labels, one per sample (positional call form)
+   * @param {Object} [opts] - Fitting options (used for the positional call form)
+   * @param {boolean} [opts.scale] - Whether to scale columns to unit variance
+   * @param {number} [opts.scaling] - Ordination scaling convention
+   * @returns {this} The fitted estimator (for chaining)
    */
   fit(X, y = null, opts = {}) {
     let result;
@@ -90,9 +93,9 @@ export class LDA extends Classifier {
   /**
    * Transform input X to discriminant scores (delegates to functional transform).
    *
-   * Accepts:
-   *  - numeric array X
-   *  - declarative object { X: cols, data: tableLike }
+   * Accepts a numeric array or a declarative object `{ X: cols, data: tableLike }`.
+   * @param {Array<Array<number>>|Object} X - Data matrix (n samples × p features), or a declarative `{ data, X }` object
+   * @returns {Array<Object>} Discriminant score objects, one per row, keyed by axis (e.g. `ld1`, `ld2`, ...)
    */
   transform(X) {
     if (!this.fitted || !this.model) {
@@ -105,11 +108,10 @@ export class LDA extends Classifier {
   /**
    * Predict class labels for X.
    *
-   * Accepts:
-   *  - numeric array X
-   *  - declarative object { X: cols, data: tableLike }
-   *
-   * Returns decoded labels if label encoder is present, otherwise numeric predictions
+   * Accepts a numeric array or a declarative object `{ X: cols, data: tableLike }`.
+   * Returns decoded labels if a label encoder is present, otherwise numeric predictions.
+   * @param {Array<Array<number>>|Object} X - Data matrix (n samples × p features), or a declarative `{ data, X }` object
+   * @returns {Array<number>|Array<string>} Predicted class label for each row
    */
   predict(X) {
     if (!this.fitted || !this.model) {

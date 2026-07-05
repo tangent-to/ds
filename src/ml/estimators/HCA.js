@@ -17,6 +17,15 @@ export class HCA extends Estimator {
     this.labels = null;
   }
 
+  /**
+   * Fit the hierarchical clustering model.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n observations × p features), or a declarative options object ({ data, columns/X, ... }).
+   * @param {Object} [opts] - Optional fitting overrides.
+   * @param {string} [opts.linkage] - Linkage method (e.g. 'average', 'single', 'complete').
+   * @param {boolean} [opts.omit_missing] - Whether to drop rows with missing values.
+   * @param {number} [opts.k] - Optional number of clusters to cut the dendrogram into after fitting.
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, opts = {}) {
     let data = X;
     let linkage = opts.linkage !== undefined ? opts.linkage : this.params.linkage;

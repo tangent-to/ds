@@ -38,11 +38,16 @@ export class PCA extends Transformer {
   /**
    * Fit PCA on the provided data.
    *
-   * Accepts either:
-   *  - fit(X[, opts]) where X is an array-of-arrays numeric matrix
-   *  - fit({ data, columns, center, scale, omit_missing })
-   *
-   * Returns `this` for chaining.
+   * Accepts either a numeric matrix (`fit(X[, opts])`) or a declarative
+   * `{ data, columns }` object (`fit({ data, columns, center, scale, omit_missing })`).
+   * @param {Array<Array<number>>|Object} X - Data matrix (n samples × p features), or a declarative `{ data, columns }` object
+   * @param {Object} [opts] - Fitting options (used for the numeric-matrix call form)
+   * @param {boolean} [opts.center] - Whether to mean-center the columns
+   * @param {boolean} [opts.scale] - Whether to scale columns to unit variance
+   * @param {Array<string>} [opts.columns] - Column names to use for declarative inputs
+   * @param {boolean} [opts.omit_missing] - Whether to drop rows with missing values
+   * @param {number} [opts.scaling] - Ordination scaling convention
+   * @returns {this} The fitted estimator (for chaining)
    */
   fit(X, opts = {}) {
     let model;
@@ -85,9 +90,11 @@ export class PCA extends Transformer {
   }
 
   /**
-   * Transform new data using fitted PCA model.
+   * Transform new data into principal-component scores using the fitted model.
    *
    * Accepts numeric arrays or declarative table objects { data, columns }.
+   * @param {Array<Array<number>>|Object} X - Data matrix (n samples × p features), or a declarative `{ data, columns }` object
+   * @returns {Array<Object>} Score objects, one per row, keyed by component (e.g. `pc1`, `pc2`, ...)
    */
   transform(X) {
     this._ensureFitted('transform');

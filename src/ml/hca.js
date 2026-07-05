@@ -224,6 +224,12 @@ export function fit(X, { linkage = 'average' } = {}) {
   };
 }
 
+/**
+ * Cut a hierarchical clustering dendrogram into k flat clusters
+ * @param {Object} model - Fitted HCA model with { dendrogram, linkage, n }
+ * @param {number} k - Desired number of clusters (1 ≤ k ≤ n)
+ * @returns {Array<number>} Cluster label for each of the n samples
+ */
 export function cut(model, k) {
   const { dendrogram, n } = model;
 
@@ -272,6 +278,12 @@ export function cut(model, k) {
   return labels;
 }
 
+/**
+ * Cut a hierarchical clustering dendrogram at a given merge height
+ * @param {Object} model - Fitted HCA model with { dendrogram, linkage, n }
+ * @param {number} height - Non-negative distance threshold; merges with distance above it are not applied
+ * @returns {Array<number>} Cluster label for each of the n samples
+ */
 export function cutHeight(model, height) {
   const { dendrogram, n } = model;
 

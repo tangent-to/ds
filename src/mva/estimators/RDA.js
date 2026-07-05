@@ -62,6 +62,20 @@ export class RDA extends Transformer {
     this.model = null;
   }
 
+  /**
+   * Fit the RDA model, constraining the response table Y by the predictor table X.
+   *
+   * Accepts a positional numeric call (`fit(Y, X[, opts])`) or a declarative
+   * `{ data, response, predictors }` object.
+   * @param {Array<Array<number>>|Object} Y - Response matrix (n samples × q responses), or a declarative `{ data, response, predictors }` object
+   * @param {Array<Array<number>>} [X] - Predictor/explanatory matrix (n samples × p predictors), for the positional call form
+   * @param {Object} [opts] - Fitting options
+   * @param {boolean} [opts.scale] - Whether to scale columns to unit variance
+   * @param {number} [opts.scaling] - Ordination scaling convention
+   * @param {boolean} [opts.constrained] - Whether to fit the constrained (RDA) rather than unconstrained ordination
+   * @param {boolean} [opts.omit_missing] - Whether to drop rows with missing values (declarative inputs)
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(Y, X = null, opts = {}) {
     let responses = Y;
     let predictors = X;
@@ -119,6 +133,17 @@ export class RDA extends Transformer {
     return this;
   }
 
+  /**
+   * Transform new data into RDA canonical (site) scores using the fitted model.
+   *
+   * Accepts positional numeric matrices (`transform(Y, X)`) or a declarative
+   * `{ data, response, predictors }` object.
+   * @param {Array<Array<number>>|Object} Y - Response matrix (n samples × q responses), or a declarative `{ data, response, predictors }` object
+   * @param {Array<Array<number>>} [X] - Predictor/explanatory matrix (n samples × p predictors), for the positional call form
+   * @param {Object} [opts] - Transform options
+   * @param {boolean} [opts.omit_missing] - Whether to drop rows with missing values (declarative inputs)
+   * @returns {Array<Object>} Canonical score objects, one per row (keyed `rda1`, `rda2`, ...)
+   */
   transform(Y, X, opts = {}) {
     if (!this.fitted || !this.model) {
       throw new Error('RDA: estimator not fitted. Call fit() before transform().');

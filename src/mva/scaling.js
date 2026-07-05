@@ -25,6 +25,8 @@ const SCALING_EXPONENT = {
 /**
  * Sanitize scaling option (only 1 or 2 are supported).
  * Defaults to 2 (correlation biplot) when unspecified.
+ * @param {number|string} value - Requested scaling (1 or '1' for distance biplot; otherwise 2)
+ * @returns {number} Normalized scaling, either 1 or 2
  */
 export function normalizeScaling(value) {
   if (value === 1 || value === '1') return 1;
