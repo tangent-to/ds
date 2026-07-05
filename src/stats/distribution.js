@@ -98,44 +98,55 @@ export const uniform = {
 };
 
 // ============= Gamma Distribution =============
-// ds uses the shape/SCALE convention; proba uses shape/RATE (beta = 1/scale).
+// ds uses the shape/SCALE convention (R's rgamma); proba uses shape/RATE
+// (beta = 1/scale, the PyMC/Stan convention). `rate` is accepted as an
+// explicit alternative to `scale` so users of either convention are served
+// without ambiguity — see @tangent.to/mc's Gamma for the rate-first form.
+
+/** Resolve {scale} from ds gamma params, honoring an explicit `rate` alias. */
+function gammaScale({ scale, rate }) {
+  if (rate !== undefined) {
+    guardPositive(rate, 'rate');
+    return 1 / rate;
+  }
+  const s = scale ?? 1;
+  guardPositive(s, 'scale');
+  return s;
+}
 
 export const gamma = {
   /**
    * Probability density function
    * @param {number} x - Value (x > 0)
-   * @param {Object} params - {shape, scale}
+   * @param {Object} params - {shape, scale} or {shape, rate}
    * @returns {number} Probability density
    */
-  pdf(x, { shape = 1, scale = 1 } = {}) {
+  pdf(x, { shape = 1, scale, rate } = {}) {
     guardPositive(shape, 'shape');
-    guardPositive(scale, 'scale');
-    return probaGamma.pdf(x, { alpha: shape, beta: 1 / scale });
+    return probaGamma.pdf(x, { alpha: shape, beta: 1 / gammaScale({ scale, rate }) });
   },
 
   /**
    * Cumulative distribution function
    * @param {number} x - Value
-   * @param {Object} params - {shape, scale}
+   * @param {Object} params - {shape, scale} or {shape, rate}
    * @returns {number} Cumulative probability
    */
-  cdf(x, { shape = 1, scale = 1 } = {}) {
+  cdf(x, { shape = 1, scale, rate } = {}) {
     guardPositive(shape, 'shape');
-    guardPositive(scale, 'scale');
-    return probaGamma.cdf(x, { alpha: shape, beta: 1 / scale });
+    return probaGamma.cdf(x, { alpha: shape, beta: 1 / gammaScale({ scale, rate }) });
   },
 
   /**
    * Quantile function (inverse CDF)
    * @param {number} p - Probability
-   * @param {Object} params - {shape, scale}
+   * @param {Object} params - {shape, scale} or {shape, rate}
    * @returns {number} Quantile
    */
-  quantile(p, { shape = 1, scale = 1 } = {}) {
+  quantile(p, { shape = 1, scale, rate } = {}) {
     guardProbability(p, 'p');
     guardPositive(shape, 'shape');
-    guardPositive(scale, 'scale');
-    return probaGamma.quantile(p, { alpha: shape, beta: 1 / scale });
+    return probaGamma.quantile(p, { alpha: shape, beta: 1 / gammaScale({ scale, rate }) });
   }
 };
 

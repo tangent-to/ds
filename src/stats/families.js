@@ -1,4 +1,4 @@
-import { gamma as gammaFunc } from 'simple-statistics';
+import { special } from '@tangent.to/proba';
 
 /**
  * GLM Family Definitions
@@ -13,9 +13,8 @@ import { gamma as gammaFunc } from 'simple-statistics';
 const EPS = 1e-12;
 const LOG_TWO_PI = Math.log(2 * Math.PI);
 
-function logGamma(x) {
-  return Math.log(gammaFunc(x));
-}
+// log-gamma via @tangent.to/proba's Lanczos implementation (was simple-statistics)
+const logGamma = special.lgamma;
 
 function logFactorial(k) {
   return logGamma(k + 1);
