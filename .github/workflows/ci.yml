@@ -7,6 +7,8 @@ on:
   pull_request:
   workflow_dispatch:
 
+# ds depends on @tangent.to/opt and @tangent.to/proba via file:../ specifiers,
+# so CI checks out and builds both sibling repos next to it before installing.
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,23 +17,37 @@ jobs:
         node-version: ['20', '22']
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: ds
+      - uses: actions/checkout@v4
+        with: { repository: tangent-to/opt, path: opt }
+      - uses: actions/checkout@v4
+        with: { repository: tangent-to/proba, path: proba }
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Build sibling foundations (produce their dist for the file dependencies)
+        run: |
+          for pkg in opt proba; do (cd "$pkg" && npm install --no-fund --no-audit); done
+
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-fund --no-audit
+        working-directory: ds
 
       - name: Run tests
         run: npm run test:run
+        working-directory: ds
 
       - name: Build browser bundle
         run: npm run build:browser
+        working-directory: ds
 
       - name: Verify package
         run: npm run verify
+        working-directory: ds
 
   lint:
     runs-on: ubuntu-latest
