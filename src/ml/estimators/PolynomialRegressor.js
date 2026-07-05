@@ -21,6 +21,16 @@ export class PolynomialRegressor extends Regressor {
     this.coef = null;
   }
 
+  /**
+   * Fit the polynomial regression model on training data.
+   * @param {Array<Array<number>>|Object} X - Feature matrix (n samples × p features), or a declarative options object ({ data, X/columns, y, ... }).
+   * @param {Array<number>} [y] - Continuous target values; omitted when using the declarative form.
+   * @param {Object} [opts] - Optional fitting overrides.
+   * @param {number} [opts.degree] - Polynomial degree.
+   * @param {boolean} [opts.intercept] - Whether to include an intercept term.
+   * @param {boolean} [opts.omit_missing] - Whether to drop rows with missing values (declarative form).
+   * @returns {this} The fitted estimator (for chaining).
+   */
   fit(X, y = null, opts = {}) {
     let dataX = X;
     let dataY = y;
@@ -66,6 +76,13 @@ export class PolynomialRegressor extends Regressor {
     return this;
   }
 
+  /**
+   * Predict continuous target values for each sample.
+   * @param {Array<Array<number>>|Object} X - Feature matrix, or a declarative options object ({ data, X/columns, ... }).
+   * @param {Object} [options] - Optional prediction overrides.
+   * @param {boolean} [options.intercept] - Whether to include the intercept term; defaults to the value used at fit time.
+   * @returns {Array<number>} Predicted values (one per sample).
+   */
   predict(X, { intercept = undefined } = {}) {
     this._ensureFitted('predict');
 

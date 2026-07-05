@@ -189,6 +189,12 @@ class GradientBoostingBase extends Estimator {
     return { tree, update: X.map((row) => findLeaf(tree.tree.root, row).value) };
   }
 
+  /**
+   * Fit the gradient boosting model on training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>} y - Target values (class indices or regression targets)
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y) {
     const prepared = prepareDataset(X, y);
     return this._fitPrepared(prepared.X, prepared.y, prepared.columns);
@@ -424,12 +430,23 @@ export class GradientBoostingRegressor extends Regressor {
     this.gb = new GradientBoostingBase({ ...opts, task: "regression" });
   }
 
+  /**
+   * Fit the regressor on training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>} [y] - Target values
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null) {
     this.gb.fit(X, y);
     this.fitted = true;
     return this;
   }
 
+  /**
+   * Predict target values for samples in X.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @returns {Array<number>} Predicted target values
+   */
   predict(X) {
     return this.gb._predictRaw(X);
   }
@@ -458,6 +475,12 @@ export class GradientBoostingClassifier extends Classifier {
     this.gb = new GradientBoostingBase({ ...opts, task: "classification" });
   }
 
+  /**
+   * Fit the classifier on training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>|Array<string>} [y] - Class labels
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null) {
     const prepared = prepareDataset(X, y);
 
@@ -480,6 +503,11 @@ export class GradientBoostingClassifier extends Classifier {
     return this;
   }
 
+  /**
+   * Predict class labels for samples in X.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @returns {Array<number>|Array<string>} Predicted class labels
+   */
   predict(X) {
     this._ensureFitted("predict");
     const indices = this.gb._predictClassIndices(X);

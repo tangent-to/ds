@@ -5,6 +5,8 @@
  * Returns Observable-friendly tables and specifications
  */
 
+import { chi2 } from '@tangent.to/proba';
+
 /**
  * Compare multiple models with information criteria
  * @param {Array<Object>} models - Array of fitted GLM models with optional names
@@ -531,67 +533,12 @@ export function crossValidateModels(modelFactories, X, y, options = {}) {
 // ============================================================================
 
 /**
- * Chi-square CDF approximation
+ * Chi-square CDF, via @tangent.to/proba's exact regularized incomplete gamma
+ * (replaces the previous series/Lanczos approximation).
  */
 function chiSquareCDF(x, df) {
   if (x <= 0) return 0;
-
-  // Use gamma function approximation
-  const k = df / 2;
-  const z = x / 2;
-
-  return lowerIncompleteGamma(k, z) / gamma(k);
-}
-
-/**
- * Gamma function (Stirling's approximation)
- */
-function gamma(z) {
-  if (z < 0.5) {
-    return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
-  }
-
-  z -= 1;
-  const g = 7;
-  const coefficients = [
-    0.99999999999980993,
-    676.5203681218851,
-    -1259.1392167224028,
-    771.32342877765313,
-    -176.61502916214059,
-    12.507343278686905,
-    -0.13857109526572012,
-    9.9843695780195716e-6,
-    1.5056327351493116e-7
-  ];
-
-  let x = coefficients[0];
-  for (let i = 1; i < g + 2; i++) {
-    x += coefficients[i] / (z + i);
-  }
-
-  const t = z + g + 0.5;
-  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
-}
-
-/**
- * Lower incomplete gamma function (series approximation)
- */
-function lowerIncompleteGamma(s, x) {
-  if (x === 0) return 0;
-  if (x < 0 || s <= 0) return NaN;
-
-  let sum = 0;
-  let term = 1 / s;
-  let n = 0;
-
-  while (Math.abs(term) > 1e-10 && n < 100) {
-    sum += term;
-    n++;
-    term *= x / (s + n);
-  }
-
-  return Math.pow(x, s) * Math.exp(-x) * sum;
+  return chi2.cdf(x, { k: df });
 }
 
 /**

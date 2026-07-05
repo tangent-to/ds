@@ -193,6 +193,15 @@ function meanFromSanitized(arr) {
   return total / arr.length;
 }
 
+/**
+ * Compute the quantile(s) of an array
+ * @param {Array<number>} arr - Array of numbers
+ * @param {number|Array<number>} p - Probability in [0, 1], or an array of probabilities
+ * @param {Object} options - Options
+ * @param {boolean} [options.naOmit] - Omit non-finite values instead of throwing
+ * @param {string} [options.method] - Interpolation method ('linear' or nearest)
+ * @returns {number|Array<number>} Quantile value, or array of quantiles if p is an array
+ */
 export function quantile(arr, p, options = {}) {
   if (!Array.isArray(arr)) {
     throw new Error('Expected an array of numbers');
@@ -224,10 +233,26 @@ export function quantile(arr, p, options = {}) {
   return sorted[weight > 0.5 ? upper : lower];
 }
 
+/**
+ * Compute the median of an array
+ * @param {Array<number>} arr - Array of numbers
+ * @param {Object} options - Options
+ * @param {boolean} [options.naOmit] - Omit non-finite values instead of throwing
+ * @param {string} [options.method] - Interpolation method ('linear' or nearest)
+ * @returns {number} Median value, or NaN if empty
+ */
 export function median(arr, options = {}) {
   return quantile(arr, 0.5, options);
 }
 
+/**
+ * Compute the proportion of values less than or equal to a given value
+ * @param {Array<number>} arr - Array of numbers
+ * @param {number} value - Threshold value
+ * @param {Object} options - Options
+ * @param {boolean} [options.naOmit] - Omit non-finite values instead of throwing
+ * @returns {number} Proportion in [0, 1], or NaN if empty
+ */
 export function percentile(arr, value, options = {}) {
   const data = sanitizeNumericArray(arr, options);
   if (!data.length) return NaN;
@@ -239,6 +264,15 @@ export function percentile(arr, value, options = {}) {
   return count / sorted.length;
 }
 
+/**
+ * Compute a set of quantiles keyed by probability
+ * @param {Array<number>} arr - Array of numbers
+ * @param {Array<number>} probs - Probabilities in [0, 1] to compute
+ * @param {Object} options - Options
+ * @param {boolean} [options.naOmit] - Omit non-finite values instead of throwing
+ * @param {string} [options.method] - Interpolation method ('linear' or nearest)
+ * @returns {Object} Object mapping each probability to its quantile value
+ */
 export function summaryQuantiles(arr, probs = [0, 0.25, 0.5, 0.75, 1], options = {}) {
   const out = {};
   for (const p of probs) {

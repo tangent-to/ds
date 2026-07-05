@@ -234,6 +234,13 @@ function attachTableDataToFolds(folds, dataset) {
 /**
  * Split data into train and test sets
  * Supports both raw matrices and declarative table descriptors
+ * @param {Array<Array<number>>|Object} X - Design matrix (n × p) or a table descriptor ({ data, X, y, ... })
+ * @param {Array<number>|Array<string>|Object|null} y - Response vector, or options object when X is a table descriptor
+ * @param {Object} options - Split options
+ * @param {number} [options.ratio] - Fraction of samples assigned to the train set (default 0.8)
+ * @param {boolean} [options.shuffle] - Whether to shuffle indices before splitting (default true)
+ * @param {number} [options.seed] - Optional random seed for reproducible shuffling
+ * @returns {Object} Split result with XTrain/XTest, optional yTrain/yTest, and trainIndices/testIndices (or table views for descriptor input)
  */
 export function trainTestSplit(X, y = null, options = {}) {
   if (isTableSplitInput(X)) {
@@ -555,6 +562,13 @@ export function shuffleSplit(X, y, options = {}) {
  *   { scores, meanScore, stdScore, nFolds, metadata?, tableFolds? }
  * When invoked with a descriptor, metadata/tableFolds include the training encoders
  * and per-fold table views for further inspection.
+ *
+ * @param {Function} fitFn - Fits a model given (XTrain, yTrain) and returns the model
+ * @param {Function} scoreFn - Scores a model given (model, XTest, yTest) and returns a number
+ * @param {Array<Array<number>>|Object} X - Design matrix (n × p) or a table descriptor ({ data, X, y, encoders? })
+ * @param {Array<number>|Array<string>|Object|null} y - Response vector, or options object when X is a table descriptor
+ * @param {Array<Object>|null} folds - Optional fold definitions (each with trainIndices/testIndices); defaults to k-fold
+ * @returns {{scores: Array<number>, meanScore: number, stdScore: number, nFolds: number, metadata?: Object, tableFolds?: Array<Object>}} Cross-validation results
  */
 export function crossValidate(fitFn, scoreFn, X, y = null, folds = null) {
   let dataX = X;

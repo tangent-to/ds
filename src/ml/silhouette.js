@@ -51,6 +51,12 @@ function ensureDataMatrix(X) {
   );
 }
 
+/**
+ * Compute the silhouette value for each sample
+ * @param {Array<Array<number>>|{data: Array<Array<number>>, columns: Array<string>}} X - Data matrix (n × p) or an options object with data/columns
+ * @param {Array<number>|Array<string>} labels - Cluster label for each sample (length n)
+ * @returns {Array<{index: number, cluster: (number|string), a: number, b: number, silhouette: number}>} Per-sample silhouette records
+ */
 export function silhouetteSamples(X, labels) {
   const data = ensureDataMatrix(X);
   const n = data.length;
@@ -115,6 +121,12 @@ export function silhouetteSamples(X, labels) {
   });
 }
 
+/**
+ * Group per-sample silhouette values by cluster and compute cluster averages
+ * @param {Array<Array<number>>|{data: Array<Array<number>>, columns: Array<string>}} X - Data matrix (n × p) or an options object with data/columns
+ * @param {Array<number>|Array<string>} labels - Cluster label for each sample (length n)
+ * @returns {Array<{cluster: (number|string), samples: Array<Object>, average: number}>} Clusters sorted by descending average silhouette
+ */
 export function silhouetteByCluster(X, labels) {
   const samples = silhouetteSamples(X, labels);
   const clusters = new Map();

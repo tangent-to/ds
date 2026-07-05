@@ -832,6 +832,14 @@ function computeGLMMStandardErrors(X, _Z, mu, eta, _beta, _u, _theta, weights, f
 
 /**
  * Predict from GLM
+ * @param {Object} model - Fitted GLM model (with coefficients, family, link, intercept)
+ * @param {Array<Array<number>>} X - Design matrix (n × p)
+ * @param {Object} options - Prediction options
+ * @param {string} [options.type] - Prediction scale: 'link', 'response', 'confidence', or 'prediction'
+ * @param {boolean} [options.interval] - Whether to return intervals instead of point predictions
+ * @param {number} [options.level] - Confidence level for intervals
+ * @param {Array<number>} [options.offset] - Optional offset added to the linear predictor
+ * @returns {Array<number>|Object} Predicted values, or an interval object when interval is true
  */
 export function predictGLM(model, X, options = {}) {
   const {
@@ -868,6 +876,14 @@ export function predictGLM(model, X, options = {}) {
 
 /**
  * Predict from GLMM
+ * @param {Object} model - Fitted GLMM model (with fixedEffects, randomEffects, groupInfo, family, link, intercept)
+ * @param {Array<Array<number>>} X - Fixed-effects design matrix (n × p)
+ * @param {Object} randomEffectsData - Grouping data for random effects (intercept groups and slopes)
+ * @param {Object} options - Prediction options
+ * @param {string} [options.type] - Prediction scale: 'link' or 'response'
+ * @param {boolean} [options.allowNewGroups] - Whether to allow unseen groups (predict with zero random effect)
+ * @param {Array<number>} [options.offset] - Optional offset added to the linear predictor
+ * @returns {Array<number>} Predicted values on the requested scale
  */
 export function predictGLMM(model, X, randomEffectsData, options = {}) {
   const {
@@ -1017,6 +1033,10 @@ function matrixVectorMultiply(A, x) {
 
 /**
  * Fit linear model (functional API)
+ * @param {Array<Array<number>>} X - Design matrix (n × p)
+ * @param {Array<number>} y - Response vector
+ * @param {Object} options - Fitting options passed through to fitGLM
+ * @returns {Object} Fitted model
  */
 export function fitLM(X, y, options = {}) {
   return fitGLM(X, y, { ...options, family: 'gaussian' });
@@ -1024,6 +1044,11 @@ export function fitLM(X, y, options = {}) {
 
 /**
  * Predict from linear model (functional API)
+ * @param {Array<number>} coefficients - Model coefficients
+ * @param {Array<Array<number>>} X - Design matrix (n × p)
+ * @param {Object} options - Prediction options
+ * @param {boolean} [options.intercept] - Whether the model includes an intercept term
+ * @returns {Array<number>|Object} Predicted values, or an interval object when interval is requested
  */
 export function predictLM(coefficients, X, options = {}) {
   const model = {
@@ -1038,6 +1063,10 @@ export function predictLM(coefficients, X, options = {}) {
 
 /**
  * Fit logistic model (functional API)
+ * @param {Array<Array<number>>} X - Design matrix (n × p)
+ * @param {Array<number>} y - Response vector (0/1 outcomes)
+ * @param {Object} options - Fitting options passed through to fitGLM
+ * @returns {Object} Fitted model
  */
 export function fitLogit(X, y, options = {}) {
   return fitGLM(X, y, { ...options, family: 'binomial', link: 'logit' });
@@ -1045,6 +1074,11 @@ export function fitLogit(X, y, options = {}) {
 
 /**
  * Predict from logistic model (functional API)
+ * @param {Array<number>} coefficients - Model coefficients
+ * @param {Array<Array<number>>} X - Design matrix (n × p)
+ * @param {Object} options - Prediction options
+ * @param {boolean} [options.intercept] - Whether the model includes an intercept term
+ * @returns {Array<number>|Object} Predicted probabilities, or an interval object when interval is requested
  */
 export function predictLogit(coefficients, X, options = {}) {
   const model = {

@@ -59,9 +59,9 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "arquero": "^8.0.3",
     "ml-matrix": "^6.12.1",
-    "simple-statistics": "^7.8.3"
+    "@tangent.to/opt": "file:../opt",
+    "@tangent.to/proba": "file:../proba"
   },
   "peerDependencies": {
     "@observablehq/plot": "^0.6.0"

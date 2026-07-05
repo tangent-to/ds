@@ -46,7 +46,8 @@
   },
   "imports": {
     "ml-matrix": "npm:ml-matrix@^6.11.1",
-    "simple-statistics": "npm:simple-statistics@^7.8.3",
-    "@observablehq/plot": "npm:@observablehq/plot@^0.6.0"
+    "@observablehq/plot": "npm:@observablehq/plot@^0.6.0",
+    "@tangent.to/opt": "../opt/src/index.js",
+    "@tangent.to/proba": "../proba/src/index.js"
   }
 }

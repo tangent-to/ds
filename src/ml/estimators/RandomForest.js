@@ -207,6 +207,13 @@ class RandomForestBase extends Estimator {
     this._oobDecisionFunction = null;
   }
 
+  /**
+   * Fit the random forest on training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>} y - Target values (class labels or regression targets)
+   * @param {Array<number>|null} [sampleWeight] - Optional per-sample weights
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y, sampleWeight = null) {
     const prepared = prepareDataset(X, y);
     return this._fitPrepared(
@@ -497,6 +504,13 @@ export class RandomForestClassifier extends Classifier {
     this.forest = new RandomForestBase({ ...opts, task: "classification" });
   }
 
+  /**
+   * Fit the classifier on training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>|Array<string>} [y] - Class labels
+   * @param {Array<number>|null} [sampleWeight] - Optional per-sample weights
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null, sampleWeight = null) {
     const prepared = prepareDataset(X, y);
 
@@ -523,6 +537,11 @@ export class RandomForestClassifier extends Classifier {
     return this;
   }
 
+  /**
+   * Predict class labels for samples in X.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @returns {Array<number>|Array<string>} Predicted class labels
+   */
   predict(X) {
     const predictions = this.forest._predictRaw(X);
     // Use centralized label decoder
@@ -588,12 +607,24 @@ export class RandomForestRegressor extends Regressor {
     this.forest = new RandomForestBase({ ...opts, task: "regression" });
   }
 
+  /**
+   * Fit the regressor on training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>} [y] - Target values
+   * @param {Array<number>|null} [sampleWeight] - Optional per-sample weights
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null, sampleWeight = null) {
     this.forest.fit(X, y, sampleWeight);
     this.fitted = true;
     return this;
   }
 
+  /**
+   * Predict target values for samples in X.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @returns {Array<number>} Predicted target values
+   */
   predict(X) {
     return this.forest._predictRaw(X);
   }

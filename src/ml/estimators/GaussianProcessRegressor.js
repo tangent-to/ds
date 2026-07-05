@@ -280,9 +280,10 @@ export class GaussianProcessRegressor extends Regressor {
 
   /**
    * Fit the GP to training data
-   * @param {Array|Object} X - Training inputs (n x d) or { X, y, data }
-   * @param {Array} [y] - Training targets (n)
-   * @returns {this}
+   * @param {Array<Array<number>>|Object} X - Training inputs (n samples × d
+   *   features), or a declarative spec `{ X, columns, y, data, omit_missing }`
+   * @param {Array<number>} [y] - Training targets (n)
+   * @returns {this} The fitted estimator (for chaining)
    */
   fit(X, y = null) {
     // Handle declarative input
@@ -428,10 +429,12 @@ export class GaussianProcessRegressor extends Regressor {
 
   /**
    * Predict at test points
-   * @param {Array} X - Test inputs (m x d)
-   * @param {Object} opts - Options
-   * @param {boolean} opts.returnStd - Return standard deviations
-   * @returns {Array|Object} Predictions, or { mean, std } if returnStd=true
+   * @param {Array<Array<number>>} X - Test inputs (m samples × d features)
+   * @param {Object} [opts] - Options
+   * @param {boolean} [opts.returnStd] - Return per-point standard deviations
+   * @param {boolean} [opts.returnCov] - Return the full posterior covariance
+   * @returns {Array<number>|{mean: Array<number>, std?: Array<number>, covariance?: Array<Array<number>>}}
+   *   Predicted means, or an object with mean and std/covariance when requested
    */
   predict(X, opts = {}) {
     this._ensureFitted('predict');

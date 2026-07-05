@@ -2,33 +2,20 @@
  * Statistical hypothesis tests, effect sizes, and multiple testing corrections
  */
 
+import { chi2, f as fDistribution, studentT } from '@tangent.to/proba';
 import { mean, variance } from '../core/math.js';
 import { normal } from './distribution.js';
 
 // ============= t-Distribution Helper =============
 
 /**
- * t-distribution CDF (approximation using normal for large df)
+ * t-distribution CDF (exact, via @tangent.to/proba's incomplete beta).
  * @param {number} t - t-statistic
  * @param {number} df - degrees of freedom
  * @returns {number} Cumulative probability
  */
 function tCDF(t, df) {
-  if (df > 30) {
-    // For large df, t-distribution approximates normal
-    return normal.cdf(t, { mean: 0, sd: 1 });
-  }
-  
-  // Simplified approximation for smaller df
-  const x = df / (df + t * t);
-  return 1 - 0.5 * incompleteBeta(x, df / 2, 0.5);
-}
-
-function incompleteBeta(x, a, b) {
-  // Very simple approximation
-  if (x <= 0) return 0;
-  if (x >= 1) return 1;
-  return x ** a * (1 - x) ** b;
+  return studentT.cdf(t, { nu: df, mu: 0, sigma: 1 });
 }
 
 // ============= t-tests =============
@@ -183,77 +170,10 @@ export function chiSquareTest(observed, expected) {
 }
 
 /**
- * Chi-square CDF approximation
+ * Chi-square CDF (exact, via @tangent.to/proba's regularized incomplete gamma).
  */
 function chiSquareCDF(x, k) {
-  if (x <= 0) return 0;
-
-  // Special cases for small df (exact formulas)
-  if (k === 1) {
-    // df=1: CDF = erf(sqrt(x/2))
-    const z = Math.sqrt(x);
-    return 2 * normal.cdf(z, { mean: 0, sd: 1 }) - 1;
-  }
-
-  if (k === 2) {
-    // df=2: CDF = 1 - exp(-x/2)
-    return 1 - Math.exp(-x / 2);
-  }
-
-  // For large k, use Wilson-Hilferty normal approximation
-  if (k > 30) {
-    const z = (Math.sqrt(2 * x) - Math.sqrt(2 * k - 1));
-    return normal.cdf(z, { mean: 0, sd: 1 });
-  }
-
-  // For intermediate df, use incomplete gamma approximation
-  // This is still an approximation but better than incomplete beta
-  const a = k / 2;
-  const z = x / 2;
-
-  // Series expansion for lower incomplete gamma
-  let sum = 1;
-  let term = 1;
-  for (let i = 1; i < 100; i++) {
-    term *= z / (a + i - 1);
-    sum += term;
-    if (Math.abs(term) < 1e-10) break;
-  }
-
-  return 1 - Math.exp(-z) * Math.pow(z, a) * sum / gamma_func(a);
-}
-
-/**
- * Gamma function approximation using Lanczos approximation
- */
-function gamma_func(z) {
-  if (z < 0.5) {
-    // Reflection formula for z < 0.5
-    return Math.PI / (Math.sin(Math.PI * z) * gamma_func(1 - z));
-  }
-
-  // Lanczos coefficients for g=7
-  const g = 7;
-  const coef = [
-    0.99999999999980993,
-    676.5203681218851,
-    -1259.1392167224028,
-    771.32342877765313,
-    -176.61502916214059,
-    12.507343278686905,
-    -0.13857109526572012,
-    9.9843695780195716e-6,
-    1.5056327351493116e-7
-  ];
-
-  z -= 1;
-  let x = coef[0];
-  for (let i = 1; i < g + 2; i++) {
-    x += coef[i] / (z + i);
-  }
-
-  const t = z + g + 0.5;
-  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+  return chi2.cdf(x, { k });
 }
 
 // ============= ANOVA =============
@@ -313,14 +233,10 @@ export function oneWayAnova(groups) {
 }
 
 /**
- * F-distribution CDF (simplified approximation)
+ * F-distribution CDF (exact, via @tangent.to/proba's incomplete beta).
  */
 function fCDF(f, d1, d2) {
-  if (f <= 0) return 0;
-
-  // Very rough approximation using beta distribution relationship
-  const x = d2 / (d2 + d1 * f);
-  return 1 - incompleteBeta(x, d2 / 2, d1 / 2);
+  return fDistribution.cdf(f, { d1, d2 });
 }
 
 // ============= Tukey HSD (Post-hoc test) =============

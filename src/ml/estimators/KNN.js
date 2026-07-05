@@ -286,6 +286,12 @@ export class KNNClassifier extends Classifier {
     this.knn = new KNNBase(opts);
   }
 
+  /**
+   * Fit the classifier by storing the training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>|Array<string>} [y] - Class labels
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null) {
     const prepared = this.knn._fitBase(X, y);
     // Use centralized label encoder extraction
@@ -293,6 +299,14 @@ export class KNNClassifier extends Classifier {
     return this;
   }
 
+  /**
+   * Predict class labels for samples in X by majority (weighted) vote.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Object} [options] - Prediction options
+   * @param {boolean} [options.decode] - Decode numeric predictions back to
+   *   original labels (defaults to true when a label encoder is present)
+   * @returns {Array<number>|Array<string>} Predicted class labels
+   */
   predict(X, { decode = !!this.labelEncoder_ } = {}) {
     const prepared = this.knn._preparePredict(X);
     const data = prepared.X || prepared;
@@ -415,11 +429,22 @@ export class KNNRegressor extends Regressor {
     this.knn = new KNNBase(opts);
   }
 
+  /**
+   * Fit the regressor by storing the training data.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @param {Array<number>} [y] - Target values
+   * @returns {this} The fitted estimator (for chaining)
+   */
   fit(X, y = null) {
     this.knn._fitBase(X, y);
     return this;
   }
 
+  /**
+   * Predict target values for samples in X by (weighted) neighbor averaging.
+   * @param {Array<Array<number>>} X - Feature matrix (n samples × p features)
+   * @returns {Array<number>} Predicted target values
+   */
   predict(X) {
     const data = this.knn._preparePredict(X);
     const predictions = [];

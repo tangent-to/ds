@@ -19,6 +19,18 @@ function toNumericMatrix(X) {
   return X.map((row) => Array.isArray(row) ? row.map(Number) : [Number(row)]);
 }
 
+/**
+ * Fit LDA model
+ * @param {Array<Array<number>>|Object} X - Design matrix (n × p), or a declarative config object with X/y/data
+ * @param {Array<number|string>} y - Class label vector
+ * @param {Object} options - Fitting options
+ * @param {boolean} [options.scale] - Scale features to unit variance (default false)
+ * @param {number} [options.scaling] - Ordination scaling, 1 or 2 (default 2)
+ * @param {boolean} [options.omit_missing] - Omit rows with missing values (alias of naOmit)
+ * @param {boolean} [options.naOmit] - Omit rows with missing values (default true)
+ * @param {Object} [options.encoders] - Label encoders for declarative input
+ * @returns {Object} Fitted LDA model
+ */
 export function fit(X, y, options = {}) {
   let featureNames = null;
   let sourcePrepared = null;
@@ -357,6 +369,12 @@ export function fit(X, y, options = {}) {
   return model;
 }
 
+/**
+ * Project new data onto the fitted discriminant axes
+ * @param {Object} model - Fitted LDA model
+ * @param {Array<Array<number>>} X - New data matrix (n × p)
+ * @returns {Array<Object>} Discriminant score objects, one per row
+ */
 export function transform(model, X) {
   const {
     projector,
@@ -394,6 +412,12 @@ export function transform(model, X) {
   return toScoreObjects(scaledData, 'ld');
 }
 
+/**
+ * Predict class labels for new data using nearest class-mean in discriminant space
+ * @param {Object} model - Fitted LDA model
+ * @param {Array<Array<number>>|Object} X - New data matrix (n × p), or a declarative config object with data/X
+ * @returns {Array<number|string>} Predicted class label for each row
+ */
 export function predict(model, X) {
   const { classes, classMeanScores, _featureNames } = model;
 
