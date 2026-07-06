@@ -5,8 +5,6 @@
 
 // %% [markdown]
 /*
-# Multi-class GAM classification
-
 A generalized additive model (GAM) replaces the straight-line terms of a
 linear model with smooth, wiggly functions of each predictor, so it can
 capture curved relationships while staying interpretable. `ds.ml.GAMClassifier`
@@ -143,6 +141,28 @@ const gam3Summary = gam3.summary();
 
 // %% [markdown]
 /*
+The per-class accuracy is easier to compare as bars: the well-separated setosa
+class is learned almost perfectly, the overlapping classes less so.
+*/
+
+// %% [javascript]
+
+const perClassBars = Object.entries(gam3Summary.perClassAccuracy).map(
+  ([cls, acc]) => ({ class: cls, accuracy: acc }),
+);
+const plot_gam3Acc = Plot.plot({
+  x: { label: 'Class' },
+  y: { label: 'Training accuracy', domain: [0, 1], grid: true },
+  color: { legend: true },
+  marks: [
+    Plot.barY(perClassBars, { x: 'class', y: 'accuracy', fill: 'class' }),
+    Plot.ruleY([0]),
+  ],
+});
+plot_gam3Acc;
+
+// %% [markdown]
+/*
 ## Predictions and probabilities
 
 `predict` returns the most likely class label per row; `predictProba` returns
@@ -168,6 +188,35 @@ const proba3 = gam3.predictProba(Xtest);
   predictions: preds3,
   probabilities: proba3,
 });
+
+// %% [markdown]
+/*
+Plotting the probability each test point gets for every class makes the
+model's confidence legible: setosa is called decisively, while the two larger
+points spread their mass between versicolor and virginica.
+*/
+
+// %% [javascript]
+
+const probaLong = proba3.flatMap((row, i) =>
+  Object.entries(row).map(([cls, p]) => ({
+    point: `test ${i} (predicted ${preds3[i]})`,
+    class: cls,
+    prob: p,
+  })),
+);
+const plot_gam3Proba = Plot.plot({
+  marginLeft: 90,
+  x: { label: 'Probability', domain: [0, 1] },
+  y: { label: 'Class' },
+  fy: { label: null },
+  color: { legend: true },
+  marks: [
+    Plot.barX(probaLong, { x: 'prob', y: 'class', fy: 'point', fill: 'class' }),
+    Plot.ruleX([0]),
+  ],
+});
+plot_gam3Proba;
 
 // %% [markdown]
 /*
@@ -197,3 +246,31 @@ const probaBin = gamBin.predictProba([[1, 2], [5, 6]]);
   proba_low: probaBin[0],          // ~{0: 1, 1: 0}
   proba_high: probaBin[1],         // ~{0: 0, 1: 1}
 });
+
+// %% [markdown]
+/*
+The two well-separated clusters are classified with near-certain probabilities
+— each point puts almost all of its mass on the correct class.
+*/
+
+// %% [javascript]
+
+const binLong = [probaBin[0], probaBin[1]].flatMap((row, i) =>
+  Object.entries(row).map(([cls, p]) => ({
+    point: i === 0 ? 'low point [1, 2]' : 'high point [5, 6]',
+    class: `class ${cls}`,
+    prob: p,
+  })),
+);
+const plot_gamBin = Plot.plot({
+  marginLeft: 110,
+  x: { label: 'Probability', domain: [0, 1] },
+  y: { label: 'Predicted class' },
+  fy: { label: null },
+  color: { legend: true },
+  marks: [
+    Plot.barX(binLong, { x: 'prob', y: 'class', fy: 'point', fill: 'class' }),
+    Plot.ruleX([0]),
+  ],
+});
+plot_gamBin;

@@ -5,8 +5,6 @@
 
 // %% [markdown]
 /*
-# Multinomial classification with the GLM
-
 `ds.stats.GLM` is a generalized linear model, and with the binomial family it
 does logistic regression. Out of the box that is a two-class model, but there
 are two standard ways to stretch it to three or more classes:
@@ -76,6 +74,35 @@ const ovrProba = ovrModel.predict({ data: irisRows }, { type: 'proba' });
 
 // %% [markdown]
 /*
+The OVR class probabilities for the first three rows, renormalised to sum to
+one. The predicted class dominates, but the runner-up classes keep a visible
+share.
+*/
+
+// %% [javascript]
+
+const ovrLong = ovrProba.slice(0, 3).flatMap((row, i) =>
+  Object.entries(row).map(([cls, p]) => ({
+    row: `row ${i} (${irisRows[i].species})`,
+    class: cls,
+    prob: p,
+  })),
+);
+const plot_ovr = Plot.plot({
+  marginLeft: 140,
+  x: { label: 'Probability', domain: [0, 1] },
+  y: { label: 'Class' },
+  fy: { label: null },
+  color: { legend: true },
+  marks: [
+    Plot.barX(ovrLong, { x: 'prob', y: 'class', fy: 'row', fill: 'class' }),
+    Plot.ruleX([0]),
+  ],
+});
+plot_ovr;
+
+// %% [markdown]
+/*
 ## Method 2: true multinomial
 
 `multiclass: 'multinomial'` fits the K classes jointly with a softmax link,
@@ -100,6 +127,35 @@ const mnRow0 = mnProba[0];
   probability_row0: mnRow0,                // setosa ~1.0
   row0_sums_to: Object.values(mnRow0).reduce((a, b) => a + b, 0), // 1
 });
+
+// %% [markdown]
+/*
+The same three rows under the true multinomial fit. Compared with OVR above,
+the softmax probabilities are sharper — mass piles almost entirely onto the
+predicted class.
+*/
+
+// %% [javascript]
+
+const mnLong = mnProba.slice(0, 3).flatMap((row, i) =>
+  Object.entries(row).map(([cls, p]) => ({
+    row: `row ${i} (${irisRows[i].species})`,
+    class: cls,
+    prob: p,
+  })),
+);
+const plot_mn = Plot.plot({
+  marginLeft: 140,
+  x: { label: 'Probability', domain: [0, 1] },
+  y: { label: 'Class' },
+  fy: { label: null },
+  color: { legend: true },
+  marks: [
+    Plot.barX(mnLong, { x: 'prob', y: 'class', fy: 'row', fill: 'class' }),
+    Plot.ruleX([0]),
+  ],
+});
+plot_mn;
 
 // %% [markdown]
 /*
@@ -128,3 +184,41 @@ classes or a quick baseline, OVR is a reasonable default.
     probabilities_normalised: 'by construction',
   },
 });
+
+// %% [markdown]
+/*
+Both strategies recover every label on this clean data — training accuracy is
+100% for each, so the choice between them is about the probabilities, not the
+predictions.
+*/
+
+// %% [javascript]
+
+const accBars = [
+  {
+    method: 'one-vs-rest',
+    accuracy:
+      ovrPreds.filter((p, i) => p === irisRows[i].species).length / irisRows.length,
+  },
+  {
+    method: 'multinomial',
+    accuracy:
+      mnPreds.filter((p, i) => p === irisRows[i].species).length / irisRows.length,
+  },
+];
+const plot_acc = Plot.plot({
+  x: { label: 'Strategy' },
+  y: { label: 'Training accuracy', domain: [0, 1], grid: true },
+  color: { legend: true },
+  marks: [
+    Plot.barY(accBars, { x: 'method', y: 'accuracy', fill: 'method' }),
+    Plot.ruleY([0]),
+    Plot.text(accBars, {
+      x: 'method',
+      y: 'accuracy',
+      text: (d) => d.accuracy.toFixed(2),
+      dy: -8,
+    }),
+  ],
+});
+plot_acc;

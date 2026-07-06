@@ -5,8 +5,6 @@
 
 // %% [markdown]
 /*
-# Getting started
-
 `@tangent.to/ds` is a browser-first data-science toolkit. It bundles
 descriptive statistics, hypothesis tests, multivariate analysis, and machine
 learning behind an API that reads like scikit-learn and R: estimators are
@@ -102,6 +100,26 @@ const corr = ds.stats.pearsonCorrelation(petalLength, petalWidth);
 
 // %% [markdown]
 /*
+Seeing it helps: each point is a flower, and the fitted trend line makes the
+near-perfect correlation (r about 0.99) visible at a glance.
+*/
+
+// %% [javascript]
+
+const plot_corr = Plot.plot({
+  grid: true,
+  x: { label: 'Petal length (cm)' },
+  y: { label: 'Petal width (cm)' },
+  color: { legend: true },
+  marks: [
+    Plot.linearRegressionY(flowers, { x: 'petalLength', y: 'petalWidth', stroke: '#888' }),
+    Plot.dot(flowers, { x: 'petalLength', y: 'petalWidth', stroke: 'species', r: 5 }),
+  ],
+});
+plot_corr;
+
+// %% [markdown]
+/*
 ## A two-sample t-test
 
 Do the two species differ in petal length? We split the column by species
@@ -134,6 +152,25 @@ const tTest = ds.stats.hypothesis.twoSampleTTest(setosaPetal, versicolorPetal);
 
 // %% [markdown]
 /*
+The boxplot with the raw points on top shows why the test is so decisive: the
+two species barely overlap in petal length.
+*/
+
+// %% [javascript]
+
+const plot_ttest = Plot.plot({
+  x: { label: 'Species' },
+  y: { label: 'Petal length (cm)', grid: true },
+  color: { legend: true },
+  marks: [
+    Plot.boxY(flowers, { x: 'species', y: 'petalLength', fill: 'species', fillOpacity: 0.25 }),
+    Plot.dot(flowers, { x: 'species', y: 'petalLength', fill: 'species', r: 4 }),
+  ],
+});
+plot_ttest;
+
+// %% [markdown]
+/*
 ## Principal component analysis
 
 `ds.mva.PCA` is a fit/transform estimator. We fit it on the three numeric
@@ -160,6 +197,38 @@ const scores = pca.transform(matrix);
 
 // %% [markdown]
 /*
+`ds.plot.ordiplot` draws the scores on the first two components. Coloured by
+species, the two groups fall into cleanly separated clouds along PC1, and the
+loading arrows show which measurements drive that axis.
+*/
+
+// %% [javascript]
+
+const species = flowers.map((f) => f.species);
+const pcaResult = {
+  scores,
+  loadings: pca.getScores('loadings'),
+  eigenvalues: pcaSummary.eigenvalues,
+  varianceExplained: pcaSummary.varianceExplained,
+};
+const plot_pcaOrdi = ds.plot
+  .ordiplot(pcaResult, { colorBy: species, symbolBy: true })
+  .show(Plot);
+plot_pcaOrdi;
+
+// %% [markdown]
+/*
+A scree plot of the cumulative variance confirms the numbers above: PC1 alone
+captures about 97%, and the first two together reach essentially all of it.
+*/
+
+// %% [javascript]
+
+const plot_pcaScree = ds.plot.plotScree(pcaResult, { cumulative: true }).show(Plot);
+plot_pcaScree;
+
+// %% [markdown]
+/*
 ## K-means clustering
 
 `ds.ml.KMeans` follows the same object pattern. With `k: 2` and a fixed seed
@@ -178,6 +247,30 @@ const kmeans = new ds.ml.KMeans({ k: 2, seed: 42 }).fit(matrix);
   inertia: kmeans.inertia,   // about 2.94
   iterations: kmeans.iterations,
 });
+
+// %% [markdown]
+/*
+Colouring the rows by the cluster label k-means assigned (it never saw the
+species) shows the two groups it recovered are exactly the two species.
+*/
+
+// %% [javascript]
+
+const clusterPoints = flowers.map((f, i) => ({
+  petalLength: f.petalLength,
+  sepalLength: f.sepalLength,
+  cluster: `cluster ${kmeans.labels[i]}`,
+}));
+const plot_kmeans = Plot.plot({
+  grid: true,
+  x: { label: 'Petal length (cm)' },
+  y: { label: 'Sepal length (cm)' },
+  color: { legend: true },
+  marks: [
+    Plot.dot(clusterPoints, { x: 'petalLength', y: 'sepalLength', fill: 'cluster', r: 6 }),
+  ],
+});
+plot_kmeans;
 
 // %% [markdown]
 /*
@@ -200,3 +293,28 @@ const glm = new ds.stats.GLM({ family: 'gaussian' })
   intercept: glm.coefficients[0],  // -0.32
   slope_petalLength: glm.coefficients[1], // 0.38
 });
+
+// %% [markdown]
+/*
+Overlaying the fitted line on the data closes the loop: the OLS fit (slope
+about 0.38) tracks the points, so petal width rises steadily with petal length.
+*/
+
+// %% [javascript]
+
+const glmLine = flowers
+  .map((f) => ({
+    petalLength: f.petalLength,
+    fitted: glm.coefficients[0] + glm.coefficients[1] * f.petalLength,
+  }))
+  .sort((a, b) => a.petalLength - b.petalLength);
+const plot_glm = Plot.plot({
+  grid: true,
+  x: { label: 'Petal length (cm)' },
+  y: { label: 'Petal width (cm)' },
+  marks: [
+    Plot.dot(flowers, { x: 'petalLength', y: 'petalWidth', fill: 'steelblue', r: 5 }),
+    Plot.line(glmLine, { x: 'petalLength', y: 'fitted', stroke: 'crimson', strokeWidth: 2 }),
+  ],
+});
+plot_glm;

@@ -5,8 +5,6 @@
 
 // %% [markdown]
 /*
-# GAM regression and classification on penguins
-
 This notebook takes the Palmer penguins through a full modelling flow with
 generalized additive models. A GAM fits a smooth spline of each numeric
 predictor instead of a single slope, so it captures curvature while staying
@@ -462,6 +460,35 @@ const regTestActual = regPrep.test.data.map((row) => row.body_mass);
 
 // %% [markdown]
 /*
+Predicted versus actual body mass for the held-out penguins: the closer the
+points hug the dashed y = x line, the better the fit. The cloud is tight but
+spread wider for the heavier Gentoo.
+*/
+
+// %% [javascript]
+
+const regPvA = regPrep.test.data.map((row, i) => ({
+  actual: row.body_mass,
+  predicted: regTestPred[i],
+  species: row.species,
+}));
+const massLo = d3.min(regPvA, (d) => Math.min(d.actual, d.predicted));
+const massHi = d3.max(regPvA, (d) => Math.max(d.actual, d.predicted));
+const plot_regPvA = Plot.plot({
+  grid: true,
+  aspectRatio: 1,
+  x: { label: 'Actual body mass (g)' },
+  y: { label: 'Predicted body mass (g)' },
+  color: { legend: true },
+  marks: [
+    Plot.line([[massLo, massLo], [massHi, massHi]], { stroke: '#888', strokeDasharray: '4 4' }),
+    Plot.dot(regPvA, { x: 'actual', y: 'predicted', stroke: 'species', r: 4 }),
+  ],
+});
+plot_regPvA;
+
+// %% [markdown]
+/*
 ## Classifying species
 
 Now a three-class problem: predict species from the four measurements plus
@@ -533,6 +560,20 @@ for (let i = 0; i < clsTestActual.length; i++) {
 
 // %% [markdown]
 /*
+The confusion matrix as a heatmap (rows = actual, columns = predicted): a
+strong diagonal means most penguins are classified correctly, and the few
+off-diagonal cells show where species were confused.
+*/
+
+// %% [javascript]
+
+const plot_confusion = ds.plot
+  .plotConfusionMatrix(clsTestActual, clsTestPred)
+  .show(Plot);
+plot_confusion;
+
+// %% [markdown]
+/*
 ## Per-row probabilities
 
 `predictProba` returns a probability object per row keyed by species name.
@@ -554,3 +595,32 @@ sampleRows.map((row, i) => ({
   predicted: samplePreds[i],
   probabilities: sampleProba[i],
 }));
+
+// %% [markdown]
+/*
+The predicted species probabilities for those same three penguins: the model
+is confident and correct on all three, putting almost all of its mass on the
+true species.
+*/
+
+// %% [javascript]
+
+const sampleLong = sampleProba.flatMap((row, i) =>
+  Object.entries(row).map(([cls, p]) => ({
+    penguin: `penguin ${i} (actual ${sampleRows[i].species})`,
+    species: cls,
+    prob: p,
+  })),
+);
+const plot_sampleProba = Plot.plot({
+  marginLeft: 170,
+  x: { label: 'Probability', domain: [0, 1] },
+  y: { label: 'Species' },
+  fy: { label: null },
+  color: { legend: true },
+  marks: [
+    Plot.barX(sampleLong, { x: 'prob', y: 'species', fy: 'penguin', fill: 'species' }),
+    Plot.ruleX([0]),
+  ],
+});
+plot_sampleProba;

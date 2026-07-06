@@ -5,8 +5,6 @@
 
 // %% [markdown]
 /*
-# Tukey HSD with named groups
-
 A one-way ANOVA answers a single yes/no question: is *any* group mean
 different from the others? When the answer is yes, it does not say *which*
 groups differ. Tukey's Honestly Significant Difference (HSD) test fills that
@@ -37,6 +35,31 @@ const anova = ds.stats.hypothesis.oneWayAnova([adelie, chinstrap, gentoo]);
   dfBetween: anova.dfBetween,
   dfWithin: anova.dfWithin,
 });
+
+// %% [markdown]
+/*
+Before comparing pairs, a boxplot of the raw masses shows what the ANOVA
+detected: Adelie and Chinstrap sit close together while Gentoo is clearly
+heavier.
+*/
+
+// %% [javascript]
+
+const massByGroup = [
+  ...adelie.map((m) => ({ species: 'Adelie', mass: m })),
+  ...chinstrap.map((m) => ({ species: 'Chinstrap', mass: m })),
+  ...gentoo.map((m) => ({ species: 'Gentoo', mass: m })),
+];
+const plot_box = Plot.plot({
+  x: { label: 'Species' },
+  y: { label: 'Body mass (g)', grid: true },
+  color: { legend: true },
+  marks: [
+    Plot.boxY(massByGroup, { x: 'species', y: 'mass', fill: 'species', fillOpacity: 0.25 }),
+    Plot.dot(massByGroup, { x: 'species', y: 'mass', fill: 'species', r: 3 }),
+  ],
+});
+plot_box;
 
 // %% [markdown]
 /*
@@ -91,6 +114,35 @@ const tukeyNamed = ds.stats.hypothesis.tukeyHSD(
     significant: c.significant,
   })),
 });
+
+// %% [markdown]
+/*
+The whole Tukey result fits in one plot: each pairwise mean difference as a dot
+with its 95% CI. Intervals that cross the dashed zero line are not significant
+(Adelie vs Chinstrap); the two comparisons with Gentoo sit far to the right.
+*/
+
+// %% [javascript]
+
+const tukeyDiffs = tukeyNamed.comparisons.map((c) => ({
+  pair: c.groupLabels.join(' − '),
+  diff: c.diff,
+  lo: c.lowerCI,
+  hi: c.upperCI,
+  significance: c.significant ? 'significant' : 'n.s.',
+}));
+const plot_tukey = Plot.plot({
+  marginLeft: 150,
+  x: { label: 'Mean difference in body mass (g)', grid: true },
+  y: { label: 'Comparison' },
+  color: { legend: true, domain: ['significant', 'n.s.'], range: ['#1a7f37', '#999999'] },
+  marks: [
+    Plot.ruleX([0], { stroke: '#888', strokeDasharray: '4 4' }),
+    Plot.ruleY(tukeyDiffs, { y: 'pair', x1: 'lo', x2: 'hi', stroke: 'significance', strokeWidth: 2 }),
+    Plot.dot(tukeyDiffs, { y: 'pair', x: 'diff', fill: 'significance', r: 5 }),
+  ],
+});
+plot_tukey;
 
 // %% [markdown]
 /*
