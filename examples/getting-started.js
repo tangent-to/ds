@@ -14,11 +14,6 @@ objects you `fit` and then `transform` or `predict`, and functional helpers
 take plain numeric arrays. The whole library runs in the browser with no
 build step and no native dependencies.
 
-This notebook imports the local build. Once the package is published you
-would import it from a CDN instead:
-
-    import ds from 'https://esm.sh/@tangent.to/ds';
-
 The default export is namespaced: `ds.core`, `ds.stats`, `ds.mva`, and
 `ds.ml`. We will walk one short flow end to end: describe a dataset, test a
 difference between groups, reduce dimensions with PCA, cluster, and fit a
@@ -27,9 +22,9 @@ linear model.
 
 // %% [javascript]
 
-import ds from '../dist/index.js';
+import ds from 'https://esm.sh/@tangent.to/ds';
 
-const { math } = ds.core;
+const math = ds.core.math;
 
 // A quick sanity check that the namespaces are present.
 ({
