@@ -36,7 +36,8 @@
     "deno:lint": "deno lint src/",
     "deno:fmt": "deno fmt src/",
     "deno:check": "deno check src/index.js",
-    "docs:api": "node scripts/build-api-docs.mjs"
+    "docs:api": "node scripts/build-api-docs.mjs",
+    "version": "node scripts/sync-version.mjs && git add deno.json"
   },
   "keywords": [
     "data-science",
@@ -59,9 +60,9 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "ml-matrix": "^6.12.1",
-    "@tangent.to/opt": "file:../opt",
-    "@tangent.to/proba": "file:../proba"
+    "@tangent.to/opt": "^0.1.0",
+    "@tangent.to/proba": "^0.1.0",
+    "ml-matrix": "^6.12.1"
   },
   "peerDependencies": {
     "@observablehq/plot": "^0.6.0"
