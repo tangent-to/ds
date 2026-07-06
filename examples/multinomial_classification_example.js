@@ -1,111 +1,130 @@
-/**
- * Example demonstrating multinomial classification with GLM
- * Shows both one-vs-rest (ovr) and true multinomial approaches
- */
+// ---
+// title: Multinomial classification with the GLM
+// id: ds-multinomial-classification
+// ---
 
-import ds from '../src/index.js';
+// %% [markdown]
+/*
+# Multinomial classification with the GLM
 
-// Sample data: Iris-like dataset with 3 classes
-const data = ds.DataFrame({
-  sepal_length: [5.1, 4.9, 4.7, 7.0, 6.4, 6.9, 5.0, 5.5, 6.0, 6.7, 5.8, 6.3],
-  sepal_width: [3.5, 3.0, 3.2, 3.2, 3.2, 3.1, 3.6, 2.6, 2.2, 3.1, 2.7, 2.5],
-  petal_length: [1.4, 1.4, 1.3, 4.7, 4.5, 4.9, 1.4, 3.5, 4.0, 4.7, 4.1, 5.0],
-  petal_width: [0.2, 0.2, 0.2, 1.4, 1.5, 1.5, 0.2, 1.0, 1.0, 1.5, 1.0, 1.9],
-  species: ['setosa', 'setosa', 'setosa', 'versicolor', 'versicolor', 'versicolor', 
-            'setosa', 'versicolor', 'versicolor', 'virginica', 'virginica', 'virginica']
+`ds.stats.GLM` is a generalized linear model, and with the binomial family it
+does logistic regression. Out of the box that is a two-class model, but there
+are two standard ways to stretch it to three or more classes:
+
+- **One-vs-rest (OVR)** fits one binary classifier per class ("this class or
+  not") and compares their scores.
+- **True multinomial** fits all classes jointly with a softmax link.
+
+This notebook runs both on the same small iris-style dataset and shows how
+their probabilities differ.
+*/
+
+// %% [javascript]
+
+import ds from 'https://esm.sh/@tangent.to/ds';
+
+// The table API takes plain row objects (no DataFrame needed). Three species,
+// four measurements each.
+const irisRows = [
+  { sepal_length: 5.1, sepal_width: 3.5, petal_length: 1.4, petal_width: 0.2, species: 'setosa' },
+  { sepal_length: 4.9, sepal_width: 3.0, petal_length: 1.4, petal_width: 0.2, species: 'setosa' },
+  { sepal_length: 4.7, sepal_width: 3.2, petal_length: 1.3, petal_width: 0.2, species: 'setosa' },
+  { sepal_length: 7.0, sepal_width: 3.2, petal_length: 4.7, petal_width: 1.4, species: 'versicolor' },
+  { sepal_length: 6.4, sepal_width: 3.2, petal_length: 4.5, petal_width: 1.5, species: 'versicolor' },
+  { sepal_length: 6.9, sepal_width: 3.1, petal_length: 4.9, petal_width: 1.5, species: 'versicolor' },
+  { sepal_length: 5.0, sepal_width: 3.6, petal_length: 1.4, petal_width: 0.2, species: 'setosa' },
+  { sepal_length: 5.5, sepal_width: 2.6, petal_length: 3.5, petal_width: 1.0, species: 'versicolor' },
+  { sepal_length: 6.0, sepal_width: 2.2, petal_length: 4.0, petal_width: 1.0, species: 'versicolor' },
+  { sepal_length: 6.7, sepal_width: 3.1, petal_length: 4.7, petal_width: 1.5, species: 'virginica' },
+  { sepal_length: 5.8, sepal_width: 2.7, petal_length: 4.1, petal_width: 1.0, species: 'virginica' },
+  { sepal_length: 6.3, sepal_width: 2.5, petal_length: 5.0, petal_width: 1.9, species: 'virginica' },
+];
+
+const features = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'];
+
+({
+  rows: irisRows.length,
+  features,
+  classes: [...new Set(irisRows.map((r) => r.species))],
 });
 
-console.log("=== Multiclass Classification Examples ===\n");
-console.log("Dataset:");
-console.log(data.head(12));
+// %% [markdown]
+/*
+## Method 1: one-vs-rest
 
-// ============================================================
-// Method 1: One-vs-Rest (OVR) Multiclass
-// ============================================================
-console.log("\n\n=== Method 1: One-vs-Rest (OVR) ===");
-console.log("Uses binary logistic regression for each class vs all others\n");
+Setting `multiclass: 'ovr'` tells the GLM to fit one binomial model per class.
+We pass a table-style object (`{ data, X, y }`) where `y` names the label
+column. `predict` returns class labels; passing `{ type: 'proba' }` as the
+second argument returns a probability object per row (renormalised to sum to
+one across the classes).
+*/
 
-const model_ovr = new ds.stats.GLM({
-  family: 'binomial',
-  multiclass: 'ovr'  // <-- This enables one-vs-rest
+// %% [javascript]
+
+const ovrModel = new ds.stats.GLM({ family: 'binomial', multiclass: 'ovr' });
+ovrModel.fit({ data: irisRows, X: features, y: 'species' });
+
+const ovrClasses = ovrModel._classes;
+const ovrPreds = ovrModel.predict({ data: irisRows }, { type: 'class' });
+const ovrProba = ovrModel.predict({ data: irisRows }, { type: 'proba' });
+
+({
+  classes: ovrClasses,               // [setosa, versicolor, virginica]
+  predictions_first5: ovrPreds.slice(0, 5),
+  probability_row0: ovrProba[0],     // setosa ~0.93, versicolor ~0.07
 });
 
-model_ovr.fit({
-  data: data,
-  X: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
-  y: 'species'
+// %% [markdown]
+/*
+## Method 2: true multinomial
+
+`multiclass: 'multinomial'` fits the K classes jointly with a softmax link,
+optimising K-1 parameter vectors against a reference class. The call site is
+identical; only the strategy changes. Because softmax is normalised by
+construction, each row's probabilities sum to exactly one, and they tend to be
+sharper (better calibrated) than the OVR scores.
+*/
+
+// %% [javascript]
+
+const mnModel = new ds.stats.GLM({ family: 'binomial', multiclass: 'multinomial' });
+mnModel.fit({ data: irisRows, X: features, y: 'species' });
+
+const mnPreds = mnModel.predict({ data: irisRows }, { type: 'class' });
+const mnProba = mnModel.predict({ data: irisRows }, { type: 'proba' });
+const mnRow0 = mnProba[0];
+
+({
+  isMultinomial: mnModel._isMultinomial,   // true
+  predictions_first5: mnPreds.slice(0, 5),
+  probability_row0: mnRow0,                // setosa ~1.0
+  row0_sums_to: Object.values(mnRow0).reduce((a, b) => a + b, 0), // 1
 });
 
-console.log("Classes detected:", model_ovr._classes);
+// %% [markdown]
+/*
+## Which to reach for
 
-// Predict
-const predictions_ovr = model_ovr.predict({ data: data });
-console.log("\nPredictions (OVR):", predictions_ovr.slice(0, 5));
+Both recover the labels on this clean data; the difference is in the
+probabilities. OVR is simple and scales to many classes or imbalanced data,
+but its per-class scores are estimated independently and only sum to one after
+renormalisation. True multinomial optimises the classes together, so its
+probabilities are inherently normalised and usually better calibrated — at the
+cost of a joint fit. For a handful of classes, prefer multinomial; for many
+classes or a quick baseline, OVR is a reasonable default.
+*/
 
-// Predict probabilities
-const probs_ovr = model_ovr.predict({ data: data, type: 'prob' });
-console.log("\nProbabilities for first observation (OVR):");
-console.log(probs_ovr[0]);
+// %% [javascript]
 
-// ============================================================
-// Method 2: True Multinomial Logistic Regression
-// ============================================================
-console.log("\n\n=== Method 2: True Multinomial (Joint Optimization) ===");
-console.log("Uses softmax and fits K-1 models jointly\n");
-
-// First, create dummy variables for the target
-const species_dummies = data.get('species').map(s => {
-  return {
-    is_versicolor: s === 'versicolor' ? 1 : 0,
-    is_virginica: s === 'virginica' ? 1 : 0
-    // Reference category: setosa (both dummies = 0)
-  };
+({
+  ovr: {
+    strategy: 'one-vs-rest',
+    usage: "new ds.stats.GLM({ family: 'binomial', multiclass: 'ovr' })",
+    probabilities_normalised: 'after renormalisation',
+  },
+  multinomial: {
+    strategy: 'softmax (joint)',
+    usage: "new ds.stats.GLM({ family: 'binomial', multiclass: 'multinomial' })",
+    probabilities_normalised: 'by construction',
+  },
 });
-
-const data_multinomial = data.copy();
-data_multinomial.addColumn('is_versicolor', species_dummies.map(d => d.is_versicolor));
-data_multinomial.addColumn('is_virginica', species_dummies.map(d => d.is_virginica));
-
-const model_multinomial = new ds.stats.GLM({
-  family: 'binomial'
-});
-
-model_multinomial.fit({
-  data: data_multinomial,
-  X: ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
-  y: ['is_versicolor', 'is_virginica']  // <-- Multiple binary targets triggers multinomial
-});
-
-console.log("Multinomial model fitted!");
-console.log("Model type:", model_multinomial._isMultinomial ? "True Multinomial" : "Multi-output");
-
-// Predict probabilities
-const probs_multinomial = model_multinomial.predict({ 
-  data: data_multinomial, 
-  type: 'prob' 
-});
-
-console.log("\nProbabilities for first observation (Multinomial):");
-console.log("P(versicolor):", probs_multinomial[0].is_versicolor);
-console.log("P(virginica):", probs_multinomial[0].is_virginica);
-console.log("P(setosa):", 1 - probs_multinomial[0].is_versicolor - probs_multinomial[0].is_virginica);
-
-// ============================================================
-// Comparison
-// ============================================================
-console.log("\n\n=== Summary ===");
-console.log("\n1. One-vs-Rest (multiclass: 'ovr'):");
-console.log("   - Simpler: fits K binary classifiers independently");
-console.log("   - Probabilities may not sum to 1.0");
-console.log("   - Good for many classes or imbalanced data");
-console.log("   - Usage: { family: 'binomial', multiclass: 'ovr' }");
-
-console.log("\n2. True Multinomial:");
-console.log("   - Joint optimization using softmax");
-console.log("   - Probabilities always sum to 1.0");
-console.log("   - Better calibrated probabilities");
-console.log("   - Usage: { family: 'binomial' } with multiple binary targets");
-
-console.log("\n\nTo use multinomial with your penguin data:");
-console.log("const model = new ds.stats.GLM({ family: 'binomial', multiclass: 'ovr' });");
-console.log("model.fit({ data: penguins, X: ['bill_length', 'bill_depth', ...], y: 'species' });");
