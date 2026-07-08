@@ -13,9 +13,9 @@ take plain numeric arrays. The whole library runs in the browser with no
 build step and no native dependencies.
 
 The default export is namespaced: `ds.core`, `ds.stats`, `ds.mva`, and
-`ds.ml`. We will walk one short flow end to end: describe a dataset, test a
-difference between groups, reduce dimensions with PCA, cluster, and fit a
-linear model.
+`ds.ml`. We will walk one flow end to end on a real dataset: fetch it from
+the web, describe it, test a group difference, reduce dimensions with PCA,
+cluster, fit a linear model, and finish with a supervised classifier.
 */
 
 // %% [javascript]
@@ -29,45 +29,42 @@ const math = ds.core.math;
   core: Object.keys(ds.core),
   stats_has_GLM: typeof ds.stats.GLM,
   mva_has_PCA: typeof ds.mva.PCA,
-  ml_has_KMeans: typeof ds.ml.KMeans,
+  ml_has_RandomForest: typeof ds.ml.RandomForestClassifier,
 });
 
 // %% [markdown]
 /*
-## A self-contained dataset
+## A real dataset, fetched from the web
 
-We use a small flower dataset in the spirit of Fisher's iris: twelve rows,
-two species, three numeric measurements each (in centimetres). Keeping it
-inline means the notebook has no file loading and every number below is
-reproducible. The two species are chosen to be clearly separable, which
-makes the later steps easy to read.
+We use the Palmer penguins (Horst, Hill & Gorman 2020): 344 penguins of
+three species measured at Palmer Station, Antarctica. The notebook fetches
+the CSV straight from the palmerpenguins repository and parses it with
+`d3.csvParse` (`d3` is preloaded in tangent notebooks). Eleven rows are
+missing at least one measurement; we keep the 342 complete cases for the
+four numeric columns and get 151 Adelie, 68 Chinstrap, and 123 Gentoo.
 */
 
 // %% [javascript]
 
-const flowers = [
-  { species: 'setosa', petalLength: 1.4, petalWidth: 0.2, sepalLength: 5.1 },
-  { species: 'setosa', petalLength: 1.4, petalWidth: 0.2, sepalLength: 4.9 },
-  { species: 'setosa', petalLength: 1.3, petalWidth: 0.2, sepalLength: 4.7 },
-  { species: 'setosa', petalLength: 1.5, petalWidth: 0.2, sepalLength: 4.6 },
-  { species: 'setosa', petalLength: 1.4, petalWidth: 0.2, sepalLength: 5.0 },
-  { species: 'setosa', petalLength: 1.7, petalWidth: 0.4, sepalLength: 5.4 },
-  { species: 'versicolor', petalLength: 4.7, petalWidth: 1.4, sepalLength: 7.0 },
-  { species: 'versicolor', petalLength: 4.5, petalWidth: 1.5, sepalLength: 6.4 },
-  { species: 'versicolor', petalLength: 4.9, petalWidth: 1.5, sepalLength: 6.9 },
-  { species: 'versicolor', petalLength: 4.0, petalWidth: 1.3, sepalLength: 5.5 },
-  { species: 'versicolor', petalLength: 4.6, petalWidth: 1.5, sepalLength: 6.5 },
-  { species: 'versicolor', petalLength: 4.5, petalWidth: 1.3, sepalLength: 5.7 },
-];
+const url =
+  'https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv';
+const csvText = await (await fetch(url)).text();
 
-// Pull out the columns we will reuse across the notebook.
-const petalLength = flowers.map((f) => f.petalLength);
-const petalWidth = flowers.map((f) => f.petalWidth);
+const measurements = ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g'];
+const penguins = d3
+  .csvParse(csvText, d3.autoType)
+  .filter((row) => measurements.every((c) => typeof row[c] === 'number'));
+
+const countBySpecies = {};
+for (const row of penguins) {
+  countBySpecies[row.species] = (countBySpecies[row.species] ?? 0) + 1;
+}
 
 ({
-  rows: flowers.length,
-  columns: Object.keys(flowers[0]),
-  first_row: flowers[0],
+  rows: penguins.length,
+  columns: penguins.columns,
+  by_species: countBySpecies,
+  first_row: penguins[0],
 });
 
 // %% [markdown]
@@ -76,44 +73,50 @@ const petalWidth = flowers.map((f) => f.petalWidth);
 
 `ds.core.math` provides the numeric primitives: `mean`, `variance` (sample
 variance by default), `stddev`, quantiles, and more. `ds.stats` adds
-correlation with an inference layer attached. Here petal length and petal
-width move together almost perfectly (r about 0.99, p about 5e-11), which is
-a useful thing to know before we ask a model to use both.
+correlation with an inference layer attached. Body mass averages about
+4202 g with a standard deviation of about 802 g, and flipper length and
+body mass move together strongly (r = 0.871, with a p-value so small it
+underflows to 0): bigger flippers, heavier bird.
 */
 
 // %% [javascript]
 
-const plStats = {
-  mean: math.mean(petalLength),      // 2.99
-  variance: math.variance(petalLength), // 2.64 (sample)
-  stddev: math.stddev(petalLength),  // 1.63
+const flipper = penguins.map((p) => p.flipper_length_mm);
+const mass = penguins.map((p) => p.body_mass_g);
+
+const massStats = {
+  mean: math.mean(mass),
+  stddev: math.stddev(mass),
+  min: math.min(mass),
+  max: math.max(mass),
 };
 
 // pearsonCorrelation returns the coefficient plus a t-test and 95% interval.
-const corr = ds.stats.pearsonCorrelation(petalLength, petalWidth);
+const corr = ds.stats.pearsonCorrelation(flipper, mass);
 
 ({
-  petalLength: plStats,
+  body_mass_g: massStats,
   correlation_r: corr.r,
   correlation_p: corr.pValue,
 });
 
 // %% [markdown]
 /*
-Seeing it helps: each point is a flower, and the fitted trend line makes the
-near-perfect correlation (r about 0.99) visible at a glance.
+Seeing it helps: each point is a penguin, and the fitted trend line makes
+the strong flipper-mass relationship visible at a glance. The three species
+occupy different regions of the plot: Gentoo (large) sit in the upper right.
 */
 
 // %% [javascript]
 
 const plot_corr = Plot.plot({
   grid: true,
-  x: { label: 'Petal length (cm)' },
-  y: { label: 'Petal width (cm)' },
+  x: { label: 'Flipper length (mm)' },
+  y: { label: 'Body mass (g)' },
   color: { legend: true },
   marks: [
-    Plot.linearRegressionY(flowers, { x: 'petalLength', y: 'petalWidth', stroke: '#888' }),
-    Plot.dot(flowers, { x: 'petalLength', y: 'petalWidth', stroke: 'species', r: 5 }),
+    Plot.linearRegressionY(penguins, { x: 'flipper_length_mm', y: 'body_mass_g', stroke: '#888' }),
+    Plot.dot(penguins, { x: 'flipper_length_mm', y: 'body_mass_g', stroke: 'species', r: 3 }),
   ],
 });
 plot_corr;
@@ -122,49 +125,50 @@ plot_corr;
 /*
 ## A two-sample t-test
 
-Do the two species differ in petal length? We split the column by species
-and run an independent two-sample t-test. The helper returns the t
-statistic, the p-value, degrees of freedom, and both group means. These now
-match scipy's `ttest_ind` to machine precision. The difference here is
-enormous (t about -22.8, p about 6e-10): setosa petals average 1.45 cm
-against versicolor's 4.53 cm.
+Do Adelie and Gentoo differ in body mass? We split the column by species and
+run an independent two-sample t-test (matching scipy's `ttest_ind`). The
+helper returns the t statistic, the p-value, degrees of freedom, and both
+group means. The difference is enormous: Adelie average about 3701 g against
+Gentoo's 5076 g, t = -23.6 on 272 degrees of freedom, with p far below any
+conventional threshold (it too underflows to 0).
 */
 
 // %% [javascript]
 
-const setosaPetal = flowers
-  .filter((f) => f.species === 'setosa')
-  .map((f) => f.petalLength);
+const adelieMass = penguins
+  .filter((p) => p.species === 'Adelie')
+  .map((p) => p.body_mass_g);
 
-const versicolorPetal = flowers
-  .filter((f) => f.species === 'versicolor')
-  .map((f) => f.petalLength);
+const gentooMass = penguins
+  .filter((p) => p.species === 'Gentoo')
+  .map((p) => p.body_mass_g);
 
-const tTest = ds.stats.hypothesis.twoSampleTTest(setosaPetal, versicolorPetal);
+const tTest = ds.stats.hypothesis.twoSampleTTest(adelieMass, gentooMass);
 
 ({
   statistic: tTest.statistic,
   pValue: tTest.pValue,
   df: tTest.df,
-  mean_setosa: tTest.mean1,
-  mean_versicolor: tTest.mean2,
+  mean_adelie: tTest.mean1,
+  mean_gentoo: tTest.mean2,
 });
 
 // %% [markdown]
 /*
-The boxplot with the raw points on top shows why the test is so decisive: the
-two species barely overlap in petal length.
+The boxplot with the raw points on top shows why the test is so decisive:
+Adelie and Gentoo barely overlap in body mass, while Chinstrap sit with
+Adelie.
 */
 
 // %% [javascript]
 
 const plot_ttest = Plot.plot({
   x: { label: 'Species' },
-  y: { label: 'Petal length (cm)', grid: true },
+  y: { label: 'Body mass (g)', grid: true },
   color: { legend: true },
   marks: [
-    Plot.boxY(flowers, { x: 'species', y: 'petalLength', fill: 'species', fillOpacity: 0.25 }),
-    Plot.dot(flowers, { x: 'species', y: 'petalLength', fill: 'species', r: 4 }),
+    Plot.boxY(penguins, { x: 'species', y: 'body_mass_g', fill: 'species', fillOpacity: 0.25 }),
+    Plot.dot(penguins, { x: 'species', y: 'body_mass_g', fill: 'species', r: 2 }),
   ],
 });
 plot_ttest;
@@ -173,24 +177,24 @@ plot_ttest;
 /*
 ## Principal component analysis
 
-`ds.mva.PCA` is a fit/transform estimator. We fit it on the three numeric
-columns as a plain matrix (array of arrays), then read the variance each
-component explains. Because the measurements are highly correlated, the
-first component alone captures about 97% of the variance, and the first two
-together reach about 99.9%. `transform` projects the rows onto the
-components, giving low-dimensional scores you could plot.
+`ds.mva.PCA` is a fit/transform estimator. The four measurements live on
+wildly different scales (grams versus millimetres), so we pass
+`{ scale: true }` to run the PCA on standardized variables — the same as
+R's `prcomp(x, scale. = TRUE)`. The first component captures about 69% of
+the variance and the first two together about 88%. `transform` projects the
+rows onto the components, giving low-dimensional scores to plot.
 */
 
 // %% [javascript]
 
-const matrix = flowers.map((f) => [f.petalLength, f.petalWidth, f.sepalLength]);
+const matrix = penguins.map((p) => measurements.map((c) => p[c]));
 
-const pca = new ds.mva.PCA().fit(matrix);
+const pca = new ds.mva.PCA({ scale: true }).fit(matrix);
 const pcaSummary = pca.summary();
 const scores = pca.transform(matrix);
 
 ({
-  varianceExplained: pcaSummary.varianceExplained, // [0.967, 0.032, 0.001]
+  varianceExplained: pcaSummary.varianceExplained,
   cumulative: pcaSummary.cumulativeVariance,
   first_two_scores: scores.slice(0, 2),
 });
@@ -198,13 +202,14 @@ const scores = pca.transform(matrix);
 // %% [markdown]
 /*
 `ds.plot.ordiplot` draws the scores on the first two components. Coloured by
-species, the two groups fall into cleanly separated clouds along PC1, and the
-loading arrows show which measurements drive that axis.
+species, Gentoo separate cleanly along PC1 (overall size: flipper length and
+body mass load most heavily on it), while Adelie and Chinstrap split along
+PC2, which the loading arrows tie to the two bill measurements.
 */
 
 // %% [javascript]
 
-const species = flowers.map((f) => f.species);
+const speciesLabels = penguins.map((p) => p.species);
 const pcaResult = {
   scores,
   loadings: pca.getScores('loadings'),
@@ -212,14 +217,14 @@ const pcaResult = {
   varianceExplained: pcaSummary.varianceExplained,
 };
 const plot_pcaOrdi = ds.plot
-  .ordiplot(pcaResult, { colorBy: species, symbolBy: true })
+  .ordiplot(pcaResult, { colorBy: speciesLabels, symbolBy: true })
   .show(Plot);
 plot_pcaOrdi;
 
 // %% [markdown]
 /*
-A scree plot of the cumulative variance confirms the numbers above: PC1 alone
-captures about 97%, and the first two together reach essentially all of it.
+A scree plot of the cumulative variance confirms the numbers above: two
+components carry most of the structure in the four measurements.
 */
 
 // %% [javascript]
@@ -231,43 +236,57 @@ plot_pcaScree;
 /*
 ## K-means clustering
 
-`ds.ml.KMeans` follows the same object pattern. With `k: 2` and a fixed seed
-for reproducibility, it recovers the two species without ever seeing the
-labels: the first six rows land in one cluster and the last six in the
-other. `inertia` is the within-cluster sum of squared distances, the
-quantity k-means minimises, and a smaller value means tighter clusters.
+`ds.ml.KMeans` follows the same object pattern. We cluster the standardized
+measurements with `k: 3`, never showing the model the species labels. K-means
+only finds a local optimum, and which one depends on the random start, so we
+run ten seeded restarts and keep the one with the lowest inertia (the
+within-cluster sum of squares it minimises). We then ask how well the found
+clusters agree with the true species using the adjusted Rand index (1 =
+perfect agreement, 0 = chance). Gentoo are recovered perfectly; Adelie and
+Chinstrap overlap in size, so the agreement is strong but not perfect
+(ARI about 0.79).
 */
 
 // %% [javascript]
 
-const kmeans = new ds.ml.KMeans({ k: 2, seed: 42 }).fit(matrix);
+const colMeans = measurements.map((c, j) => math.mean(matrix.map((row) => row[j])));
+const colSds = measurements.map((c, j) => math.stddev(matrix.map((row) => row[j])));
+const standardized = matrix.map((row) => row.map((v, j) => (v - colMeans[j]) / colSds[j]));
+
+let kmeans = null;
+for (let seed = 1; seed <= 10; seed++) {
+  const candidate = new ds.ml.KMeans({ k: 3, seed }).fit(standardized);
+  if (!kmeans || candidate.inertia < kmeans.inertia) kmeans = candidate;
+}
+const ari = ds.ml.metrics.adjustedRandIndex(speciesLabels, kmeans.labels);
 
 ({
-  labels: kmeans.labels,     // [0,0,0,0,0,0, 1,1,1,1,1,1]
-  inertia: kmeans.inertia,   // about 2.94
-  iterations: kmeans.iterations,
+  cluster_sizes: [0, 1, 2].map((k) => kmeans.labels.filter((l) => l === k).length),
+  inertia: kmeans.inertia,
+  adjusted_rand_index: ari,
 });
 
 // %% [markdown]
 /*
-Colouring the rows by the cluster label k-means assigned (it never saw the
-species) shows the two groups it recovered are exactly the two species.
+Colouring the penguins by the cluster k-means assigned (it never saw the
+species) shows the same three clouds as the PCA plot: one cluster is
+essentially the Gentoo, and the other two split the Adelie-Chinstrap mass.
 */
 
 // %% [javascript]
 
-const clusterPoints = flowers.map((f, i) => ({
-  petalLength: f.petalLength,
-  sepalLength: f.sepalLength,
+const clusterPoints = penguins.map((p, i) => ({
+  flipper_length_mm: p.flipper_length_mm,
+  bill_length_mm: p.bill_length_mm,
   cluster: `cluster ${kmeans.labels[i]}`,
 }));
 const plot_kmeans = Plot.plot({
   grid: true,
-  x: { label: 'Petal length (cm)' },
-  y: { label: 'Sepal length (cm)' },
+  x: { label: 'Flipper length (mm)' },
+  y: { label: 'Bill length (mm)' },
   color: { legend: true },
   marks: [
-    Plot.dot(clusterPoints, { x: 'petalLength', y: 'sepalLength', fill: 'cluster', r: 6 }),
+    Plot.dot(clusterPoints, { x: 'flipper_length_mm', y: 'bill_length_mm', fill: 'cluster', r: 3 }),
   ],
 });
 plot_kmeans;
@@ -276,45 +295,121 @@ plot_kmeans;
 /*
 ## A linear model with the GLM
 
-Finally a generalized linear model. With the Gaussian family, `ds.stats.GLM`
-is ordinary least squares. We regress petal width on petal length and read
-the coefficients: an intercept near -0.32 and a slope near 0.38, so each
-extra centimetre of petal length predicts about 0.38 cm more petal width.
-The `coefficients` array is ordered intercept first, then one slope per
-feature.
+With the Gaussian family, `ds.stats.GLM` is ordinary least squares. We
+regress body mass on flipper length and read the coefficients: each extra
+millimetre of flipper predicts about 50 g more body mass (the same
+intercept -5780.8 and slope 49.7 R's `lm` reports on this data). The
+`coefficients` array is ordered intercept first, then one slope per feature.
 */
 
 // %% [javascript]
 
 const glm = new ds.stats.GLM({ family: 'gaussian' })
-  .fit(flowers.map((f) => [f.petalLength]), petalWidth);
+  .fit(penguins.map((p) => [p.flipper_length_mm]), mass);
 
 ({
-  intercept: glm.coefficients[0],  // -0.32
-  slope_petalLength: glm.coefficients[1], // 0.38
+  intercept: glm.coefficients[0],
+  slope_flipper: glm.coefficients[1],
 });
 
 // %% [markdown]
 /*
-Overlaying the fitted line on the data closes the loop: the OLS fit (slope
-about 0.38) tracks the points, so petal width rises steadily with petal length.
+Overlaying the fitted line on the data closes the loop: the OLS fit tracks
+the cloud, so body mass rises steadily with flipper length.
 */
 
 // %% [javascript]
 
-const glmLine = flowers
-  .map((f) => ({
-    petalLength: f.petalLength,
-    fitted: glm.coefficients[0] + glm.coefficients[1] * f.petalLength,
+const glmLine = penguins
+  .map((p) => ({
+    flipper_length_mm: p.flipper_length_mm,
+    fitted: glm.coefficients[0] + glm.coefficients[1] * p.flipper_length_mm,
   }))
-  .sort((a, b) => a.petalLength - b.petalLength);
+  .sort((a, b) => a.flipper_length_mm - b.flipper_length_mm);
 const plot_glm = Plot.plot({
   grid: true,
-  x: { label: 'Petal length (cm)' },
-  y: { label: 'Petal width (cm)' },
+  x: { label: 'Flipper length (mm)' },
+  y: { label: 'Body mass (g)' },
   marks: [
-    Plot.dot(flowers, { x: 'petalLength', y: 'petalWidth', fill: 'steelblue', r: 5 }),
-    Plot.line(glmLine, { x: 'petalLength', y: 'fitted', stroke: 'crimson', strokeWidth: 2 }),
+    Plot.dot(penguins, { x: 'flipper_length_mm', y: 'body_mass_g', fill: 'steelblue', r: 3 }),
+    Plot.line(glmLine, { x: 'flipper_length_mm', y: 'fitted', stroke: 'crimson', strokeWidth: 2 }),
   ],
 });
 plot_glm;
+
+// %% [markdown]
+/*
+## Machine learning: predicting the species
+
+Finally, supervised learning. Can the four measurements identify the
+species? `ds.ml.validation.trainTestSplit` holds out 20% of the rows
+(seeded, so the notebook is reproducible), `ds.ml.RandomForestClassifier`
+fits 100 trees on the rest, and `ds.ml.metrics` scores the held-out
+predictions. The measurements are highly informative: accuracy on this test
+set is about 0.97, and Cohen's kappa (chance-corrected agreement, which
+accounts for the unequal class sizes) is about 0.95.
+*/
+
+// %% [javascript]
+
+const split = ds.ml.validation.trainTestSplit(matrix, speciesLabels, {
+  ratio: 0.8,
+  seed: 42,
+});
+
+const forest = new ds.ml.RandomForestClassifier({ nEstimators: 100, seed: 42 })
+  .fit(split.XTrain, split.yTrain);
+
+const predicted = forest.predict(split.XTest);
+
+({
+  train_rows: split.XTrain.length,
+  test_rows: split.XTest.length,
+  accuracy: ds.ml.metrics.accuracy(split.yTest, predicted),
+  cohen_kappa: ds.ml.metrics.cohenKappa(split.yTest, predicted),
+});
+
+// %% [markdown]
+/*
+The confusion matrix shows where the few mistakes (if any) live: the
+diagonal counts correct predictions per species, and off-diagonal cells are
+confusions, which occur between Adelie and Chinstrap when they occur at all.
+*/
+
+// %% [javascript]
+
+const plot_confusion = ds.plot
+  .plotConfusionMatrix(split.yTest, predicted, { width: 420, height: 380 })
+  .show(Plot);
+plot_confusion;
+
+// %% [markdown]
+/*
+Random forests also report how much each feature contributed to the split
+decisions. Flipper length and bill length carry almost all of it, roughly
+tied at the top; bill length is what separates Adelie from Chinstrap, the
+pair the size-driven features cannot tell apart. Body mass adds almost
+nothing once the others are in — the same story the PCA loadings told above.
+*/
+
+// %% [javascript]
+
+const importances = forest.featureImportances
+  .map((importance, j) => ({ feature: measurements[j], importance }))
+  .sort((a, b) => b.importance - a.importance);
+
+const plot_importance = ds.plot
+  .plotFeatureImportance(importances, { width: 560, height: 260 })
+  .show(Plot);
+plot_importance;
+
+// %% [markdown]
+/*
+## Where to go next
+
+The same fit/predict pattern extends across the library: `ds.ml` has
+gradient boosting, k-nearest neighbours, GAMs, DBSCAN and hierarchical
+clustering, imputers, and cross-validation; `ds.stats` has ANOVA, Tukey HSD,
+nonparametric tests, and model comparison; `ds.mva` adds LDA, CCA, and RDA.
+Each has a matching notebook in the ds repository's examples folder.
+*/
