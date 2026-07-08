@@ -51,6 +51,11 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      # Install npm dependencies (e.g. ml-matrix) into node_modules so deno can
+      # resolve the bare npm imports in src/ when caching and publishing; JSR
+      # itself does not vendor them, but publish-time resolution needs them present.
+      - name: Install npm dependencies
+        run: deno install
       # Vouch for the resolved dependency graph with the supply-chain cooldown
       # disabled, so a package can be released the same day as an intra-suite
       # dependency it was just published alongside. No-op for dependency-free
