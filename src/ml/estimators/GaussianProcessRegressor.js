@@ -17,6 +17,7 @@
 import { Regressor } from '../../core/estimators/estimator.js';
 import { toMatrix } from '../../core/linalg.js';
 import { prepareXY } from '../../core/table.js';
+import { lbfgs } from '../../core/optimize.js';
 import {
   Kernel,
   RBF,
@@ -395,12 +396,103 @@ export class GaussianProcessRegressor extends Regressor {
    * search with optional random restarts. Mutates the kernel and `this.alpha`.
    * @private
    */
+  /**
+   * Negative log marginal likelihood and its gradient w.r.t. log(hyperparameter)
+   * for a Matérn kernel (ν ∈ {1.5, 2.5, ∞}), in the collectHypers order
+   * [length scales…, variance, α]. Uses the exact identity
+   * ∂/∂θ(−log p) = ½·tr((K⁻¹ − ααᵀ)·∂K/∂θ): one Cholesky + one inverse gives
+   * every partial, so a gradient step costs ~one likelihood evaluation instead
+   * of the 2·(#hypers) the derivative-free search spends. `logVals` are applied
+   * to `hypers` first. @private
+   * @returns {{loss:number, gradient:number[]}}
+   */
+  _negLogMLGrad(logVals, hypers) {
+    hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(logVals[i]))));
+    const k = this.kernel;
+    const v = k.variance;
+    const nu = k.nu;
+    const l = k.lengthScale;
+    const isArr = Array.isArray(l);
+    const X = this._XTrain.to2DArray();
+    const y = this._yTrain;
+    const n = X.length;
+    const D = X[0].length;
+
+    const Ksig = k.call(this._XTrain); // signal kernel (no noise)
+    const Kmat = Ksig.clone();
+    for (let i = 0; i < n; i++) Kmat.set(i, i, Kmat.get(i, i) + this.alpha);
+    let L;
+    try { L = choleskyDecomposition(Kmat); } catch { return { loss: 1e12, gradient: logVals.map(() => 0) }; }
+
+    const alphaVec = this._solveCholesky(L, y);
+    // K⁻¹ by solving against each identity column.
+    const Kinv = [];
+    const e = new Array(n).fill(0);
+    for (let j = 0; j < n; j++) { e[j] = 1; Kinv.push(this._solveCholesky(L, e)); e[j] = 0; }
+    // M = K⁻¹ − ααᵀ.
+    const M = new Array(n);
+    for (let i = 0; i < n; i++) {
+      M[i] = new Array(n);
+      for (let j = 0; j < n; j++) M[i][j] = Kinv[i][j] - alphaVec[i] * alphaVec[j];
+    }
+
+    let yAlpha = 0;
+    for (let i = 0; i < n; i++) yAlpha += y[i] * alphaVec[i];
+    let logDet = 0;
+    for (let i = 0; i < n; i++) logDet += Math.log(L.get(i, i));
+    const loss = 0.5 * yAlpha + logDet + 0.5 * n * Math.log(2 * Math.PI);
+
+    // Gradients. ∂k_ij/∂l_d = F·δ_d²/l_d³ with F depending on ν; ∂k/∂v = k/v
+    // (so ∂/∂log v cancels v); ∂K/∂α = I → ∂/∂log α = α·½·tr(M).
+    const gLlog = isArr ? new Array(l.length).fill(0) : [0];
+    let gVarLog = 0;
+    for (let i = 0; i < n; i++) {
+      gVarLog += 0.5 * M[i][i] * Ksig.get(i, i);
+      for (let j = i + 1; j < n; j++) {
+        const w = 2 * M[i][j]; // symmetric off-diagonal counted once
+        gVarLog += 0.5 * w * Ksig.get(i, j);
+        let scaledSq = 0;
+        for (let d = 0; d < D; d++) { const ld = isArr ? l[d] : l; const del = (X[i][d] - X[j][d]) / ld; scaledSq += del * del; }
+        if (scaledSq === 0) continue;
+        let F;
+        if (nu === Infinity) F = v * Math.exp(-scaledSq / 2);
+        else {
+          const sc = Math.sqrt(2 * nu) * Math.sqrt(scaledSq);
+          const es = Math.exp(-sc);
+          F = nu === 1.5 ? 3 * v * es : (5 / 3) * v * (1 + sc) * es;
+        }
+        const hwF = 0.5 * w * F;
+        if (isArr) {
+          for (let d = 0; d < l.length; d++) { const del = X[i][d] - X[j][d]; gLlog[d] += hwF * (del * del) / (l[d] * l[d] * l[d]); }
+        } else {
+          let acc = 0; for (let d = 0; d < D; d++) { const del = X[i][d] - X[j][d]; acc += del * del; }
+          gLlog[0] += hwF * acc / (l * l * l);
+        }
+      }
+    }
+    // chain length-scale grads to log space (× l).
+    if (isArr) for (let d = 0; d < l.length; d++) gLlog[d] *= l[d];
+    else gLlog[0] *= l;
+    let trM = 0;
+    for (let i = 0; i < n; i++) trM += M[i][i];
+    const gAlphaLog = 0.5 * trM * this.alpha;
+
+    return { loss, gradient: [...gLlog, gVarLog, gAlphaLog] };
+  }
+
+  /**
+   * Maximize the log marginal likelihood over the kernel length scale(s),
+   * variance and the noise `alpha`. For a Matérn kernel (ν ∈ {1.5, 2.5, ∞}) it
+   * uses analytic gradients + L-BFGS (fast); otherwise a derivative-free
+   * log-space pattern search. Random restarts in both cases. @private
+   */
   _optimizeHypers() {
     const hypers = collectHypers(this.kernel);
     // Treat the observation noise as a (WhiteKernel-like) hyperparameter too.
     hypers.push({ get: () => this.alpha, set: (v) => { this.alpha = v; }, min: 1e-10 });
     if (hypers.length === 0) return;
 
+    const analytic = this.kernel instanceof Matern && [1.5, 2.5, Infinity].includes(this.kernel.nu);
     const initial = hypers.map((h) => h.get());
     const evalNeg = () => this._negLogML();
     const rng = mulberry32(this._seed);
@@ -418,11 +510,17 @@ export class GaussianProcessRegressor extends Regressor {
           h.set(Math.max(h.min, initial[i] * factor));
         });
       }
-      const { vals, f } = _patternSearch(hypers, evalNeg);
-      if (f < bestF) {
-        bestF = f;
-        bestVals = vals;
+      let vals;
+      if (analytic) {
+        const x0 = hypers.map((h) => Math.log(h.get()));
+        const res = lbfgs((x) => this._negLogMLGrad(x, hypers), x0, { maxIter: 100, tol: 1e-5 });
+        hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(res.x[i]))));
+        vals = hypers.map((h) => h.get());
+      } else {
+        ({ vals } = _patternSearch(hypers, evalNeg));
       }
+      const f = evalNeg(); // score consistently via the plain likelihood
+      if (f < bestF) { bestF = f; bestVals = vals; }
     }
     hypers.forEach((h, i) => h.set(bestVals[i]));
   }
