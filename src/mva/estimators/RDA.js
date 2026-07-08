@@ -124,6 +124,11 @@ export class RDA extends Transformer {
       predictorNames: opts.predictorNames
     });
     this.model = { ...result, omit_missing: omitMissing };
+    // The spread drops non-enumerable properties; carry the retained response/
+    // constraint matrices over so permutationTest()/anova() keep working.
+    if (result._work) {
+      Object.defineProperty(this.model, '_work', { value: result._work, enumerable: false });
+    }
     this.params.scale = scale;
     this.params.omit_missing = omitMissing;
     this.params.scaling = normalizeScaling(result.scaling ?? scaling);
@@ -194,6 +199,25 @@ export class RDA extends Transformer {
       scaling: scaling ?? this.params.scaling,
       constrained: constrained ?? this.params.constrained,
     };
+  }
+
+  /**
+   * Global permutation test of the constrained ordination (vegan `anova.cca`).
+   * @param {Object} [options]
+   * @param {number} [options.permutations=999]
+   * @param {number} [options.seed=42]
+   * @returns {Object} pseudo-F, permutation p-value, df and inertia decomposition.
+   */
+  permutationTest(options = {}) {
+    if (!this.fitted || !this.model) {
+      throw new Error('RDA: estimator not fitted. Call fit() before permutationTest().');
+    }
+    return rda.permutationTest(this.model, options);
+  }
+
+  /** Alias for {@link RDA#permutationTest} mirroring R's `anova(rda_model)`. */
+  anova(options = {}) {
+    return this.permutationTest(options);
   }
 
   /**

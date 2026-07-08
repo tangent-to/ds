@@ -3,7 +3,7 @@
  * Constrained ordination - PCA on fitted values from multiple regression
  */
 
-import { Matrix, solveLeastSquares, toMatrix as _toMatrix } from '../core/linalg.js';
+import { Matrix, solveLeastSquares, svd, toMatrix as _toMatrix } from '../core/linalg.js';
 import * as pca from './pca.js';
 import { mean } from '../core/math.js';
 import { prepareX, attachSourceRows } from '../core/table.js';
@@ -247,6 +247,18 @@ export function fit(Y, X, options = {}) {
   explainedInertia /= n;
 
   const constrainedVariance = explainedInertia / totalInertia;
+  const residualInertia = totalInertia - explainedInertia;
+
+  // Degrees of freedom for the global permutation test (vegan anova.cca
+  // convention): the model df is the numerical rank of the centred constraints
+  // (= number of canonical constraints; equals p when X is full column rank),
+  // and the residual df is n - rank - 1 (the extra 1 for the centring of Y).
+  const constraintRank = constrained ? numericRank(XCentered) : 0;
+  const dfModel = constraintRank;
+  const dfResidual = n - dfModel - 1;
+  const pseudoF = (constrained && dfModel > 0 && dfResidual > 0 && residualInertia > 0)
+    ? (explainedInertia / dfModel) / (residualInertia / dfResidual)
+    : NaN;
 
   const predictorCorrelations = constraintObjects;
 
@@ -275,6 +287,13 @@ export function fit(Y, X, options = {}) {
     singularValues: pcaModel.singularValues,
     components: pcaModel.components,
     constrained: !!constrained,
+    // Inertia decomposition + degrees of freedom for permutationTest() below.
+    totalInertia,
+    explainedInertia,
+    residualInertia,
+    dfModel,
+    dfResidual,
+    pseudoF,
   };
 
   model.responseNames = responseNamesFinal;
@@ -284,12 +303,146 @@ export function fit(Y, X, options = {}) {
   model.canonicalLoadings = loadingsObjects;
   model.predictorCorrelations = predictorCorrelations;
 
+  // Retain the centred (and, if requested, scaled) response matrix and the
+  // centred constraints so permutationTest() can refit permuted responses
+  // without re-preparing the data. Non-enumerable so JSON/persistence skip it.
+  Object.defineProperty(model, '_work', {
+    value: { Y: YCentered, X: XCentered },
+    enumerable: false,
+  });
+
   // Reference to the filtered source rows (+ original indices) for plot
   // helpers (colorBy by column name, and realigning external per-row arrays);
   // non-enumerable so persistence/JSON skips it
   attachSourceRows(model, sourcePrepared);
 
   return model;
+}
+
+/**
+ * Numerical rank of a matrix (count of singular values above a scaled tolerance).
+ * @param {Array<Array<number>>} M
+ * @returns {number}
+ */
+function numericRank(M) {
+  const { s } = svd(M);
+  const maxSv = s.reduce((a, b) => Math.max(a, b), 0);
+  if (maxSv === 0) return 0;
+  const tol = Math.max(M.length, M[0].length) * 2.220446049250313e-16 * maxSv;
+  return s.filter((v) => v > tol).length;
+}
+
+/**
+ * Deterministic PRNG (mulberry32) for reproducible permutations.
+ * @param {number} a - 32-bit seed
+ * @returns {() => number} uniform [0,1) generator
+ */
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Permutation test of the global RDA (equivalent to vegan's
+ * `anova.cca(model)`): tests H0 that the constraints explain no more response
+ * variance than expected by chance. Under H0 the response rows are exchangeable,
+ * so we permute the rows of the (centred) response matrix, refit, and compare the
+ * permuted pseudo-F to the observed one. Because a row permutation leaves each
+ * response column's total sum of squares unchanged, the total inertia and the
+ * degrees of freedom are invariant, so only the constrained inertia is recomputed.
+ *
+ * The pseudo-F is `(constrained inertia / dfModel) / (residual inertia / dfResidual)`
+ * with `dfModel` the rank of the constraints and `dfResidual = n - dfModel - 1`,
+ * matching vegan. The p-value uses the standard `(1 + #{F* >= F}) / (nperm + 1)`
+ * correction. F, the proportion constrained and the df are divisor-invariant, so
+ * they match vegan regardless of its n-1 inertia convention; the reported inertia
+ * values use the n-1 divisor to match vegan's "Variance" column directly.
+ *
+ * @param {Object} model - A constrained RDA model from fit().
+ * @param {Object} [options]
+ * @param {number} [options.permutations=999] - Number of row permutations.
+ * @param {number} [options.seed=42] - Seed for reproducibility.
+ * @returns {Object} { pseudoF, pValue, permutations, dfModel, dfResidual,
+ *   constrainedInertia, residualInertia, totalInertia, constrainedProportion, eigenvalues }
+ */
+export function permutationTest(model, options = {}) {
+  const permutations = options.permutations ?? 999;
+  const seed = (options.seed ?? 42) >>> 0;
+  const work = model && model._work;
+  if (!work) {
+    throw new Error('RDA.permutationTest requires a model from rda.fit() (retained response/constraint matrices are missing).');
+  }
+  if (!model.constrained) {
+    throw new Error('RDA.permutationTest applies to a constrained ordination (constrained: true).');
+  }
+  const Y = work.Y;
+  const X = work.X;
+  const n = Y.length;
+  const q = Y[0].length;
+  const dfModel = model.dfModel;
+  const dfResidual = model.dfResidual;
+  if (!(dfModel > 0) || !(dfResidual > 0)) {
+    throw new Error('RDA.permutationTest: degenerate degrees of freedom (need n > rank(X) + 1).');
+  }
+
+  const Xmat = new Matrix(X);
+  const XtX = Xmat.transpose().mmul(Xmat);
+  // B = (X'X)^-1 X'  (p x n): the projection onto the column space of X.
+  const B = solveLeastSquares(Xmat, Matrix.eye(n));
+
+  // Constrained sum of squares = trace(beta' X'X beta) with beta = B * R.
+  const explainedSS = (R) => {
+    const beta = B.mmul(R);
+    const T = beta.transpose().mmul(XtX).mmul(beta);
+    let tr = 0;
+    for (let j = 0; j < q; j++) tr += T.get(j, j);
+    return tr;
+  };
+
+  // Total SS of the centred response, invariant under row permutation.
+  let totalSS = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < q; j++) totalSS += Y[i][j] * Y[i][j];
+  }
+
+  const fStat = (explSS) => (explSS / dfModel) / ((totalSS - explSS) / dfResidual);
+  const obsSS = explainedSS(new Matrix(Y));
+  const Fobs = fStat(obsSS);
+
+  const rng = mulberry32(seed);
+  const idx = Array.from({ length: n }, (_, i) => i);
+  const EPS = 1e-9;
+  let ge = 0;
+  for (let b = 0; b < permutations; b++) {
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      const t = idx[i];
+      idx[i] = idx[j];
+      idx[j] = t;
+    }
+    const Rp = new Matrix(idx.map((k) => Y[k]));
+    if (fStat(explainedSS(Rp)) >= Fobs - EPS) ge++;
+  }
+  const pValue = (ge + 1) / (permutations + 1);
+
+  const denom = n - 1;
+  return {
+    pseudoF: Fobs,
+    pValue,
+    permutations,
+    dfModel,
+    dfResidual,
+    constrainedInertia: obsSS / denom,
+    residualInertia: (totalSS - obsSS) / denom,
+    totalInertia: totalSS / denom,
+    constrainedProportion: obsSS / totalSS,
+    eigenvalues: model.eigenvalues,
+  };
 }
 
 /**

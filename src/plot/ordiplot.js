@@ -38,6 +38,10 @@ import { resolveGroupValues } from './utils.js';
  *   'red', or 'blue' for an RDA response triplot).
  * @param {string|null} options.loadingTextColor - Fill for loading labels (default:
  *   'darkred', or 'darkblue' for RDA).
+ * @param {string|null} options.predictorColor - Stroke for RDA predictor arrows
+ *   (default: 'red'). Set e.g. '#111' for a greyscale triplot.
+ * @param {string|null} options.predictorTextColor - Fill for RDA predictor labels
+ *   (default: inherits predictorColor, else 'darkred').
  * @param {number} options.pointRadius - Point radius (default: 4).
  * @returns {Object} Plot configuration
  */
@@ -60,6 +64,8 @@ export function ordiplot(result, {
   symbolBy = false,
   loadingColor = null,
   loadingTextColor = null,
+  predictorColor = null,
+  predictorTextColor = null,
   pointRadius = 4
 } = {}) {
   // Auto-detect ordination type if not specified
@@ -271,7 +277,7 @@ export function ordiplot(result, {
       y1: 'y1',
       x2: 'x2',
       y2: 'y2',
-      stroke: 'red',
+      stroke: predictorColor ?? 'red',
       strokeWidth: 2,
       headLength: 8
     });
@@ -282,7 +288,7 @@ export function ordiplot(result, {
       y: 'y2',
       text: 'variable',
       fontSize: 10,
-      fill: 'darkred',
+      fill: predictorTextColor ?? predictorColor ?? 'darkred',
       dx: 5,
       dy: 5
     });

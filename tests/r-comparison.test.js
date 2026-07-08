@@ -20,6 +20,7 @@ import { dirname, join } from 'path';
 import { GLM } from '../src/stats/estimators/GLM.js';
 import { PCA } from '../src/mva/estimators/PCA.js';
 import { LDA } from '../src/mva/estimators/LDA.js';
+import * as rda from '../src/mva/rda.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,6 +29,7 @@ const __dirname = dirname(__filename);
 let rAvailable = false;
 let rResults = null;
 let hasLme4 = false;
+let hasVegan = false;
 
 try {
   // Check if Rscript is available
@@ -63,9 +65,13 @@ beforeAll(async () => {
       readFileSync('/tmp/r_comparison_results.json', 'utf-8')
     );
     hasLme4 = rResults.has_lme4 === true;
+    hasVegan = rResults.has_vegan === true;
     console.log('✓ R reference results loaded');
     if (hasLme4) {
       console.log('✓ lme4 available - GLMM tests enabled');
+    }
+    if (hasVegan) {
+      console.log('✓ vegan available - RDA tests enabled');
     }
   } catch (error) {
     console.error('Failed to run R comparison script:', error.message);
@@ -453,6 +459,63 @@ describe('LDA - Comparison with R MASS::lda()', () => {
 });
 
 // ==============================================================================
+// RDA Tests - Comparison with vegan::rda() + anova.cca()
+// ==============================================================================
+
+describe('RDA - Comparison with R vegan::rda()', () => {
+  const fitRef = () => {
+    const r = rResults.rda;
+    // Fit on the SAME raw numbers vegan used, with scale=TRUE on the response
+    // (matching vegan's scale=TRUE). Predictor scaling does not affect the
+    // constrained inertia / pseudo-F, so X is passed raw.
+    const model = rda.fit(r.Y, r.X, { scale: true, scaling: 2 });
+    return { r, model };
+  };
+
+  it.skipIf(!rAvailable || !hasVegan)('matches vegan constrained proportion and degrees of freedom', () => {
+    const { r, model } = fitRef();
+    const av = rda.permutationTest(model, { permutations: 999, seed: 123 });
+
+    console.log('JS  proportion/dfM/dfR:', av.constrainedProportion, av.dfModel, av.dfResidual);
+    console.log('veg proportion/dfM/dfR:', r.constrained_proportion, r.df_model, r.df_residual);
+
+    // Proportion constrained is divisor-invariant -> should match to high precision.
+    expect(av.constrainedProportion).toBeCloseTo(r.constrained_proportion, 6);
+    expect(av.dfModel).toBe(r.df_model);
+    expect(av.dfResidual).toBe(r.df_residual);
+  });
+
+  it.skipIf(!rAvailable || !hasVegan)('matches vegan pseudo-F', () => {
+    const { r, model } = fitRef();
+    const av = rda.permutationTest(model, { permutations: 999, seed: 123 });
+
+    console.log('JS pseudo-F:', av.pseudoF, ' vegan pseudo-F:', r.pseudo_F);
+    // Pseudo-F is a ratio of inertias -> divisor-invariant, should match closely.
+    expect(av.pseudoF).toBeCloseTo(r.pseudo_F, 4);
+  });
+
+  it.skipIf(!rAvailable || !hasVegan)('matches vegan constrained eigenvalue proportions', () => {
+    const { r, model } = fitRef();
+    const jsEig = model.eigenvalues.slice(0, r.eigenvalues.length);
+    const jsSum = jsEig.reduce((a, b) => a + b, 0);
+    const rSum = r.eigenvalues.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < r.eigenvalues.length; i++) {
+      // Eigenvalues can be scaled differently; compare proportions.
+      expect(jsEig[i] / jsSum).toBeCloseTo(r.eigenvalues[i] / rSum, 3);
+    }
+  });
+
+  it.skipIf(!rAvailable || !hasVegan)('agrees with vegan on significance (both permutation p-values small)', () => {
+    const { r, model } = fitRef();
+    const av = rda.permutationTest(model, { permutations: 999, seed: 123 });
+    console.log('JS p:', av.pValue, ' vegan p:', r.p_value);
+    // Permutation p-values are stochastic and use different permutation orders,
+    // so we assert agreement on the decision rather than the exact value.
+    expect(av.pValue < 0.05).toBe(r.p_value < 0.05);
+  });
+});
+
+// ==============================================================================
 // Safeguards
 // ==============================================================================
 
@@ -461,6 +524,7 @@ describe('R Comparison - Safeguards', () => {
     // This test documents R availability status
     console.log('R available:', rAvailable);
     console.log('lme4 available:', hasLme4);
+    console.log('vegan available:', hasVegan);
 
     // Don't fail if R not available, just document
     expect(true).toBe(true);

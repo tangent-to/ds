@@ -18,7 +18,7 @@ suppressPackageStartupMessages({
 # Check for required packages
 check_packages <- function() {
   required <- c("jsonlite", "MASS")
-  optional <- c("lme4")
+  optional <- c("lme4", "vegan")
 
   missing_required <- required[!sapply(required, requireNamespace, quietly = TRUE)]
   if (length(missing_required) > 0) {
@@ -26,7 +26,8 @@ check_packages <- function() {
   }
 
   has_lme4 <- requireNamespace("lme4", quietly = TRUE)
-  return(list(has_lme4 = has_lme4))
+  has_vegan <- requireNamespace("vegan", quietly = TRUE)
+  return(list(has_lme4 = has_lme4, has_vegan = has_vegan))
 }
 
 packages <- check_packages()
@@ -274,6 +275,55 @@ test_lda <- function() {
 }
 
 # ==============================================================================
+# RDA Test (vegan::rda + anova.cca) - reference for ds.mva.rda permutationTest
+# ==============================================================================
+
+test_rda <- function() {
+  # A small, fully reproducible design: 4 responses driven by 3 predictors plus
+  # noise, so the global constraint is genuinely significant. Emit the RAW Y and
+  # X so the JS side fits the SAME numbers; JS applies scale=TRUE on Y, matching
+  # vegan's scale=TRUE (per-column unit variance). Predictor scaling is
+  # irrelevant to the constrained inertia / pseudo-F, so X is passed raw.
+  set.seed(42)
+  n <- 40
+  X1 <- rnorm(n); X2 <- rnorm(n); X3 <- rnorm(n)
+  X <- cbind(X1, X2, X3)
+  B <- matrix(c( 1.0, -0.5,  0.2,
+                 0.3,  0.8, -0.4,
+                -0.6,  0.1,  0.9,
+                 0.4,  0.4,  0.4), nrow = 3)  # 3 predictors x 4 responses
+  Y <- X %*% B + matrix(rnorm(n * 4, sd = 0.7), n, 4)
+  colnames(Y) <- c("y1", "y2", "y3", "y4")
+  df <- data.frame(Y, X1 = X1, X2 = X2, X3 = X3)
+
+  rr <- vegan::rda(cbind(y1, y2, y3, y4) ~ X1 + X2 + X3, data = df, scale = TRUE)
+
+  tot <- rr$tot.chi                 # total inertia
+  constrained <- rr$CCA$tot.chi     # constrained inertia
+  df_model <- rr$CCA$qrank          # rank of the constraints
+  df_resid <- rr$CA$rank            # residual df used by anova.cca
+
+  set.seed(123)
+  av <- anova(rr, permutations = 999)
+
+  list(
+    test = "rda",
+    Y = Y,
+    X = X,
+    scale = TRUE,
+    total_inertia = tot,
+    constrained_inertia = constrained,
+    constrained_proportion = constrained / tot,
+    eigenvalues = as.numeric(rr$CCA$eig),
+    df_model = df_model,
+    df_residual = df_resid,
+    pseudo_F = as.numeric(av$F[1]),
+    p_value = as.numeric(av$`Pr(>F)`[1]),
+    permutations = 999
+  )
+}
+
+# ==============================================================================
 # Run All Tests
 # ==============================================================================
 
@@ -294,6 +344,15 @@ run_all_tests <- function() {
   } else {
     results$has_lme4 <- FALSE
     message("Note: lme4 not available, GLMM tests skipped")
+  }
+
+  # Add RDA test if vegan is available
+  if (packages$has_vegan) {
+    results$rda <- test_rda()
+    results$has_vegan <- TRUE
+  } else {
+    results$has_vegan <- FALSE
+    message("Note: vegan not available, RDA test skipped")
   }
 
   return(results)
