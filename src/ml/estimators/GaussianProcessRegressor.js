@@ -326,9 +326,12 @@ export class GaussianProcessRegressor extends Regressor {
       this._optimizeHypers();
     }
 
-    // Factorize with the final hyperparameters.
+    // Factorize with the final hyperparameters. The log marginal likelihood
+    // is read off the factor just computed — recomputing it via _negLogML()
+    // would rebuild the kernel matrix and redo the O(n³) Cholesky for the
+    // exact same numbers, doubling every fit.
     this._refit();
-    this.logMarginalLikelihood_ = -this._negLogML();
+    this.logMarginalLikelihood_ = this._logMLFromFactor();
 
     this.fitted = true;
     return this;
@@ -363,6 +366,21 @@ export class GaussianProcessRegressor extends Regressor {
       throw new Error("logMarginalLikelihood() requires training data; call fit() first.");
     }
     return -this._negLogML();
+  }
+
+  /**
+   * Log marginal likelihood computed from the cached Cholesky factor and
+   * solve vector left by _refit(): -½ yᵀα - Σ log Lᵢᵢ - n/2 log(2π).
+   * Identical to -_negLogML() but with no kernel rebuild or refactorization.
+   * @private
+   */
+  _logMLFromFactor() {
+    const n = this._L.rows;
+    let yAlpha = 0;
+    for (let i = 0; i < n; i++) yAlpha += this._yTrain[i] * this._alphaVector[i];
+    let logDet = 0; // ½ log|K| = Σ log L_ii
+    for (let i = 0; i < n; i++) logDet += Math.log(this._L.get(i, i));
+    return -0.5 * yAlpha - logDet - 0.5 * n * Math.log(2 * Math.PI);
   }
 
   /**
@@ -555,17 +573,22 @@ export class GaussianProcessRegressor extends Regressor {
       return mean;
     }
 
-    const { covarianceMatrix, diag } = this._computePosteriorCovariance(XTest, KStar);
     const result = { mean };
 
-    if (returnStd) {
-      // std scales with y; variance (diag) scales with y².
-      result.std = diag.map(v => Math.sqrt(Math.max(0, v)) * this._yStd);
-    }
-
     if (returnCov) {
+      const { covarianceMatrix, diag } = this._computePosteriorCovariance(XTest, KStar);
+      if (returnStd) {
+        // std scales with y; variance (diag) scales with y².
+        result.std = diag.map(v => Math.sqrt(Math.max(0, v)) * this._yStd);
+      }
       const s2 = this._yStd * this._yStd;
       result.covariance = covarianceMatrix.to2DArray().map(row => row.map(x => x * s2));
+    } else {
+      // std only: the posterior VARIANCE is the covariance diagonal, so skip
+      // building the m×m test-kernel matrix and the O(m²·n) full-covariance
+      // loop — O(m·n²) and O(m) memory instead, same numbers.
+      const diag = this._posteriorVariance(XTest, KStar);
+      result.std = diag.map(v => Math.sqrt(Math.max(0, v)) * this._yStd);
     }
 
     return result;
@@ -636,6 +659,34 @@ export class GaussianProcessRegressor extends Regressor {
     }
 
     return samples;
+  }
+
+  /**
+   * Posterior variance (the covariance diagonal only) at the test points:
+   * diag[i] = k(xᵢ*, xᵢ*) − ‖L⁻¹ k*ᵢ‖², in standardized-y space. Exactly the
+   * `diag` of _computePosteriorCovariance, without the off-diagonal work.
+   * @private
+   */
+  _posteriorVariance(XTest, KStar) {
+    const nTrain = this._XTrain.rows;
+    const nTest = XTest.rows;
+    const diag = new Array(nTest);
+    const kStarColumn = new Array(nTrain);
+
+    for (let col = 0; col < nTest; col++) {
+      for (let row = 0; row < nTrain; row++) {
+        kStarColumn[row] = KStar.get(row, col);
+      }
+      const v = this._forwardSubstitution(this._L, kStarColumn);
+      const x = XTest.getRow(col);
+      let cov = this.kernel.compute(x, x);
+      for (let k = 0; k < nTrain; k++) {
+        cov -= v[k] * v[k];
+      }
+      diag[col] = cov;
+    }
+
+    return diag;
   }
 
   _computePosteriorCovariance(XTest, KStar) {

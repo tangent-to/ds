@@ -34,18 +34,29 @@ export class Kernel {
 
     const n1 = M1.rows;
     const n2 = M2.rows;
-    const K = new Array(n1);
 
+    // Extract rows once. getRow() allocates a fresh array, and doing it
+    // inside the inner loop allocated O(n1·n2) throwaway rows per kernel
+    // build — a large GC load given call() runs on every fit and predict.
+    const rows2 = new Array(n2);
+    for (let j = 0; j < n2; j++) rows2[j] = M2.getRow(j);
+    let rows1 = rows2;
+    if (!symmetric) {
+      rows1 = new Array(n1);
+      for (let i = 0; i < n1; i++) rows1[i] = M1.getRow(i);
+    }
+
+    const K = new Array(n1);
     for (let i = 0; i < n1; i++) {
       K[i] = new Array(n2);
-      const row1 = M1.getRow(i);
-      
+      const row1 = rows1[i];
+
       for (let j = 0; j < n2; j++) {
         // Use symmetry if computing K(X, X)
         if (symmetric && j < i) {
           K[i][j] = K[j][i];
         } else {
-          K[i][j] = this.compute(row1, M2.getRow(j));
+          K[i][j] = this.compute(row1, rows2[j]);
         }
       }
     }
