@@ -40,8 +40,8 @@ function createSvgElement(tag) {
  * The returned function is compatible with the `.show(renderer)` helper emitted by plotHCA.
  *
  * Usage:
- *   import { plotHCA } from '@tangent.to/ds/plot';
- *   import { createD3DendrogramRenderer } from '@tangent.to/ds/plot/renderers/d3Dendrogram.js';
+ *   import { plot } from '@tangent.to/ds';
+ *   const { plotHCA, createD3DendrogramRenderer } = plot;
  *   const spec = plotHCA(model);
  *   const svg = spec.show(createD3DendrogramRenderer(d3));
  *

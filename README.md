@@ -190,9 +190,8 @@ mlp.fit(X_train, y_train);
 // Cross-validation
 const scores = ml.validation.crossValidate(model, X, y, { cv: 5 });
 
-// Grid search
-import { GridSearchCV } from '@tangent.to/ds/ml';
-const result = GridSearchCV(fitFn, scoreFn, X, y, paramGrid, { k: 5 });
+// Grid search (function form; `ml` imported above)
+const result = ml.tuning.GridSearchCV(fitFn, scoreFn, X, y, paramGrid, { k: 5 });
 ```
 
 ## Multivariate Analysis (mva)

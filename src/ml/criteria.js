@@ -3,6 +3,8 @@
  * Centralized impurity functions used by DecisionTree, RandomForest, etc.
  */
 
+import { variance as populationVariance } from '../core/math.js';
+
 /**
  * Gini impurity for classification
  * Measures probability of misclassification
@@ -65,17 +67,11 @@ export function entropy(labels) {
  * @returns {number} Variance
  */
 export function variance(values) {
+  // Guard empty input (core variance returns NaN; trees expect 0 for a
+  // pure/empty node). Delegate to core/math.js in population mode otherwise.
   if (values.length === 0) return 0;
 
-  const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  let sum = 0;
-
-  for (const v of values) {
-    const diff = v - mean;
-    sum += diff * diff;
-  }
-
-  return sum / values.length;
+  return populationVariance(values, false);
 }
 
 /**

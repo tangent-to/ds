@@ -59,37 +59,22 @@ export class StandardScaler {
     const tableInput = prepareTableMatrix(X, {
       requireColumnsMessage: 'StandardScaler.fit: columns are required when using table data',
     });
-    if (tableInput) {
-      const { prepared, naOmit } = tableInput;
+    const dataMatrix = tableInput ? tableInput.prepared.X : X;
 
-      this.nFeatures = prepared.columns.length;
-      this.means = [];
-      this.stds = [];
-
-      for (let j = 0; j < this.nFeatures; j++) {
-        const col = prepared.X.map((row) => row[j]);
-        this.means.push(mean(col));
-        this.stds.push(stddev(col, false));
-      }
-
-      this._tableColumns = prepared.columns.slice();
-      this._tableNaOmit = naOmit;
-
-      return this;
-    }
-
-    // Standard array API
-    const _n = X.length;
-    this.nFeatures = X[0].length;
-
+    this.nFeatures = dataMatrix[0].length;
     this.means = [];
     this.stds = [];
 
     for (let j = 0; j < this.nFeatures; j++) {
-      const col = X.map((row) => row[j]);
+      const col = dataMatrix.map((row) => row[j]);
       this.means.push(mean(col));
       // Use population std (ddof=0) to match sklearn's StandardScaler
       this.stds.push(stddev(col, false));
+    }
+
+    if (tableInput) {
+      this._tableColumns = tableInput.prepared.columns.slice();
+      this._tableNaOmit = tableInput.naOmit;
     }
 
     return this;
@@ -114,7 +99,6 @@ export class StandardScaler {
     if (tableInput) {
       const { prepared } = tableInput;
       const featureColumns = prepared.columns;
-      const rows = prepared.rows;
       const encoders = X.encoders;
 
       const scaledMatrix = prepared.X.map((row) =>
@@ -124,11 +108,10 @@ export class StandardScaler {
         })
       );
 
-      const scaledData = rows.map((row) => {
+      const scaledData = prepared.rows.map((row, idx) => {
         const newRow = { ...row };
         featureColumns.forEach((col, j) => {
-          const std = this.stds[j] > 0 ? this.stds[j] : 1;
-          newRow[col] = (row[col] - this.means[j]) / std;
+          newRow[col] = scaledMatrix[idx][j];
         });
         return newRow;
       });

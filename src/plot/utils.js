@@ -1,3 +1,4 @@
+import { special } from '@tangent.to/proba';
 import { attachShow } from './show.js';
 import { normalize } from '../core/table.js';
 
@@ -308,10 +309,9 @@ export function plotQQ(residualData, {
   // Theoretical quantiles (standard normal)
   const theoreticalQuantiles = [];
   for (let i = 0; i < n; i++) {
-    // Use approximate quantile for standard normal
     const p = (i + 0.5) / n;
-    // Approximate inverse CDF of standard normal
-    const q = Math.sqrt(2) * erfInv(2 * p - 1);
+    // Accurate inverse CDF of the standard normal (from @tangent.to/proba)
+    const q = special.normalQuantile(p);
     theoreticalQuantiles.push(q);
   }
   
@@ -358,19 +358,6 @@ export function plotQQ(residualData, {
       }
     ]
   });
-}
-
-/**
- * Approximate error function inverse (for Q-Q plot)
- * @param {number} x - Input value
- * @returns {number} Inverse erf
- */
-function erfInv(x) {
-  const a = 0.147;
-  const b = 2 / (Math.PI * a) + Math.log(1 - x * x) / 2;
-  const sqrt1 = Math.sqrt(b * b - Math.log(1 - x * x) / a);
-  const sqrt2 = Math.sqrt(sqrt1 - b);
-  return sqrt2 * Math.sign(x);
 }
 
 /**
