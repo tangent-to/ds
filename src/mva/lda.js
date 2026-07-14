@@ -352,6 +352,8 @@ export function fit(X, y, options = {}) {
     classMeans: classMeansOriginal,
     classes,
     overallMean,
+    scale,
+    sds,
     projector: projector.to2DArray(),
     invScales,
     eigenvectors: selectedEigenvectors.to2DArray(),
@@ -385,10 +387,16 @@ export function transform(model, X) {
     siteFactors = null,
     eigenvalues,
     scaling,
+    scale = false,
+    sds = null,
   } = model;
 
   const data = toNumericMatrix(X);
-  const centered = data.map((row) => row.map((val, j) => val - overallMean[j]));
+  let centered = data.map((row) => row.map((val, j) => val - overallMean[j]));
+  // Standardize with the training-set sds when the model was fit with scale:true
+  if (scale && sds) {
+    centered = centered.map((row) => row.map((val, j) => sds[j] > 0 ? val / sds[j] : 0));
+  }
   let projected = new Matrix(centered).mmul(new Matrix(projector));
   for (let i = 0; i < projected.rows; i++) {
     for (let j = 0; j < projected.columns; j++) {

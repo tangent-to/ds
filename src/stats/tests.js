@@ -853,17 +853,20 @@ export function fisherExactTest(table, { alternative = 'two-sided' } = {}) {
   const col1 = a + c;
   const col2 = b + d;
 
-  // Hypergeometric probability for a given cell count
-  const hypergeoProb = (x) => {
+  // Hypergeometric log-probability for a given cell count.
+  // Computed in log space so large tables (raw factorials overflow to
+  // Infinity for n > 170) still yield finite, accurate probabilities.
+  const logHypergeoProb = (x) => {
     return (
-      factorial(row1) * factorial(row2) * factorial(col1) * factorial(col2) /
-      (factorial(x) * factorial(row1 - x) * factorial(col1 - x) *
-       factorial(row2 - (col1 - x)) * factorial(n))
+      logFactorial(row1) + logFactorial(row2) + logFactorial(col1) + logFactorial(col2) -
+      (logFactorial(x) + logFactorial(row1 - x) + logFactorial(col1 - x) +
+       logFactorial(row2 - (col1 - x)) + logFactorial(n))
     );
   };
+  const hypergeoProb = (x) => Math.exp(logHypergeoProb(x));
 
   // For two-sided test, sum probabilities <= observed probability
-  const observedProb = hypergeoProb(a);
+  const logObservedProb = logHypergeoProb(a);
   let pValue;
 
   if (alternative === 'two-sided') {
@@ -872,9 +875,9 @@ export function fisherExactTest(table, { alternative = 'two-sided' } = {}) {
     const maxA = Math.min(row1, col1);
 
     for (let x = minA; x <= maxA; x++) {
-      const prob = hypergeoProb(x);
-      if (prob <= observedProb + 1e-10) {
-        pValue += prob;
+      // Compare in log space (relative tolerance, as in R's fisher.test)
+      if (logHypergeoProb(x) <= logObservedProb + 1e-7) {
+        pValue += hypergeoProb(x);
       }
     }
   } else if (alternative === 'greater') {
@@ -933,12 +936,13 @@ function factorial(n) {
  * Log factorial using Stirling's approximation or gamma function
  */
 function logFactorial(n) {
-  if (n < 20) {
+  if (n <= 170) {
     return Math.log(factorial(n));
   }
 
-  // Stirling's approximation
-  return n * Math.log(n) - n + 0.5 * Math.log(2 * Math.PI * n);
+  // Stirling's series (with correction terms for accuracy)
+  return n * Math.log(n) - n + 0.5 * Math.log(2 * Math.PI * n) +
+    1 / (12 * n) - 1 / (360 * n ** 3);
 }
 
 // ============= Multiple Testing Corrections =============
@@ -992,9 +996,17 @@ export function holmBonferroni(pValues, alpha = 0.05) {
     }
   }
 
-  // Determine rejections
+  // Determine rejections (step-down: stop at the first non-rejection,
+  // all hypotheses with larger p-values are then also not rejected)
   for (let i = 0; i < m; i++) {
-    rejected[indexed[i].index] = indexed[i].p <= alpha / (m - i);
+    if (indexed[i].p <= alpha / (m - i)) {
+      rejected[indexed[i].index] = true;
+    } else {
+      for (let j = i; j < m; j++) {
+        rejected[indexed[j].index] = false;
+      }
+      break;
+    }
   }
 
   return {

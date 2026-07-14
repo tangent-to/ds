@@ -107,7 +107,7 @@ function applyClassWeights(y, classWeight) {
     });
   } else if (typeof classWeight === "object") {
     y.forEach((label, i) => {
-      weights[i] = classWeight[label] || 1;
+      weights[i] = classWeight[label] ?? 1;
     });
   }
   return weights;
