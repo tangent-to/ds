@@ -8,6 +8,7 @@ const SUPPORTED_MARKS = new Set([
   'line',
   'area',
   'arrow',
+  'link',
   'text',
   'barX',
   'barY',
@@ -231,6 +232,8 @@ function convertMarkToPlot(mark, datasets, Plot) {
       return Plot.area(resolveDataset(type, dataKey, datasets), options);
     case 'arrow':
       return Plot.arrow(resolveDataset(type, dataKey, datasets), options);
+    case 'link':
+      return Plot.link(resolveDataset(type, dataKey, datasets), options);
     case 'text':
       return Plot.text(resolveDataset(type, dataKey, datasets), options);
     case 'barX':

@@ -75,6 +75,46 @@ describe('Plot Configuration Generators', () => {
       expect(config.data.loadings).toBeDefined();
       // loadingFactor: 0 means auto-scale
     });
+
+    it('shows every loading at true length by default (no rescaling of small ones)', () => {
+      const wide = [
+        [10, 1.0, 1.0, 1.0],
+        [ 1, 1.1, 0.9, 1.0],
+        [20, 0.9, 1.1, 1.0],
+        [ 2, 1.0, 1.0, 1.1],
+        [15, 1.05, 0.95, 1.0],
+        [ 3, 0.95, 1.05, 1.0],
+      ];
+      const pcaResult = mva.pca.fit(wide, { nComponents: 2 });
+      const config = plot.ordiplot(pcaResult, { type: 'pca', showLoadings: true, loadingFactor: 0 });
+      // default: all loadings kept, none removed
+      expect(config.data.loadings.length).toBe(4);
+    });
+
+    it('minLoadingContribution filters out negligible loadings (honest magnitudes)', () => {
+      const wide = [
+        [10, 1.0, 1.0, 1.0],
+        [ 1, 1.1, 0.9, 1.0],
+        [20, 0.9, 1.1, 1.0],
+        [ 2, 1.0, 1.0, 1.1],
+        [15, 1.05, 0.95, 1.0],
+        [ 3, 0.95, 1.05, 1.0],
+      ];
+      const pcaResult = mva.pca.fit(wide, { nComponents: 2 });
+      const all = plot.ordiplot(pcaResult, { type: 'pca', showLoadings: true, loadingFactor: 0 });
+      const filtered = plot.ordiplot(pcaResult, {
+        type: 'pca', showLoadings: true, loadingFactor: 0, minLoadingContribution: 0.05,
+      });
+      // filtering removes at least one near-zero loading, keeps the dominant ones
+      expect(filtered.data.loadings.length).toBeLessThan(all.data.loadings.length);
+      expect(filtered.data.loadings.length).toBeGreaterThan(0);
+      // kept vectors are NOT rescaled: each kept loading's length matches the unfiltered one
+      const lenOf = (v) => Math.hypot(v.x2 || 0, v.y2 || 0);
+      for (const kept of filtered.data.loadings) {
+        const match = all.data.loadings.find((l) => l.variable === kept.variable);
+        expect(lenOf(kept)).toBeCloseTo(lenOf(match), 10);
+      }
+    });
   });
 
   describe('plotScree', () => {
@@ -225,6 +265,50 @@ describe('Plot Configuration Generators', () => {
       expect(config).toHaveProperty('data');
       expect(config.data).toHaveProperty('scores');
       expect(config.data.scores.length).toBe(Y.length);
+    });
+
+    it('should reserve horizontal margins so edge labels are not clipped', () => {
+      const rdaResult = mva.rda.fit(Y, X, { nComponents: 2 });
+      const config = plot.ordiplot(rdaResult, { type: 'rda' });
+      expect(config.marginLeft).toBeGreaterThan(0);
+      expect(config.marginRight).toBeGreaterThan(0);
+    });
+
+    it('de-collides response and predictor labels together (ggrepel-style)', () => {
+      const rdaResult = mva.rda.fit(Y, X, { nComponents: 2 });
+      const config = plot.ordiplot(rdaResult, { type: 'rda', showLoadings: true });
+      // One combined, de-collided label set (loadings + predictors), each with a
+      // finite position and a remembered tip for an optional leader line.
+      expect(config.data).toHaveProperty('arrowLabels');
+      const labels = config.data.arrowLabels;
+      expect(labels.length).toBeGreaterThan(0);
+      expect(labels.every((d) =>
+        Number.isFinite(d.lx) && Number.isFinite(d.ly) &&
+        Number.isFinite(d.tipx) && Number.isFinite(d.tipy)
+      )).toBe(true);
+      // labels are drawn by ONE text mark bound to arrowLabels (not per-set marks)
+      const textMarks = config.marks.filter((m) => m.type === 'text' && m.data === 'arrowLabels');
+      expect(textMarks.length).toBe(1);
+      // no stray text mark bound to the old per-set data keys
+      expect(config.marks.some((m) => m.data === 'predictorLabelsRight')).toBe(false);
+    });
+
+    it('auto-scaled arrows (factor 0) stay within the score-cloud radius', () => {
+      const rdaResult = mva.rda.fit(Y, X, { nComponents: 2 });
+      const config = plot.ordiplot(rdaResult, {
+        type: 'rda', showLoadings: true, loadingFactor: 0, predictorFactor: 0,
+      });
+      const maxScoreR = Math.max(
+        ...config.data.scores.map((p) => Math.hypot(p.x || 0, p.y || 0))
+      );
+      const arrowTipR = (arr) => Math.max(
+        ...arr.map((v) => Math.hypot(v.x2 || 0, v.y2 || 0))
+      );
+      // longest arrow tip must not exceed the score cloud (headroom leaves room for labels)
+      expect(arrowTipR(config.data.loadings)).toBeLessThanOrEqual(maxScoreR + 1e-9);
+      if (config.data.predictors) {
+        expect(arrowTipR(config.data.predictors)).toBeLessThanOrEqual(maxScoreR + 1e-9);
+      }
     });
   });
 
