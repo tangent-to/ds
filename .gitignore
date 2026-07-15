@@ -117,3 +117,4 @@ deno.lock
 
 # TypeDoc scratch output (post-processed into docs/api/)
 docs/api-generated/
+dist/ds.local.js
