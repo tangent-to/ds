@@ -8,7 +8,7 @@
  * - Penalty matrices for smoothness
  */
 
-import { Matrix } from 'ml-matrix';
+import { Matrix } from '../core/linalg.js';
 
 /**
  * Compute B-spline basis functions

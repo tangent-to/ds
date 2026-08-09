@@ -11,7 +11,7 @@
 import { Classifier, Regressor } from '../../core/estimators/estimator.js';
 import { prepareX, prepareXY } from '../../core/table.js';
 import { fitGLM, predictGLM } from '../../stats/glm.js';
-import { Matrix } from 'ml-matrix';
+import { Matrix } from '../../core/linalg.js';
 import {
   bsplineBasis as _bsplineBasis,
   buildSmoothMatrix,

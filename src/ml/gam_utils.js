@@ -9,7 +9,7 @@
  * - Confidence intervals for predictions
  */
 
-import { Matrix, inverse, SingularValueDecomposition, EigenvalueDecomposition, solve } from 'ml-matrix';
+import { eig, inverse, Matrix, SingularValueDecomposition, solve } from '../core/linalg.js';
 import { qchisq as _qchisq } from '../stats/distribution.js';
 
 /**
@@ -346,9 +346,8 @@ function qnorm(p) {
  */
 function determinant(A) {
   try {
-    // Use eigenvalue product for positive definite matrices
-    const eig = new EigenvalueDecomposition(A);
-    const eigVals = eig.realEigenvalues;
+    // Use eigenvalue product for (symmetric) positive definite matrices
+    const eigVals = eig(A).values;
     let det = 1;
     for (const val of eigVals) {
       det *= Math.max(val, 1e-10); // Avoid log(0)

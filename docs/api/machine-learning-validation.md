@@ -15,26 +15,10 @@ permalink: /api/machine-learning/validation
 function trainTestSplit(
    X, 
    y?, 
-   options?): 
-  | {
-  XTrain: any[];
-  XTest: any[];
-  trainIndices: number[];
-  testIndices: number[];
-  yTrain?: undefined;
-  yTest?: undefined;
-}
-  | {
-  XTrain: any[];
-  XTest: any[];
-  yTrain: any[];
-  yTest: any[];
-  trainIndices: number[];
-  testIndices: number[];
-};
+   options?): Object;
 ```
 
-Defined in: [src/ml/validation.js:238](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L238)
+Defined in: [src/ml/validation.js:245](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L245)
 
 Split data into train and test sets
 Supports both raw matrices and declarative table descriptors
@@ -43,32 +27,43 @@ Supports both raw matrices and declarative table descriptors
 
 ##### X
 
-`any`
+`Object` \| `number`[][]
+
+Design matrix (n × p) or a table descriptor ({ data, X, y, ... })
 
 ##### y?
 
-`null` = `null`
+`Object` \| `number`[] \| `string`[] \| `null`
+
+Response vector, or options object when X is a table descriptor
 
 ##### options?
 
+Split options
+
+###### ratio?
+
+`number`
+
+Fraction of samples assigned to the train set (default 0.8)
+
+###### shuffle?
+
+`boolean`
+
+Whether to shuffle indices before splitting (default true)
+
+###### seed?
+
+`number`
+
+Optional random seed for reproducible shuffling
+
 #### Returns
 
-  \| \{
-  `XTrain`: `any`[];
-  `XTest`: `any`[];
-  `trainIndices`: `number`[];
-  `testIndices`: `number`[];
-  `yTrain?`: `undefined`;
-  `yTest?`: `undefined`;
-\}
-  \| \{
-  `XTrain`: `any`[];
-  `XTest`: `any`[];
-  `yTrain`: `any`[];
-  `yTest`: `any`[];
-  `trainIndices`: `number`[];
-  `testIndices`: `number`[];
-\}
+`Object`
+
+Split result with XTrain/XTest, optional yTrain/yTest, and trainIndices/testIndices (or table views for descriptor input)
 
 ***
 
@@ -82,7 +77,7 @@ function kFold(
    shuffle?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:416](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L416)
+Defined in: [src/ml/validation.js:423](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L423)
 
 K-Fold cross-validation generator
 
@@ -129,7 +124,7 @@ function stratifiedKFold(
    k?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:441](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L441)
+Defined in: [src/ml/validation.js:448](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L448)
 
 Stratified K-Fold for classification with balanced class distribution
 
@@ -171,7 +166,7 @@ function groupKFold(
    k?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:468](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L468)
+Defined in: [src/ml/validation.js:475](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L475)
 
 Group K-Fold keeping group membership intact
 
@@ -215,7 +210,7 @@ Array of fold objects
 function leaveOneOut(X, _y): Object[];
 ```
 
-Defined in: [src/ml/validation.js:501](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L501)
+Defined in: [src/ml/validation.js:508](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L508)
 
 Leave-One-Out cross-validation
 
@@ -248,7 +243,7 @@ function shuffleSplit(
    options?): Object[];
 ```
 
-Defined in: [src/ml/validation.js:522](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L522)
+Defined in: [src/ml/validation.js:529](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L529)
 
 Shuffle Split - repeated random train-test splits
 
@@ -291,7 +286,7 @@ function crossValidate(
    folds?): object;
 ```
 
-Defined in: [src/ml/validation.js:559](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/validation.js#L559)
+Defined in: [src/ml/validation.js:573](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/validation.js#L573)
 
 Execute cross-validation with a model.
 
@@ -311,32 +306,44 @@ and per-fold table views for further inspection.
 
 ##### fitFn
 
-`any`
+`Function`
+
+Fits a model given (XTrain, yTrain) and returns the model
 
 ##### scoreFn
 
-`any`
+`Function`
+
+Scores a model given (model, XTest, yTest) and returns a number
 
 ##### X
 
-`any`
+`Object` \| `number`[][]
+
+Design matrix (n × p) or a table descriptor ({ data, X, y, encoders? })
 
 ##### y?
 
-`null` = `null`
+`Object` \| `number`[] \| `string`[] \| `null`
+
+Response vector, or options object when X is a table descriptor
 
 ##### folds?
 
-`null` = `null`
+`Object`[] \| `null`
+
+Optional fold definitions (each with trainIndices/testIndices); defaults to k-fold
 
 #### Returns
 
 `object`
 
+Cross-validation results
+
 ##### scores
 
 ```ts
-scores: any[];
+scores: number[];
 ```
 
 ##### meanScore
@@ -354,5 +361,17 @@ stdScore: number;
 ##### nFolds
 
 ```ts
-nFolds: any = foldDefs.length;
+nFolds: number;
+```
+
+##### metadata?
+
+```ts
+optional metadata?: Object;
+```
+
+##### tableFolds?
+
+```ts
+optional tableFolds?: Object[];
 ```
