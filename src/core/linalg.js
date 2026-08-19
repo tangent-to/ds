@@ -4,6 +4,8 @@
  */
 
 import {
+  cholesky as linaCholesky,
+  choleskySolve as linaCholeskySolve,
   eigSym as linaEigSym,
   inv as linaInv,
   pinv as linaPinv,
@@ -138,6 +140,27 @@ export function inverse(data) {
  */
 export function solve(A, b) {
   return new Matrix(linaSolve(asArray(toMatrix(A)), asArray(toMatrix(b))));
+}
+
+/**
+ * Cholesky factorization of a symmetric positive definite matrix
+ * @param {Array<Array<number>>|Matrix} data - Symmetric positive definite matrix
+ * @returns {Matrix} Lower triangular L with data = L * L'
+ * @throws {Error} When the matrix is not symmetric or not positive definite
+ */
+export function cholesky(data) {
+  return new Matrix(linaCholesky(asArray(toMatrix(data))));
+}
+
+/**
+ * Solve A x = b from the Cholesky factor L of A, by forward then back
+ * substitution
+ * @param {Array<Array<number>>|Matrix} L - Lower triangular factor
+ * @param {Array<number>} b - Right-hand side vector
+ * @returns {Array<number>} Solution x
+ */
+export function choleskySolve(L, b) {
+  return linaCholeskySolve(asArray(toMatrix(L)), b);
 }
 
 /**
