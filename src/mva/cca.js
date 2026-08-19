@@ -5,7 +5,7 @@
  * two multivariate datasets X and Y.
  */
 
-import { Matrix, covarianceMatrix, eig, svd } from '../core/linalg.js';
+import { Matrix, covarianceMatrix, svd, symmetricInverseSqrt } from '../core/linalg.js';
 import { normalize } from '../core/table.js';
 
 const EPSILON = 1e-10;
@@ -309,15 +309,6 @@ function preprocessMatrix(data, center, scale) {
   return { matrix: processed, means, sds };
 }
 
-function symmetricInverseSqrt(matrix) {
-  const { values, vectors } = eig(matrix);
-  const diagValues = values.map((value) =>
-    value > EPSILON ? 1 / Math.sqrt(value) : 0
-  );
-
-  const diag = Matrix.diag(diagValues);
-  return vectors.mmul(diag).mmul(vectors.transpose());
-}
 
 function matrixToVariableLoadings(matrix, names, components, prefix) {
   const result = [];

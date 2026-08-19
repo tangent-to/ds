@@ -7,6 +7,8 @@ import {
   cholesky as linaCholesky,
   choleskySolve as linaCholeskySolve,
   eigSym as linaEigSym,
+  eigSymGeneralized as linaEigSymGeneralized,
+  invSqrtSym as linaInvSqrtSym,
   inv as linaInv,
   pinv as linaPinv,
   solve as linaSolve,
@@ -102,6 +104,38 @@ export function eig(data) {
     values,
     vectors: new Matrix(vectors),
   };
+}
+
+/**
+ * Generalized symmetric eigendecomposition: solve A x = lambda B x for
+ * symmetric A and symmetric positive (semi)definite B. Eigenvalues are
+ * returned in descending order; eigenvectors are the columns of `vectors`.
+ *
+ * When B is positive definite the vectors are B-orthonormal (x'Bx = 1), as
+ * from scipy's eigh(A, B). When B is singular the problem is solved on
+ * range(B) and the vectors have unit euclidean length instead; `definite`
+ * reports which case applied.
+ *
+ * @param {Array<Array<number>>|Matrix} A - Symmetric matrix
+ * @param {Array<Array<number>>|Matrix} B - Symmetric positive (semi)definite matrix
+ * @returns {Object} {values, vectors, definite}
+ */
+export function eigGeneralized(A, B) {
+  const { values, vectors, definite } = linaEigSymGeneralized(
+    asArray(toMatrix(A)),
+    asArray(toMatrix(B)),
+  );
+  return { values, vectors: new Matrix(vectors), definite };
+}
+
+/**
+ * Inverse square root of a symmetric positive semidefinite matrix: the
+ * symmetric W with W A W = I on A's range, and 0 on its null space
+ * @param {Array<Array<number>>|Matrix} data - Symmetric positive semidefinite matrix
+ * @returns {Matrix} Symmetric inverse square root
+ */
+export function symmetricInverseSqrt(data) {
+  return new Matrix(linaInvSqrtSym(asArray(toMatrix(data))));
 }
 
 /**

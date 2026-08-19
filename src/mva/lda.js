@@ -3,7 +3,7 @@
  * Implementation mirrors scikit-learn's SVD solver to ensure comparable results.
  */
 
-import { eig, Matrix, svd } from '../core/linalg.js';
+import { eigGeneralized, Matrix, svd } from '../core/linalg.js';
 import { mean, stddev } from '../core/math.js';
 import { prepareX, prepareXY, attachSourceRows } from '../core/table.js';
 import {
@@ -234,25 +234,13 @@ export function fit(X, y, options = {}) {
   const SwMatrix = new Matrix(Sw_w);
   const SbMatrix = new Matrix(Sb_w);
 
-  // Generalized symmetric eigenproblem Sb x = λ Sw x, reduced to an
-  // ordinary symmetric one: with W = Sw^{-1/2} (pseudoinverse square
-  // root, robust to singular Sw), eigSym(W Sb W) yields λ and y, and
-  // x = W y. Same eigenvalues as Sw⁻¹Sb, but stays within symmetric
-  // decompositions; eigenvectors are normalized to unit length.
-  const { values: swValues, vectors: swVectors } = eig(SwMatrix);
-  const swTol = (swValues[0] || 0) * 1e-12;
-  const invSqrtVals = swValues.map((v) => (v > swTol ? 1 / Math.sqrt(v) : 0));
-  const W = swVectors.mmul(Matrix.diag(invSqrtVals)).mmul(swVectors.transpose());
-  const M = W.mmul(SbMatrix).mmul(W);
-  for (let i = 0; i < M.rows; i++) {
-    for (let j = i + 1; j < M.columns; j++) {
-      const avg = (M.get(i, j) + M.get(j, i)) / 2;
-      M.set(i, j, avg);
-      M.set(j, i, avg);
-    }
-  }
-  const { values: eigenvaluesRaw, vectors: yVectors } = eig(M);
-  const xVectors = W.mmul(yVectors);
+  // Discriminant axes solve the generalized symmetric eigenproblem
+  // Sb x = λ Sw x. lina takes the Cholesky route when Sw is positive
+  // definite and falls back to Sw's truncated inverse square root when it
+  // is not — small designs routinely leave Sw singular. Vectors are
+  // rescaled to unit length below so the axis scaling stays the same
+  // either way (the Cholesky route returns Sw-orthonormal vectors).
+  const { values: eigenvaluesRaw, vectors: xVectors } = eigGeneralized(SbMatrix, SwMatrix);
 
   const eigenPairs = eigenvaluesRaw.map((val, idx) => {
     const vector = xVectors.getColumn(idx);
