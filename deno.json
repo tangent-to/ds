@@ -45,7 +45,7 @@
     ]
   },
   "imports": {
-    "ml-matrix": "npm:ml-matrix@^6.11.1",
+    "@tangent.to/lina": "jsr:@tangent/lina@^0.1.3",
     "@observablehq/plot": "npm:@observablehq/plot@^0.6.0",
     "@tangent.to/opt": "jsr:@tangent/opt@^0.1.0",
     "@tangent.to/proba": "jsr:@tangent/proba@^0.1.0"

@@ -3,7 +3,7 @@
  * Implementation mirrors scikit-learn's SVD solver to ensure comparable results.
  */
 
-import { eig, Matrix, solveLeastSquares, svd } from '../core/linalg.js';
+import { eigGeneralized, Matrix, svd } from '../core/linalg.js';
 import { mean, stddev } from '../core/math.js';
 import { prepareX, prepareXY, attachSourceRows } from '../core/table.js';
 import {
@@ -233,13 +233,23 @@ export function fit(X, y, options = {}) {
 
   const SwMatrix = new Matrix(Sw_w);
   const SbMatrix = new Matrix(Sb_w);
-  const SwInvSb = solveLeastSquares(SwMatrix, SbMatrix);
-  const { values: eigenvaluesRaw, vectors: eigenvectorsRaw } = eig(SwInvSb);
 
-  const eigenPairs = eigenvaluesRaw.map((val, idx) => ({
-    value: val,
-    vector: eigenvectorsRaw.getColumn(idx),
-  }));
+  // Discriminant axes solve the generalized symmetric eigenproblem
+  // Sb x = λ Sw x. lina takes the Cholesky route when Sw is positive
+  // definite and falls back to Sw's truncated inverse square root when it
+  // is not — small designs routinely leave Sw singular. Vectors are
+  // rescaled to unit length below so the axis scaling stays the same
+  // either way (the Cholesky route returns Sw-orthonormal vectors).
+  const { values: eigenvaluesRaw, vectors: xVectors } = eigGeneralized(SbMatrix, SwMatrix);
+
+  const eigenPairs = eigenvaluesRaw.map((val, idx) => {
+    const vector = xVectors.getColumn(idx);
+    const norm = Math.sqrt(vector.reduce((acc, v) => acc + v * v, 0));
+    return {
+      value: val,
+      vector: norm > 0 ? vector.map((v) => v / norm) : vector,
+    };
+  });
   eigenPairs.sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
 
   const nComponents = Math.min(k - 1, eigenPairs.length);

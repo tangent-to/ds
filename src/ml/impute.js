@@ -9,7 +9,7 @@
 
 import { mean as calculateMean } from "../core/math.js";
 import { normalize, applyColumns } from "../core/table.js";
-import { Matrix, SingularValueDecomposition } from "ml-matrix";
+import { Matrix, SingularValueDecomposition } from "../core/linalg.js";
 import { createGowerDistance } from "./distances.js";
 
 /**

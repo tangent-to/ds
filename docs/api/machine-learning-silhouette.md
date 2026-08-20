@@ -15,21 +15,33 @@ permalink: /api/machine-learning/silhouette
 function silhouetteSamples(X, labels): object[];
 ```
 
-Defined in: [src/ml/silhouette.js:54](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/silhouette.js#L54)
+Defined in: [src/ml/silhouette.js:60](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/silhouette.js#L60)
+
+Compute the silhouette value for each sample
 
 #### Parameters
 
 ##### X
 
-`any`
+  \| `number`[][]
+  \| \{
+  `data`: `number`[][];
+  `columns`: `string`[];
+\}
+
+Data matrix (n × p) or an options object with data/columns
 
 ##### labels
 
-`any`
+`number`[] \| `string`[]
+
+Cluster label for each sample (length n)
 
 #### Returns
 
 `object`[]
+
+Per-sample silhouette records
 
 ***
 
@@ -39,18 +51,30 @@ Defined in: [src/ml/silhouette.js:54](https://github.com/tangent-to/ds/blob/edab
 function silhouetteByCluster(X, labels): object[];
 ```
 
-Defined in: [src/ml/silhouette.js:118](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/silhouette.js#L118)
+Defined in: [src/ml/silhouette.js:130](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/silhouette.js#L130)
+
+Group per-sample silhouette values by cluster and compute cluster averages
 
 #### Parameters
 
 ##### X
 
-`any`
+  \| `number`[][]
+  \| \{
+  `data`: `number`[][];
+  `columns`: `string`[];
+\}
+
+Data matrix (n × p) or an options object with data/columns
 
 ##### labels
 
-`any`
+`number`[] \| `string`[]
+
+Cluster label for each sample (length n)
 
 #### Returns
 
 `object`[]
+
+Clusters sorted by descending average silhouette

@@ -15,7 +15,7 @@
  */
 
 import { Regressor } from '../../core/estimators/estimator.js';
-import { toMatrix } from '../../core/linalg.js';
+import { cholesky, choleskySolve, toMatrix } from '../../core/linalg.js';
 import { prepareXY } from '../../core/table.js';
 import { lbfgs } from '../../core/optimize.js';
 import {
@@ -42,44 +42,6 @@ function mulberry32(seed) {
 }
 
 /**
- * Cholesky decomposition (lower triangular)
- * @param {Matrix} A - Symmetric positive definite matrix
- * @returns {Matrix} Lower triangular matrix L such that A = L * L^T
- */
-function choleskyDecomposition(A) {
-  const n = A.rows;
-  const L = new Array(n);
-  
-  for (let i = 0; i < n; i++) {
-    L[i] = new Array(n).fill(0);
-  }
-
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j <= i; j++) {
-      let sum = 0;
-      
-      if (j === i) {
-        for (let k = 0; k < j; k++) {
-          sum += L[j][k] * L[j][k];
-        }
-        const diag = A.get(j, j) - sum;
-        if (diag <= 0) {
-          throw new Error('Matrix is not positive definite');
-        }
-        L[j][j] = Math.sqrt(diag);
-      } else {
-        for (let k = 0; k < j; k++) {
-          sum += L[i][k] * L[j][k];
-        }
-        L[i][j] = (A.get(i, j) - sum) / L[j][j];
-      }
-    }
-  }
-
-  return toMatrix(L);
-}
-
-/**
  * Sample from multivariate normal distribution
  * @param {Array<number>} mean - Mean vector
  * @param {Matrix} cov - Covariance matrix
@@ -91,14 +53,14 @@ function sampleMultivariateNormal(mean, cov, rng = Math.random) {
   let L;
   
   try {
-    L = choleskyDecomposition(cov);
+    L = cholesky(cov);
   } catch {
     // Add jitter if not positive definite
     const jitter = 1e-6;
     for (let i = 0; i < n; i++) {
       cov.set(i, i, cov.get(i, i) + jitter);
     }
-    L = choleskyDecomposition(cov);
+    L = cholesky(cov);
   }
 
   // Generate standard normal samples using Box-Muller
@@ -347,11 +309,11 @@ export class GaussianProcessRegressor extends Regressor {
       K.set(i, i, K.get(i, i) + this.alpha);
     }
     try {
-      this._L = choleskyDecomposition(K);
+      this._L = cholesky(K);
     } catch (error) {
       throw new Error(`Failed to fit GP: ${error.message}. Try increasing alpha.`);
     }
-    this._alphaVector = this._solveCholesky(this._L, this._yTrain);
+    this._alphaVector = choleskySolve(this._L, this._yTrain);
     return this;
   }
 
@@ -395,11 +357,11 @@ export class GaussianProcessRegressor extends Regressor {
     }
     let L;
     try {
-      L = choleskyDecomposition(K);
+      L = cholesky(K);
     } catch {
       return 1e12; // not PD under these hypers -> heavy penalty
     }
-    const alphaVec = this._solveCholesky(L, this._yTrain);
+    const alphaVec = choleskySolve(L, this._yTrain);
     let yAlpha = 0;
     for (let i = 0; i < n; i++) yAlpha += this._yTrain[i] * alphaVec[i];
     let logDet = 0; // ½ log|K| = Σ log L_ii
@@ -440,13 +402,13 @@ export class GaussianProcessRegressor extends Regressor {
     const Kmat = Ksig.clone();
     for (let i = 0; i < n; i++) Kmat.set(i, i, Kmat.get(i, i) + this.alpha);
     let L;
-    try { L = choleskyDecomposition(Kmat); } catch { return { loss: 1e12, gradient: logVals.map(() => 0) }; }
+    try { L = cholesky(Kmat); } catch { return { loss: 1e12, gradient: logVals.map(() => 0) }; }
 
-    const alphaVec = this._solveCholesky(L, y);
-    // K⁻¹ by solving against each identity column.
-    const Kinv = [];
-    const e = new Array(n).fill(0);
-    for (let j = 0; j < n; j++) { e[j] = 1; Kinv.push(this._solveCholesky(L, e)); e[j] = 0; }
+    const alphaVec = choleskySolve(L, y);
+    // K⁻¹ by solving against the whole identity in a single triangular walk.
+    const I = Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => (i === j ? 1 : 0)));
+    const Kinv = choleskySolve(L, I);
     // M = K⁻¹ − ααᵀ.
     const M = new Array(n);
     for (let i = 0; i < n; i++) {
@@ -732,11 +694,11 @@ export class GaussianProcessRegressor extends Regressor {
     return { covarianceMatrix, diag };
   }
 
-  _solveCholesky(L, y) {
-    const z = this._forwardSubstitution(L, y);
-    return this._backSubstitution(L, z);
-  }
-
+  /**
+   * Forward substitution alone: solve L v = b. The predictive variance needs
+   * v = L⁻¹k* on its own (var = k** − vᵀv), not the full solve, and lina
+   * exposes only the combined forward+back `choleskySolve`. @private
+   */
   _forwardSubstitution(L, b) {
     const n = L.rows;
     const x = new Array(n);
@@ -745,21 +707,6 @@ export class GaussianProcessRegressor extends Regressor {
       x[i] = b[i];
       for (let j = 0; j < i; j++) {
         x[i] -= L.get(i, j) * x[j];
-      }
-      x[i] /= L.get(i, i);
-    }
-
-    return x;
-  }
-
-  _backSubstitution(L, b) {
-    const n = L.rows;
-    const x = new Array(n);
-
-    for (let i = n - 1; i >= 0; i--) {
-      x[i] = b[i];
-      for (let j = i + 1; j < n; j++) {
-        x[i] -= L.get(j, i) * x[j];
       }
       x[i] /= L.get(i, i);
     }

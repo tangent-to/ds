@@ -8,7 +8,7 @@
  * - Random intercepts and slopes
  */
 
-import { inverse, Matrix, SingularValueDecomposition, solve } from 'ml-matrix';
+import { inverse, Matrix, SingularValueDecomposition, solve } from '../core/linalg.js';
 import { createFamily } from './families.js';
 import { mean as _mean, sum } from '../core/math.js';
 

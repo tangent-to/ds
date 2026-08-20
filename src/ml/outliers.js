@@ -9,7 +9,7 @@
 
 import { normalize, prepareX, applyColumns as _applyColumns } from "../core/table.js";
 import { random, randomInt, sample as _randomSample } from "./utils.js";
-import { Matrix, SingularValueDecomposition } from "ml-matrix";
+import { Matrix, SingularValueDecomposition } from "../core/linalg.js";
 
 /**
  * Helper: Check if value is missing (NaN, null, undefined)

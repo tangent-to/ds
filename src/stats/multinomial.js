@@ -6,7 +6,7 @@
  * Matches R's nnet::multinom() behavior
  */
 
-import { inverse, Matrix, solve } from 'ml-matrix';
+import { inverse, Matrix, solve } from '../core/linalg.js';
 import { sum } from '../core/math.js';
 
 /**

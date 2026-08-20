@@ -15,7 +15,7 @@ permalink: /api/machine-learning/hca
 function fit(X, options?): Object;
 ```
 
-Defined in: [src/ml/hca.js:132](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/hca.js#L132)
+Defined in: [src/ml/hca.js:132](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/hca.js#L132)
 
 Fit hierarchical clustering
 
@@ -44,45 +44,61 @@ Data matrix
 ### cut()
 
 ```ts
-function cut(model, k): any[];
+function cut(model, k): number[];
 ```
 
-Defined in: [src/ml/hca.js:227](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/hca.js#L227)
+Defined in: [src/ml/hca.js:233](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/hca.js#L233)
+
+Cut a hierarchical clustering dendrogram into k flat clusters
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted HCA model with { dendrogram, linkage, n }
 
 ##### k
 
-`any`
+`number`
+
+Desired number of clusters (1 ≤ k ≤ n)
 
 #### Returns
 
-`any`[]
+`number`[]
+
+Cluster label for each of the n samples
 
 ***
 
 ### cutHeight()
 
 ```ts
-function cutHeight(model, height): any[];
+function cutHeight(model, height): number[];
 ```
 
-Defined in: [src/ml/hca.js:275](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/ml/hca.js#L275)
+Defined in: [src/ml/hca.js:287](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/hca.js#L287)
+
+Cut a hierarchical clustering dendrogram at a given merge height
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted HCA model with { dendrogram, linkage, n }
 
 ##### height
 
-`any`
+`number`
+
+Non-negative distance threshold; merges with distance above it are not applied
 
 #### Returns
 
-`any`[]
+`number`[]
+
+Cluster label for each of the n samples

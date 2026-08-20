@@ -15,10 +15,10 @@ permalink: /api/multivariate/cca
 function fit(
    X, 
    Y?, 
-   options?): object;
+   options?): Object;
 ```
 
-Defined in: [src/mva/cca.js:19](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L19)
+Defined in: [src/mva/cca.js:28](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L28)
 
 Fit CCA model.
 
@@ -29,125 +29,49 @@ object: fit({ X: ['col1', ...], Y: ['colA', ...], data, omit_missing, center, sc
 
 ##### X
 
-`any`
+`Object` \| `number`[][]
+
+Design matrix (n × p) for the first dataset, or a declarative config object
 
 ##### Y?
 
-`null` = `null`
+`number`[][] = `null`
+
+Design matrix (n × q) for the second dataset (ignored when X is declarative)
 
 ##### options?
 
+Fitting options
+
+###### center?
+
+`boolean`
+
+Center columns to zero mean (default true)
+
+###### scale?
+
+`boolean`
+
+Scale columns to unit variance (default false)
+
+###### columnsX?
+
+`string`[]
+
+Column names for X
+
+###### columnsY?
+
+`string`[]
+
+Column names for Y
+
 #### Returns
 
-`object`
+`Object`
 
-##### type
-
-```ts
-type: string = 'cca';
-```
-
-##### nSamples
-
-```ts
-nSamples: any = n;
-```
-
-##### nFeaturesX
-
-```ts
-nFeaturesX: any = p;
-```
-
-##### nFeaturesY
-
-```ts
-nFeaturesY: any = q;
-```
-
-##### nComponents
-
-```ts
-nComponents: number = components;
-```
-
-##### correlations
-
-```ts
-correlations: any;
-```
-
-##### xWeights
-
-```ts
-xWeights: object[];
-```
-
-##### yWeights
-
-```ts
-yWeights: object[];
-```
-
-##### xScores
-
-```ts
-xScores: object[];
-```
-
-##### yScores
-
-```ts
-yScores: object[];
-```
-
-##### xMeans
-
-```ts
-xMeans: any[] = processedX.means;
-```
-
-##### xSds
-
-```ts
-xSds: any[] = processedX.sds;
-```
-
-##### yMeans
-
-```ts
-yMeans: any[] = processedY.means;
-```
-
-##### ySds
-
-```ts
-ySds: any[] = processedY.sds;
-```
-
-##### center
-
-```ts
-center: boolean;
-```
-
-##### scale
-
-```ts
-scale: boolean;
-```
-
-##### columnsX
-
-```ts
-columnsX: string[] = columnNamesX;
-```
-
-##### columnsY
-
-```ts
-columnsY: string[] = columnNamesY;
-```
+Fitted CCA model
 
 ***
 
@@ -157,26 +81,38 @@ columnsY: string[] = columnNamesY;
 function transformX(
    model, 
    X, 
-   options?): object[];
+   options?): Object[];
 ```
 
-Defined in: [src/mva/cca.js:195](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L195)
+Defined in: [src/mva/cca.js:211](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L211)
+
+Project new X data onto the fitted X canonical variates
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted CCA model
 
 ##### X
 
-`any`
+`number`[][]
+
+New X data matrix (n × p)
 
 ##### options?
 
+`Object` = `{}`
+
+Transform options
+
 #### Returns
 
-`object`[]
+`Object`[]
+
+Canonical score objects, one per row
 
 ***
 
@@ -186,26 +122,38 @@ Defined in: [src/mva/cca.js:195](https://github.com/tangent-to/ds/blob/edabdef9e
 function transformY(
    model, 
    Y, 
-   options?): object[];
+   options?): Object[];
 ```
 
-Defined in: [src/mva/cca.js:212](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L212)
+Defined in: [src/mva/cca.js:235](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L235)
+
+Project new Y data onto the fitted Y canonical variates
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted CCA model
 
 ##### Y
 
-`any`
+`number`[][]
+
+New Y data matrix (n × q)
 
 ##### options?
 
+`Object` = `{}`
+
+Transform options
+
 #### Returns
 
-`object`[]
+`Object`[]
+
+Canonical score objects, one per row
 
 ***
 
@@ -216,39 +164,41 @@ function transform(
    model, 
    X, 
    Y, 
-   options?): object;
+   options?): Object;
 ```
 
-Defined in: [src/mva/cca.js:229](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/cca.js#L229)
+Defined in: [src/mva/cca.js:260](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L260)
+
+Project new X and Y data onto their fitted canonical variates
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted CCA model
 
 ##### X
 
-`any`
+`number`[][]
+
+New X data matrix (n × p)
 
 ##### Y
 
-`any`
+`number`[][]
+
+New Y data matrix (n × q)
 
 ##### options?
 
+`Object` = `{}`
+
+Transform options
+
 #### Returns
 
-`object`
+`Object`
 
-##### xScores
-
-```ts
-xScores: object[];
-```
-
-##### yScores
-
-```ts
-yScores: object[];
-```
+Object with xScores and yScores arrays of score objects

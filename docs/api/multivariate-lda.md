@@ -15,158 +15,66 @@ permalink: /api/multivariate/lda
 function fit(
    X, 
    y, 
-   options?): object;
+   options?): Object;
 ```
 
-Defined in: [src/mva/lda.js:22](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/lda.js#L22)
+Defined in: [src/mva/lda.js:34](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/lda.js#L34)
+
+Fit LDA model
 
 #### Parameters
 
 ##### X
 
-`any`
+`Object` \| `number`[][]
+
+Design matrix (n × p), or a declarative config object with X/y/data
 
 ##### y
 
-`any`
+(`string` \| `number`)[]
+
+Class label vector
 
 ##### options?
 
+Fitting options
+
+###### scale?
+
+`boolean`
+
+Scale features to unit variance (default false)
+
+###### scaling?
+
+`number`
+
+Ordination scaling, 1 or 2 (default 2)
+
+###### omit_missing?
+
+`boolean`
+
+Omit rows with missing values (alias of naOmit)
+
+###### naOmit?
+
+`boolean`
+
+Omit rows with missing values (default true)
+
+###### encoders?
+
+`Object`
+
+Label encoders for declarative input
+
 #### Returns
 
-`object`
+`Object`
 
-##### scores
-
-```ts
-scores: Object[];
-```
-
-##### loadings
-
-```ts
-loadings: Object[];
-```
-
-##### eigenvalues
-
-```ts
-eigenvalues: any = sortedEigenvalues;
-```
-
-##### rawScores
-
-```ts
-rawScores: number[][] = rawSiteMatrix;
-```
-
-##### rawLoadings
-
-```ts
-rawLoadings: number[][] = rawLoadingMatrix;
-```
-
-##### siteFactors
-
-```ts
-siteFactors: any = scaled.siteFactors;
-```
-
-##### loadingFactors
-
-```ts
-loadingFactors: any = scaled.loadingFactors;
-```
-
-##### scaling
-
-```ts
-scaling: number = appliedScaling;
-```
-
-##### axisSigns
-
-```ts
-axisSigns: number[];
-```
-
-##### exponent
-
-```ts
-exponent: any = scaled.exponent;
-```
-
-##### discriminantAxes
-
-```ts
-discriminantAxes: number[][];
-```
-
-##### sampleClasses
-
-```ts
-sampleClasses: any;
-```
-
-##### classMeans
-
-```ts
-classMeans: any[][] = classMeansOriginal;
-```
-
-##### classes
-
-```ts
-classes: any[];
-```
-
-##### overallMean
-
-```ts
-overallMean: number[];
-```
-
-##### projector
-
-```ts
-projector: number[][];
-```
-
-##### invScales
-
-```ts
-invScales: any[];
-```
-
-##### eigenvectors
-
-```ts
-eigenvectors: number[][];
-```
-
-##### classMeanScores
-
-```ts
-classMeanScores: any[][];
-```
-
-##### classStdScores
-
-```ts
-classStdScores: any[][];
-```
-
-##### featureNames
-
-```ts
-featureNames: any = variableNames;
-```
-
-##### labelEncoder
-
-```ts
-labelEncoder: any;
-```
+Fitted LDA model
 
 ***
 
@@ -176,42 +84,58 @@ labelEncoder: any;
 function transform(model, X): Object[];
 ```
 
-Defined in: [src/mva/lda.js:365](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/lda.js#L365)
+Defined in: [src/mva/lda.js:402](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/lda.js#L402)
+
+Project new data onto the fitted discriminant axes
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted LDA model
 
 ##### X
 
-`any`
+`number`[][]
+
+New data matrix (n × p)
 
 #### Returns
 
 `Object`[]
+
+Discriminant score objects, one per row
 
 ***
 
 ### predict()
 
 ```ts
-function predict(model, X): any[];
+function predict(model, X): (string | number)[];
 ```
 
-Defined in: [src/mva/lda.js:402](https://github.com/tangent-to/ds/blob/edabdef9ecba7d49f301b52f886c73af8ca457ed/src/mva/lda.js#L402)
+Defined in: [src/mva/lda.js:451](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/lda.js#L451)
+
+Predict class labels for new data using nearest class-mean in discriminant space
 
 #### Parameters
 
 ##### model
 
-`any`
+`Object`
+
+Fitted LDA model
 
 ##### X
 
-`any`
+`Object` \| `number`[][]
+
+New data matrix (n × p), or a declarative config object with data/X
 
 #### Returns
 
-`any`[]
+(`string` \| `number`)[]
+
+Predicted class label for each row
