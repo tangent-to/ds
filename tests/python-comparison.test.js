@@ -6,7 +6,7 @@
  * They will be skipped if Python dependencies are not available.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { PCA } from '../src/mva/estimators/PCA.js';
@@ -17,32 +17,36 @@ import { GLM } from '../src/stats/estimators/GLM.js';
 let pythonAvailable = false;
 let pythonResults = null;
 
+// The reference script has to run HERE, at module evaluation, and not in a
+// beforeAll hook. it.skipIf() is evaluated while tests are being registered,
+// which happens before any hook runs, so a failure discovered in beforeAll
+// cannot un-register anything: pythonAvailable = false arrives too late and
+// every test runs against a null pythonResults, failing with a type error
+// instead of skipping. (The R comparison harness had the identical bug, where
+// it turned one broken reference script into twelve confusing failures.)
 try {
-  // Check if python3 is available
+  // Check if python3 and the required packages are available
   execSync('python3 --version', { stdio: 'pipe' });
-  // Check if required packages are installed
   execSync('python3 -c "import sklearn; import scipy; import numpy"', { stdio: 'pipe' });
+
+  console.log('Running Python comparison script...');
+  execSync('python3 tests/compare_with_python.py', { stdio: 'pipe' });
+  pythonResults = JSON.parse(
+    readFileSync('/tmp/python_comparison_results.json', 'utf-8')
+  );
   pythonAvailable = true;
-} catch {
-  console.warn('⚠ Python comparison tests will be skipped: Python 3 with sklearn/scipy not available');
+  console.log('✓ Python reference results loaded');
+} catch (error) {
+  // Surface Python's own traceback. With stdio piped it lands on error.stderr,
+  // and without it a failing script is indistinguishable from Python simply
+  // not being installed.
+  const detail = (error.stderr?.toString() || error.message || '').trim();
+  console.warn('⚠ Python comparison tests will be skipped.');
+  if (detail) {
+    console.warn(detail.split('\n').slice(-8).join('\n'));
+  }
   console.warn('  Install with: pip3 install scikit-learn scipy numpy');
 }
-
-beforeAll(async () => {
-  if (!pythonAvailable) return;
-  
-  try {
-    console.log('Running Python comparison script...');
-    execSync('python3 tests/compare_with_python.py', { stdio: 'inherit' });
-    pythonResults = JSON.parse(
-      readFileSync('/tmp/python_comparison_results.json', 'utf-8')
-    );
-    console.log('✓ Python reference results loaded');
-  } catch (error) {
-    console.error('Failed to run Python comparison script:', error.message);
-    pythonAvailable = false;
-  }
-});
 
 describe('PCA - Comparison with sklearn', () => {
   it.skipIf(!pythonAvailable)('should produce similar explained variance ratios', () => {
