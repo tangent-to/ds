@@ -296,7 +296,14 @@ test_rda <- function() {
   colnames(Y) <- c("y1", "y2", "y3", "y4")
   df <- data.frame(Y, X1 = X1, X2 = X2, X3 = X3)
 
-  rr <- vegan::rda(cbind(y1, y2, y3, y4) ~ X1 + X2 + X3, data = df, scale = TRUE)
+  # The response goes in as the matrix Y, not as cbind(y1, ...) of column names:
+  # vegan evaluates a formula's left-hand side with
+  # eval(specdata, environment(formula), enclos = globalenv()), never in `data`,
+  # so bare column names resolve only if they also exist as variables in the
+  # calling frame. They do not here, and the script aborted with
+  # "objet 'y1' introuvable" for anyone who had vegan installed. Y is a local
+  # variable, so it resolves, and holds exactly the same numbers.
+  rr <- vegan::rda(Y ~ X1 + X2 + X3, data = df, scale = TRUE)
 
   tot <- rr$tot.chi                 # total inertia
   constrained <- rr$CCA$tot.chi     # constrained inertia
