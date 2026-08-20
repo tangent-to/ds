@@ -296,15 +296,30 @@ test_rda <- function() {
   colnames(Y) <- c("y1", "y2", "y3", "y4")
   df <- data.frame(Y, X1 = X1, X2 = X2, X3 = X3)
 
-  rr <- vegan::rda(cbind(y1, y2, y3, y4) ~ X1 + X2 + X3, data = df, scale = TRUE)
+  # The response goes in as the matrix Y, not as cbind(y1, ...) of column names:
+  # vegan evaluates a formula's left-hand side with
+  # eval(specdata, environment(formula), enclos = globalenv()), never in `data`,
+  # so bare column names resolve only if they also exist as variables in the
+  # calling frame. They do not here, and the script aborted with
+  # "objet 'y1' introuvable" for anyone who had vegan installed. Y is a local
+  # variable, so it resolves, and holds exactly the same numbers.
+  rr <- vegan::rda(Y ~ X1 + X2 + X3, data = df, scale = TRUE)
 
   tot <- rr$tot.chi                 # total inertia
   constrained <- rr$CCA$tot.chi     # constrained inertia
-  df_model <- rr$CCA$qrank          # rank of the constraints
-  df_resid <- rr$CA$rank            # residual df used by anova.cca
 
   set.seed(123)
   av <- anova(rr, permutations = 999)
+
+  # Read both degrees of freedom off the anova table itself, which is the
+  # quantity the JS side is compared against. The residual df is n - 1 - q
+  # (36 here), NOT rr$CA$rank: that is the number of residual ordination axes,
+  # min(n - 1 - q, p) = 4, since constraints remove dimensions from the
+  # observation space and not from the response space. The two were confused
+  # here, and the assertion never ran to catch it because the script aborted
+  # earlier for anyone with vegan installed.
+  df_model <- av$Df[1]
+  df_resid <- av$Df[2]
 
   list(
     test = "rda",

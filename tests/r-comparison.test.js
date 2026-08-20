@@ -11,7 +11,7 @@
  * Tests will be skipped if R is not available.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -31,53 +31,50 @@ let rResults = null;
 let hasLme4 = false;
 let hasVegan = false;
 
+// The reference script has to run HERE, at module evaluation, and not in a
+// beforeAll hook. it.skipIf() is evaluated while tests are being registered,
+// which happens before any hook runs, so a failure discovered in beforeAll
+// cannot un-register anything: rAvailable = false arrives too late and every
+// test runs against a null rResults, failing with a type error instead of
+// skipping. That turned one broken R script into twelve confusing failures.
 try {
-  // Check if Rscript is available
+  // Check if Rscript and the required packages are available
   execSync('Rscript --version', { stdio: 'pipe' });
-
-  // Check if required packages are installed
   execSync('Rscript -e "library(jsonlite); library(MASS)"', { stdio: 'pipe' });
+
+  console.log('Running R comparison script...');
+  const rScript = join(__dirname, 'compare_with_r.R');
+  execSync(`Rscript "${rScript}" /tmp/r_comparison_results.json`, {
+    stdio: 'pipe',
+    timeout: 60000,
+  });
+  rResults = JSON.parse(
+    readFileSync('/tmp/r_comparison_results.json', 'utf-8')
+  );
+  // The script reports which optional packages it found, so there is no need
+  // to probe for them separately.
+  hasLme4 = rResults.has_lme4 === true;
+  hasVegan = rResults.has_vegan === true;
   rAvailable = true;
 
-  // Check for lme4 (optional)
-  try {
-    execSync('Rscript -e "library(lme4)"', { stdio: 'pipe' });
-    hasLme4 = true;
-  } catch {
-    console.warn('  lme4 not available - GLMM tests will be skipped');
+  console.log('✓ R reference results loaded');
+  console.log(hasLme4
+    ? '✓ lme4 available - GLMM tests enabled'
+    : '  lme4 not available - GLMM tests will be skipped');
+  console.log(hasVegan
+    ? '✓ vegan available - RDA tests enabled'
+    : '  vegan not available - RDA tests will be skipped');
+} catch (error) {
+  // Surface R's own diagnostics. With stdio piped they land on error.stderr,
+  // and without them a failing script is indistinguishable from R simply not
+  // being installed — which is what made the vegan formula bug so opaque.
+  const detail = (error.stderr?.toString() || error.message || '').trim();
+  console.warn('⚠ R comparison tests will be skipped.');
+  if (detail) {
+    console.warn(detail.split('\n').slice(0, 8).join('\n'));
   }
-} catch {
-  console.warn('⚠ R comparison tests will be skipped: R with jsonlite/MASS not available');
-  console.warn('  Install R and run: install.packages(c("jsonlite", "MASS", "lme4"))');
+  console.warn('  Needs R with: install.packages(c("jsonlite", "MASS", "lme4", "vegan"))');
 }
-
-beforeAll(async () => {
-  if (!rAvailable) return;
-
-  try {
-    console.log('Running R comparison script...');
-    const rScript = join(__dirname, 'compare_with_r.R');
-    execSync(`Rscript "${rScript}" /tmp/r_comparison_results.json`, {
-      stdio: 'inherit',
-      timeout: 60000
-    });
-    rResults = JSON.parse(
-      readFileSync('/tmp/r_comparison_results.json', 'utf-8')
-    );
-    hasLme4 = rResults.has_lme4 === true;
-    hasVegan = rResults.has_vegan === true;
-    console.log('✓ R reference results loaded');
-    if (hasLme4) {
-      console.log('✓ lme4 available - GLMM tests enabled');
-    }
-    if (hasVegan) {
-      console.log('✓ vegan available - RDA tests enabled');
-    }
-  } catch (error) {
-    console.error('Failed to run R comparison script:', error.message);
-    rAvailable = false;
-  }
-});
 
 // ==============================================================================
 // GLM Tests
