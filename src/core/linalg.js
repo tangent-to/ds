@@ -187,11 +187,13 @@ export function cholesky(data) {
 }
 
 /**
- * Solve A x = b from the Cholesky factor L of A, by forward then back
- * substitution
+ * Solve A x = b (or A X = B) from the Cholesky factor L of A, by forward then
+ * back substitution. Passing every right-hand side at once is much cheaper
+ * than one call per column when building an inverse.
  * @param {Array<Array<number>>|Matrix} L - Lower triangular factor
- * @param {Array<number>} b - Right-hand side vector
- * @returns {Array<number>} Solution x
+ * @param {Array<number>|Array<Array<number>>} b - Right-hand side vector, or a
+ *   matrix whose columns are right-hand sides
+ * @returns {Array<number>|Array<Array<number>>} Solution, matching b's shape
  */
 export function choleskySolve(L, b) {
   return linaCholeskySolve(asArray(toMatrix(L)), b);
