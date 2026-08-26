@@ -10,6 +10,8 @@ import sys
 from sklearn.decomposition import PCA as SklearnPCA
 from sklearn.cluster import KMeans as SklearnKMeans
 from sklearn.linear_model import LogisticRegression
+from sklearn.gaussian_process import GaussianProcessRegressor as SkGPR
+from sklearn.gaussian_process.kernels import RBF as SkRBF, WhiteKernel as SkWhite
 from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
@@ -161,6 +163,73 @@ def compare_linear_regression():
 
     return results
 
+def compare_gaussian_process():
+    """Compare GP observation-noise handling with sklearn.
+
+    Two things sklearn keeps separate, and so does ds:
+      - `alpha` as an ARRAY: known, per-observation noise variances, held fixed.
+      - `WhiteKernel`: a noise level that is part of the kernel (and so enters
+        the predictive variance).
+
+    Deliberately different data from the inlined reference values in
+    tests/gp-heteroscedastic.test.js — multi-dimensional inputs and a wider
+    spread of noise, so this widens coverage instead of duplicating it.
+    `optimizer=None` throughout: this pins the noise model, not the tuner.
+    """
+    print("\n" + "=" * 60)
+    print("Testing Gaussian Process noise handling against sklearn")
+    print("=" * 60)
+
+    np.random.seed(42)
+    n = 25
+    X = np.random.randn(n, 2)
+    y = np.sin(X[:, 0]) + 0.5 * X[:, 1] + 0.1 * np.random.randn(n)
+    # Per-observation variances spanning ~1.5 orders of magnitude.
+    alpha = np.linspace(0.01, 0.5, n)
+    X_test = np.random.randn(8, 2)
+
+    het = SkGPR(kernel=SkRBF(length_scale=1.5), alpha=alpha, optimizer=None)
+    het.fit(X, y)
+    mean_het, std_het = het.predict(X_test, return_std=True)
+
+    noise_level = 0.2
+    white = SkGPR(
+        kernel=SkRBF(length_scale=1.5) + SkWhite(noise_level=noise_level),
+        alpha=0.0,
+        optimizer=None,
+    )
+    white.fit(X, y)
+    mean_white, std_white = white.predict(X_test, return_std=True)
+
+    results = {
+        "test": "GaussianProcessRegressor",
+        "X": X.tolist(),
+        "y": y.tolist(),
+        "X_test": X_test.tolist(),
+        "length_scale": 1.5,
+        "alpha": alpha.tolist(),
+        "noise_level": noise_level,
+        "sklearn": {
+            "heteroscedastic": {
+                "mean": mean_het.tolist(),
+                "std": std_het.tolist(),
+                "log_marginal_likelihood": float(het.log_marginal_likelihood_value_),
+            },
+            "white_kernel": {
+                "mean": mean_white.tolist(),
+                "std": std_white.tolist(),
+                "log_marginal_likelihood": float(white.log_marginal_likelihood_value_),
+            },
+        },
+    }
+
+    print(f"Heteroscedastic alpha, LML: {het.log_marginal_likelihood_value_:.6f}")
+    print(f"WhiteKernel({noise_level}),   LML: {white.log_marginal_likelihood_value_:.6f}")
+    print(f"Predictive std, first 3 (alpha): {std_het[:3]}")
+    print(f"Predictive std, first 3 (white): {std_white[:3]}")
+
+    return results
+
 def main():
     print("Starting comparison tests with Python implementations")
     print("=" * 60)
@@ -169,7 +238,8 @@ def main():
         "pca": compare_pca(),
         "kmeans": compare_kmeans(),
         "logistic": compare_logistic_regression(),
-        "linear": compare_linear_regression()
+        "linear": compare_linear_regression(),
+        "gp": compare_gaussian_process()
     }
 
     # Save results to JSON for JS to read

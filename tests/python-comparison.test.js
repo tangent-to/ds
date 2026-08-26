@@ -12,6 +12,8 @@ import { readFileSync, existsSync } from 'fs';
 import { PCA } from '../src/mva/estimators/PCA.js';
 import { KMeans } from '../src/ml/estimators/KMeans.js';
 import { GLM } from '../src/stats/estimators/GLM.js';
+import { GaussianProcessRegressor } from '../src/ml/estimators/GaussianProcessRegressor.js';
+import { RBF, SumKernel, WhiteKernel } from '../src/ml/kernels/index.js';
 
 // Check Python availability BEFORE test registration
 let pythonAvailable = false;
@@ -216,6 +218,53 @@ describe('GLM Linear Regression - Comparison with scipy', () => {
     console.log('Python R²:', pyRSquared);
 
     expect(jsRSquared).toBeCloseTo(pyRSquared, 3);
+  });
+});
+
+describe('GaussianProcessRegressor - Comparison with sklearn', () => {
+  // These run against whatever sklearn is installed, so they catch a future
+  // change in sklearn's behaviour that the inlined reference values in
+  // gp-heteroscedastic.test.js / gp-white-kernel.test.js cannot. They only run
+  // where Python is available — CI has no Python, so those inlined suites stay
+  // the ones that actually gate a merge.
+  const fixture = () => {
+    const { X, y, X_test, length_scale, alpha, noise_level, sklearn } = pythonResults.gp;
+    return { X, y, XTest: X_test, lengthScale: length_scale, alpha, noiseLevel: noise_level, sklearn };
+  };
+
+  it.skipIf(!pythonAvailable)('matches sklearn with a per-observation alpha array', () => {
+    const { X, y, XTest, lengthScale, alpha, sklearn } = fixture();
+    const gp = new GaussianProcessRegressor({ kernel: new RBF(lengthScale, 1.0) });
+    gp.fit(X, y, { alpha });
+
+    const { mean, std } = gp.predict(XTest, { returnStd: true });
+    const ref = sklearn.heteroscedastic;
+
+    console.log('JS mean[0..2]:', mean.slice(0, 3));
+    console.log('Python mean[0..2]:', ref.mean.slice(0, 3));
+
+    mean.forEach((m, i) => expect(m).toBeCloseTo(ref.mean[i], 10));
+    std.forEach((v, i) => expect(v).toBeCloseTo(ref.std[i], 10));
+    expect(gp.logMarginalLikelihood_).toBeCloseTo(ref.log_marginal_likelihood, 10);
+  });
+
+  it.skipIf(!pythonAvailable)('matches sklearn with an RBF + WhiteKernel sum', () => {
+    const { X, y, XTest, lengthScale, noiseLevel, sklearn } = fixture();
+    const gp = new GaussianProcessRegressor({
+      kernel: new SumKernel({ kernels: [new RBF(lengthScale, 1.0), new WhiteKernel(noiseLevel)] }),
+      alpha: 0,
+    });
+    gp.fit(X, y);
+
+    const { mean, std } = gp.predict(XTest, { returnStd: true });
+    const ref = sklearn.white_kernel;
+
+    console.log('JS std[0..2]:', std.slice(0, 3));
+    console.log('Python std[0..2]:', ref.std.slice(0, 3));
+
+    mean.forEach((m, i) => expect(m).toBeCloseTo(ref.mean[i], 10));
+    std.forEach((v, i) => expect(v).toBeCloseTo(ref.std[i], 10));
+    expect(gp.logMarginalLikelihood_).toBeCloseTo(ref.log_marginal_likelihood, 10);
   });
 });
 

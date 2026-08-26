@@ -25,6 +25,8 @@ import {
   RationalQuadratic,
   ConstantKernel,
   Matern,
+  SumKernel,
+  WhiteKernel,
 } from '../kernels/index.js';
 
 /**
@@ -84,6 +86,48 @@ function sampleMultivariateNormal(mean, cov, rng = Math.random) {
 }
 
 /**
+ * Is `a` a per-observation noise vector rather than a scalar noise level?
+ * Typed arrays count, so a Float64Array of measurement variances works. @private
+ */
+function isAlphaVector(a) {
+  return Array.isArray(a) || (ArrayBuffer.isView(a) && !(a instanceof DataView));
+}
+
+/**
+ * Normalize the user's `alpha` into the per-observation noise variances added
+ * to the diagonal of K. Returns `null` for a scalar, which _addNoise() then
+ * reads straight off `this.alpha` rather than materializing n copies of one
+ * number. Mirrors sklearn, where `alpha` is a float or an array of shape (n,).
+ * @private
+ * @param {number|Array<number>} alpha
+ * @param {number} n - number of training observations
+ * @returns {Array<number>|null}
+ */
+function buildAlphaDiag(alpha, n) {
+  if (!isAlphaVector(alpha)) {
+    if (typeof alpha !== "number" || !Number.isFinite(alpha)) {
+      throw new Error(`alpha must be a finite number or an array of length ${n}; got ${alpha}`);
+    }
+    return null;
+  }
+  if (alpha.length !== n) {
+    throw new Error(
+      `alpha has length ${alpha.length} but there are ${n} training observations; ` +
+        "a per-observation noise vector must have one variance per point in y.",
+    );
+  }
+  const diag = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const v = Number(alpha[i]);
+    if (!Number.isFinite(v) || v < 0) {
+      throw new Error(`alpha[${i}] must be a finite non-negative variance; got ${alpha[i]}`);
+    }
+    diag[i] = v;
+  }
+  return diag;
+}
+
+/**
  * Collect the tunable positive hyperparameters of a kernel as get/set/min
  * handles, descending into SumKernel children. Length-scale arrays (ARD)
  * contribute one entry per dimension. @private
@@ -112,6 +156,8 @@ function collectHypers(kernel) {
       if (k.alpha !== undefined) {
         entries.push({ get: () => k.alpha, set: (v) => { k.alpha = v; }, min: 1e-5 });
       }
+    } else if (name === "WhiteKernel") {
+      entries.push({ get: () => k.noiseLevel, set: (v) => { k.noiseLevel = v; }, min: 1e-10 });
     } else if (name === "DotProduct") {
       entries.push({ get: () => k.sigma0, set: (v) => { k.sigma0 = v; }, min: 1e-8 });
     } else if (name === "ConstantKernel") {
@@ -170,8 +216,13 @@ export class GaussianProcessRegressor extends Regressor {
    * @param {Kernel|string} opts.kernel - Kernel instance or type ('rbf', 'periodic', 'rational_quadratic')
    * @param {number} opts.lengthScale - Length scale for kernel (default: 1.0)
    * @param {number} opts.variance - Signal variance (default: 1.0)
-   * @param {number} opts.alpha - Noise level / regularization (default: 1e-10)
-   * @param {number} opts.noiseLevel - Alias for alpha
+   * @param {number|Array<number>} opts.alpha - KNOWN observation noise added to
+   *   the diagonal of K (default: 1e-10). A scalar applies the same noise to
+   *   every point (homoscedastic); an array of length n gives a per-observation
+   *   noise variance (heteroscedastic). Never tuned by `optimize` — to LEARN a
+   *   noise level, add a `WhiteKernel` to the kernel instead. Same split as
+   *   scikit-learn. Can also be supplied per-fit via `fit(X, y, { alpha })`.
+   * @param {number|Array<number>} opts.noiseLevel - Alias for alpha
    * @param {number} opts.period - Period for periodic kernel
    * @param {boolean} opts.normalizeY - Standardize the target (center + scale to
    *   unit variance) before fitting; predictions, std, covariance and posterior
@@ -197,7 +248,14 @@ export class GaussianProcessRegressor extends Regressor {
           break;
         case 'rational_quadratic':
         case 'rationalquadratic':
-          this.kernel = new RationalQuadratic(lengthScale, opts.alpha || 1.0, variance);
+          // `opts.alpha` doubles as this kernel's shape parameter, but only
+          // when it is a scalar — a per-observation noise vector is noise, not
+          // a kernel parameter.
+          this.kernel = new RationalQuadratic(
+            lengthScale,
+            (!isAlphaVector(opts.alpha) && opts.alpha) || 1.0,
+            variance,
+          );
           break;
         case 'matern':
           this.kernel = new Matern({ lengthScale, nu: opts.nu ?? 1.5, amplitude: variance });
@@ -211,7 +269,8 @@ export class GaussianProcessRegressor extends Regressor {
       }
     }
     
-    // Support both alpha and noiseLevel
+    // Support both alpha and noiseLevel. Kept exactly as supplied (scalar or
+    // array) so it round-trips through toJSON and reads back like sklearn's.
     this.alpha = opts.alpha ?? opts.noiseLevel ?? 1e-10;
 
     // Optionally standardize the target before fitting (sklearn `normalize_y`).
@@ -226,7 +285,8 @@ export class GaussianProcessRegressor extends Regressor {
     // Hyperparameter optimization (maximize the log marginal likelihood).
     // Off by default for backward compatibility; opt in with `optimize: true`
     // (or sklearn-style `optimizer`/`nRestartsOptimizer`). When enabled, fit()
-    // tunes the kernel length scale(s) + variance and the noise `alpha`.
+    // tunes the kernel's own hyperparameters — length scale(s), variance, and
+    // the `noiseLevel` of any WhiteKernel term. `alpha` is never tuned.
     this.optimize =
       opts.optimize === true ||
       (opts.optimizer !== undefined && opts.optimizer !== false && opts.optimizer !== null);
@@ -238,19 +298,31 @@ export class GaussianProcessRegressor extends Regressor {
     this._yTrain = null;
     this._L = null;
     this._alphaVector = null;
+    // Per-observation noise variances resolved at fit time; null while `alpha`
+    // is a scalar. Distinct from `_alphaVector`, which is the solve K⁻¹y.
+    this._alphaDiag = null;
     this.logMarginalLikelihood_ = null;
   }
 
   /**
    * Fit the GP to training data
    * @param {Array<Array<number>>|Object} X - Training inputs (n samples × d
-   *   features), or a declarative spec `{ X, columns, y, data, omit_missing }`
+   *   features), or a declarative spec `{ X, columns, y, data, omit_missing, alpha }`
    * @param {Array<number>} [y] - Training targets (n)
+   * @param {Object} [opts] - Options
+   * @param {number|Array<number>} [opts.alpha] - Known observation noise,
+   *   overriding the constructor's. A scalar is added uniformly to the diagonal
+   *   of K; an array of length n gives each observation its own noise variance
+   *   (heteroscedastic regression), matching sklearn's array-valued `alpha`.
+   *   Use it for measurements of unequal reliability — a poll's sampling
+   *   variance, a sensor's per-reading error — instead of pretending they all
+   *   carry the same noise. It is never tuned by `optimize`; for a noise level
+   *   to be *learned*, put a `WhiteKernel` in the kernel instead.
    * @returns {this} The fitted estimator (for chaining)
    */
-  fit(X, y = null) {
+  fit(X, y = null, opts = {}) {
     // Handle declarative input
-    let dataX, dataY;
+    let dataX, dataY, specAlpha;
     if (X && typeof X === 'object' && !Array.isArray(X) && (X.data || X.X)) {
       const prepared = prepareXY({
         X: X.X || X.columns,
@@ -260,10 +332,14 @@ export class GaussianProcessRegressor extends Regressor {
       });
       dataX = prepared.X;
       dataY = prepared.y;
+      specAlpha = X.alpha;
     } else {
       dataX = X;
       dataY = y;
     }
+
+    const alphaOpt = opts.alpha ?? opts.noiseLevel ?? specAlpha;
+    if (alphaOpt !== undefined) this.alpha = alphaOpt;
 
     // Convert to matrix
     this._XTrain = toMatrix(dataX);
@@ -283,6 +359,12 @@ export class GaussianProcessRegressor extends Regressor {
       this._yTrain = yRaw;
     }
 
+    // Resolve the observation noise into per-point variances (or null when it
+    // is a plain scalar). Must happen before _optimizeHypers(), so the
+    // optimizer scores candidate kernels under the very same K + noise that
+    // _refit() will factorize below.
+    this._alphaDiag = buildAlphaDiag(this.alpha, this._yTrain.length);
+
     // Optionally tune hyperparameters by maximizing the log marginal likelihood.
     if (this.optimize) {
       this._optimizeHypers();
@@ -300,14 +382,29 @@ export class GaussianProcessRegressor extends Regressor {
   }
 
   /**
-   * Compute K + αI, its Cholesky factor, and the solve vector α = K⁻¹y.
+   * Add the observation noise to the diagonal of a signal-kernel matrix in
+   * place: the scalar `alpha` everywhere, or `alpha[i]` per row when a
+   * per-observation noise vector was supplied. Every place that forms K + noise
+   * — the fit factorization and both likelihood paths — goes through here, so
+   * the optimizer can never tune the kernel under a different noise model than
+   * the final fit uses. @private
+   * @param {Matrix} K - signal kernel matrix, mutated
+   * @returns {Matrix} the same matrix
+   */
+  _addNoise(K) {
+    const diag = this._alphaDiag;
+    for (let i = 0; i < K.rows; i++) {
+      K.set(i, i, K.get(i, i) + (diag === null ? this.alpha : diag[i]));
+    }
+    return K;
+  }
+
+  /**
+   * Compute K + noise, its Cholesky factor, and the solve vector α = K⁻¹y.
    * Uses the current kernel hyperparameters and noise. @private
    */
   _refit() {
-    const K = this.kernel.call(this._XTrain);
-    for (let i = 0; i < K.rows; i++) {
-      K.set(i, i, K.get(i, i) + this.alpha);
-    }
+    const K = this._addNoise(this.kernel.call(this._XTrain));
     try {
       this._L = cholesky(K);
     } catch (error) {
@@ -350,11 +447,8 @@ export class GaussianProcessRegressor extends Regressor {
    * Returns a large finite penalty if K is not positive definite. @private
    */
   _negLogML() {
-    const K = this.kernel.call(this._XTrain);
+    const K = this._addNoise(this.kernel.call(this._XTrain));
     const n = K.rows;
-    for (let i = 0; i < n; i++) {
-      K.set(i, i, K.get(i, i) + this.alpha);
-    }
     let L;
     try {
       L = cholesky(K);
@@ -371,15 +465,35 @@ export class GaussianProcessRegressor extends Regressor {
   }
 
   /**
-   * Maximize the log marginal likelihood over kernel length scale(s),
-   * variance(s) and the noise `alpha`, by a derivative-free log-space pattern
-   * search with optional random restarts. Mutates the kernel and `this.alpha`.
-   * @private
+   * Decompose the kernel for the analytic-gradient path, in the exact order
+   * collectHypers() visits it, or null if it has no closed form here. Eligible:
+   * a Matérn with ν ∈ {1.5, 2.5, ∞}, on its own or summed with a WhiteKernel
+   * (learning the noise level is the common reason to optimize at all, and
+   * dropping that case to the derivative-free search would cost the fast path
+   * exactly where it matters most). Order is preserved rather than assumed, so
+   * `White + Matérn` stays analytic too. @private
+   * @returns {Array<{kind:'matern'|'white', kernel:Kernel}>|null}
    */
+  _analyticParts() {
+    const ok = (k) => k instanceof Matern && [1.5, 2.5, Infinity].includes(k.nu);
+    const k = this.kernel;
+    if (ok(k)) return [{ kind: "matern", kernel: k }];
+    if (!(k instanceof SumKernel)) return null;
+    const parts = [];
+    for (const child of k.kernels) {
+      if (ok(child)) parts.push({ kind: "matern", kernel: child });
+      else if (child instanceof WhiteKernel) parts.push({ kind: "white", kernel: child });
+      else return null;
+    }
+    return parts.filter((p) => p.kind === "matern").length === 1 ? parts : null;
+  }
+
   /**
    * Negative log marginal likelihood and its gradient w.r.t. log(hyperparameter)
-   * for a Matérn kernel (ν ∈ {1.5, 2.5, ∞}), in the collectHypers order
-   * [length scales…, variance, α]. Uses the exact identity
+   * for the kernels _analyticParts() accepts, in the collectHypers order
+   * — [length scales…, variance] for the Matérn, one slot per WhiteKernel,
+   * interleaved as the kernel itself orders them. `alpha` never appears: it is
+   * fixed noise, not a hyperparameter. Uses the exact identity
    * ∂/∂θ(−log p) = ½·tr((K⁻¹ − ααᵀ)·∂K/∂θ): one Cholesky + one inverse gives
    * every partial, so a gradient step costs ~one likelihood evaluation instead
    * of the 2·(#hypers) the derivative-free search spends. `logVals` are applied
@@ -388,7 +502,9 @@ export class GaussianProcessRegressor extends Regressor {
    */
   _negLogMLGrad(logVals, hypers) {
     hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(logVals[i]))));
-    const k = this.kernel;
+    const parts = this._analyticParts();
+    const k = parts.find((p) => p.kind === "matern").kernel;
+    const whites = parts.filter((p) => p.kind === "white").map((p) => p.kernel);
     const v = k.variance;
     const nu = k.nu;
     const l = k.lengthScale;
@@ -398,9 +514,14 @@ export class GaussianProcessRegressor extends Regressor {
     const n = X.length;
     const D = X[0].length;
 
-    const Ksig = k.call(this._XTrain); // signal kernel (no noise)
-    const Kmat = Ksig.clone();
-    for (let i = 0; i < n; i++) Kmat.set(i, i, Kmat.get(i, i) + this.alpha);
+    // Ksig is the Matérn term ALONE: the variance gradient differentiates that
+    // term, so a white component must not be folded into it. Noise — fixed
+    // `alpha` plus every WhiteKernel level — goes on the diagonal separately.
+    const Ksig = k.call(this._XTrain);
+    const Kmat = this._addNoise(Ksig.clone());
+    for (const w of whites) {
+      for (let i = 0; i < n; i++) Kmat.set(i, i, Kmat.get(i, i) + w.noiseLevel);
+    }
     let L;
     try { L = cholesky(Kmat); } catch { return { loss: 1e12, gradient: logVals.map(() => 0) }; }
 
@@ -423,7 +544,8 @@ export class GaussianProcessRegressor extends Regressor {
     const loss = 0.5 * yAlpha + logDet + 0.5 * n * Math.log(2 * Math.PI);
 
     // Gradients. ∂k_ij/∂l_d = F·δ_d²/l_d³ with F depending on ν; ∂k/∂v = k/v
-    // (so ∂/∂log v cancels v); ∂K/∂α = I → ∂/∂log α = α·½·tr(M).
+    // (so ∂/∂log v cancels v); ∂K/∂noiseLevel = I → ∂/∂log noiseLevel
+    // = noiseLevel·½·tr(M).
     const gLlog = isArr ? new Array(l.length).fill(0) : [0];
     let gVarLog = 0;
     for (let i = 0; i < n; i++) {
@@ -453,26 +575,36 @@ export class GaussianProcessRegressor extends Regressor {
     // chain length-scale grads to log space (× l).
     if (isArr) for (let d = 0; d < l.length; d++) gLlog[d] *= l[d];
     else gLlog[0] *= l;
-    let trM = 0;
-    for (let i = 0; i < n; i++) trM += M[i][i];
-    const gAlphaLog = 0.5 * trM * this.alpha;
 
-    return { loss, gradient: [...gLlog, gVarLog, gAlphaLog] };
+    let trM = 0;
+    if (whites.length) for (let i = 0; i < n; i++) trM += M[i][i];
+    // Emit slots in kernel order so they line up with collectHypers().
+    const gradient = [];
+    for (const part of parts) {
+      if (part.kind === "matern") gradient.push(...gLlog, gVarLog);
+      else gradient.push(0.5 * trM * part.kernel.noiseLevel);
+    }
+    return { loss, gradient };
   }
 
   /**
-   * Maximize the log marginal likelihood over the kernel length scale(s),
-   * variance and the noise `alpha`. For a Matérn kernel (ν ∈ {1.5, 2.5, ∞}) it
+   * Maximize the log marginal likelihood over the kernel's hyperparameters:
+   * length scale(s), variance, and the `noiseLevel` of any WhiteKernel term.
+   *
+   * `alpha` is NOT among them. It is noise the caller declares as known, so
+   * tuning it would silently reinterpret the variances they supplied; a noise
+   * level to be *estimated* belongs in the kernel, as a WhiteKernel. sklearn
+   * draws the line the same way.
+   *
+   * For a Matérn kernel (ν ∈ {1.5, 2.5, ∞}), optionally plus a WhiteKernel, it
    * uses analytic gradients + L-BFGS (fast); otherwise a derivative-free
    * log-space pattern search. Random restarts in both cases. @private
    */
   _optimizeHypers() {
     const hypers = collectHypers(this.kernel);
-    // Treat the observation noise as a (WhiteKernel-like) hyperparameter too.
-    hypers.push({ get: () => this.alpha, set: (v) => { this.alpha = v; }, min: 1e-10 });
     if (hypers.length === 0) return;
 
-    const analytic = this.kernel instanceof Matern && [1.5, 2.5, Infinity].includes(this.kernel.nu);
+    const analytic = this._analyticParts() !== null;
     const initial = hypers.map((h) => h.get());
     const evalNeg = () => this._negLogML();
     const rng = mulberry32(this._seed);
@@ -721,7 +853,9 @@ export class GaussianProcessRegressor extends Regressor {
         type: this.kernel.constructor.name,
         params: this.kernel.getParams()
       },
-      alpha: this.alpha,
+      // A typed-array alpha would stringify to {"0":…}, which reads back as a
+      // scalar; emit a plain array so the noise vector survives the round trip.
+      alpha: isAlphaVector(this.alpha) ? Array.from(this.alpha) : this.alpha,
       normalizeY: this.normalizeY,
       yMean: this._yMean,
       yStd: this._yStd,
@@ -758,6 +892,9 @@ export class GaussianProcessRegressor extends Regressor {
       gp._yTrain = json.yTrain;
       gp._L = toMatrix(json.L);
       gp._alphaVector = json.alphaVector;
+      // predict()/sample() need only _L and _alphaVector, but restoring the
+      // noise vector keeps a re-fit of the deserialized model consistent.
+      gp._alphaDiag = buildAlphaDiag(gp.alpha, gp._yTrain.length);
       gp.fitted = true;
     }
 

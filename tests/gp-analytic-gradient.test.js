@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { GaussianProcessRegressor } from '../src/ml/estimators/GaussianProcessRegressor.js';
-import { Matern } from '../src/ml/kernels/index.js';
+import { Matern, SumKernel, WhiteKernel } from '../src/ml/kernels/index.js';
 
 function makeData(seed, n, D) {
   let s = seed >>> 0;
@@ -22,40 +22,74 @@ function makeData(seed, n, D) {
   return { X, y };
 }
 
-// Rebuild the hyperparameter accessor list the optimizer uses: length scales…, variance, α.
+// Rebuild the hyperparameter accessor list the optimizer uses, in kernel order:
+// per Matérn [length scales…, variance], per WhiteKernel [noiseLevel]. `alpha`
+// is NOT in the list — it is fixed, known noise, never a hyperparameter.
 function hyperList(gp) {
-  const k = gp.kernel;
   const hs = [];
-  if (Array.isArray(k.lengthScale)) {
-    k.lengthScale.forEach((_, i) => hs.push({ get: () => k.lengthScale[i], set: (v) => { k.lengthScale[i] = v; }, min: 1e-5 }));
-  } else {
-    hs.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
-  }
-  hs.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
-  hs.push({ get: () => gp.alpha, set: (v) => { gp.alpha = v; }, min: 1e-10 });
+  const visit = (k) => {
+    if (k instanceof SumKernel) { k.kernels.forEach(visit); return; }
+    if (k instanceof WhiteKernel) {
+      hs.push({ get: () => k.noiseLevel, set: (v) => { k.noiseLevel = v; }, min: 1e-10 });
+      return;
+    }
+    if (Array.isArray(k.lengthScale)) {
+      k.lengthScale.forEach((_, i) => hs.push({ get: () => k.lengthScale[i], set: (v) => { k.lengthScale[i] = v; }, min: 1e-5 }));
+    } else {
+      hs.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
+    }
+    hs.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
+  };
+  visit(gp.kernel);
   return hs;
 }
 
+// The analytic path covers a bare Matérn and a Matérn summed with a WhiteKernel
+// in either order; the gradient slots must follow the kernel's own ordering.
+const COMPOSITIONS = [
+  ['bare Matérn', (m) => m, (D) => D + 1],
+  ['Matérn + WhiteKernel', (m) => new SumKernel({ kernels: [m, new WhiteKernel(0.05)] }), (D) => D + 2],
+  ['WhiteKernel + Matérn', (m) => new SumKernel({ kernels: [new WhiteKernel(0.05), m] }), (D) => D + 2],
+];
+
 describe.each([1.5, 2.5, Infinity])('Matérn ν=%s analytic gradient', (nu) => {
-  it('matches finite differences of the negative log marginal likelihood', () => {
-    const D = 5;
-    const { X, y } = makeData(42, 90, D);
-    const gp = new GaussianProcessRegressor({ kernel: new Matern({ lengthScale: Array(D).fill(1.3), nu }), alpha: 5e-2, optimize: false, normalizeY: true });
-    gp.fit(X, y);
-    const hs = hyperList(gp);
-    const logv = hs.map((h) => Math.log(h.get()));
+  describe.each(COMPOSITIONS)('%s', (_name, compose, nSlots) => {
+    // A scalar alpha and a heteroscedastic one both sit on the diagonal
+    // untouched by the optimizer; the gradient must be right under either.
+    it.each([
+      ['scalar alpha', () => 5e-2],
+      ['per-observation alpha', (n) => Array.from({ length: n }, (_, i) => 0.02 + 0.001 * i)],
+    ])('matches finite differences of the negative log marginal likelihood (%s)', (_a, alphaFor) => {
+      const D = 5;
+      const { X, y } = makeData(42, 90, D);
+      const kernel = compose(new Matern({ lengthScale: Array(D).fill(1.3), nu }));
+      const gp = new GaussianProcessRegressor({ kernel, alpha: alphaFor(X.length), optimize: false, normalizeY: true });
+      gp.fit(X, y);
+      const hs = hyperList(gp);
+      const logv = hs.map((h) => Math.log(h.get()));
 
-    const analytic = gp._negLogMLGrad(logv.slice(), hs).gradient;
-    const nll = (lv) => { hs.forEach((h, i) => h.set(Math.max(h.min, Math.exp(lv[i])))); return gp._negLogML(); };
-    const h = 1e-5;
-    const fd = logv.map((_, i) => {
-      const a = logv.slice(); a[i] += h;
-      const b = logv.slice(); b[i] -= h;
-      return (nll(a) - nll(b)) / (2 * h);
+      const analytic = gp._negLogMLGrad(logv.slice(), hs).gradient;
+      const nll = (lv) => { hs.forEach((h, i) => h.set(Math.max(h.min, Math.exp(lv[i])))); return gp._negLogML(); };
+      const h = 1e-5;
+      const fd = logv.map((_, i) => {
+        const a = logv.slice(); a[i] += h;
+        const b = logv.slice(); b[i] -= h;
+        return (nll(a) - nll(b)) / (2 * h);
+      });
+
+      expect(analytic.length).toBe(nSlots(D));
+      expect(hs.length).toBe(nSlots(D));
+      for (let i = 0; i < analytic.length; i++) expect(analytic[i]).toBeCloseTo(fd[i], 4);
     });
+  });
 
-    expect(analytic.length).toBe(D + 2); // length scales + variance + alpha
-    for (let i = 0; i < analytic.length; i++) expect(analytic[i]).toBeCloseTo(fd[i], 4);
+  it(`ν=${nu}: a Matérn + WhiteKernel stays on the analytic path`, () => {
+    const { X, y } = makeData(42, 30, 2);
+    const gp = new GaussianProcessRegressor({
+      kernel: new SumKernel({ kernels: [new Matern({ lengthScale: [1, 1], nu }), new WhiteKernel(0.05)] }),
+    });
+    gp.fit(X, y);
+    expect(gp._analyticParts()).not.toBeNull();
   });
 });
 

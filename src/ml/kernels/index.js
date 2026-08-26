@@ -10,3 +10,4 @@ export { ConstantKernel } from './constant.js';
 export { SumKernel } from './sum.js';
 export { Matern } from './matern.js';
 export { DotProduct } from './dot-product.js';
+export { WhiteKernel } from './white.js';

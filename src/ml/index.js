@@ -76,6 +76,7 @@ import {
   SumKernel,
   Matern,
   DotProduct,
+  WhiteKernel,
 } from "./kernels/index.js";
 
 export {
@@ -101,6 +102,7 @@ export {
   SumKernel,
   Matern,
   DotProduct,
+  WhiteKernel,
   GridSearchCV,
   HCA,
   hca,
