@@ -404,7 +404,7 @@ function repelLabels(anchors, ctx) {
     const tip = toPx(a.x2 || 0, a.y2 || 0);
     const w = Math.max(fontSize, String(a.variable || '').length * fontSize * 0.62) + 6;
     const h = fontSize * 1.3;
-    let dx = tip.px - origin.px, dy = tip.py - origin.py;
+    const dx = tip.px - origin.px, dy = tip.py - origin.py;
     const d = Math.hypot(dx, dy) || 1;
     const nudge = (h * 0.6 + 2) * nudgeMul;             // clears the arrowhead; scaled by labelNudge
     const rx = tip.px + (dx / d) * nudge;

@@ -51,9 +51,8 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    # Non-blocking until the existing codebase is confirmed lint-clean;
-    # remove continue-on-error to make lint failures fail CI.
-    continue-on-error: true
+    # Blocking: src/ is lint-clean, so a new violation should fail CI rather
+    # than scroll past in a green run.
     steps:
       - uses: actions/checkout@v4
 
