@@ -70,7 +70,7 @@ export function fitGLM(X, y, options = {}) {
     const { z, wt } = computeWorkingWeights(y, mu, eta, off, w, familyObj);
 
     // Weighted least squares
-    coefficients = weightedLeastSquares(Xmat, z, wt, regularization);
+    coefficients = weightedLeastSquares(Xmat, z, wt, regularization, intercept);
 
     // Update eta and mu (eta is the full linear predictor, including offset)
     eta = matrixVectorMultiply(Xmat, coefficients).map((e, i) => e + off[i]);
@@ -197,9 +197,19 @@ function computeWorkingWeights(y, mu, eta, offset, weights, family) {
 }
 
 /**
- * Weighted least squares with optional regularization
+ * Weighted least squares with optional ridge regularization.
+ *
+ * @param {Array<Array<number>>} X - Design matrix, intercept already in column 0
+ *   when `hasIntercept`
+ * @param {Array<number>} y - Working response
+ * @param {Array<number>} weights - IRLS weights
+ * @param {Object} [regularization] - `{ alpha, l1_ratio }`; ridge is
+ *   `l1_ratio: 0`, and the penalty is `alpha * (1 - l1_ratio)`
+ * @param {boolean} [hasIntercept] - Whether column 0 of X is the intercept, so
+ *   it can be left out of the penalty
+ * @returns {Array<number>} Coefficients
  */
-function weightedLeastSquares(X, y, weights, regularization = null) {
+function weightedLeastSquares(X, y, weights, regularization = null, hasIntercept = false) {
   const _n = X.length;
   const p = X[0].length;
 
@@ -216,9 +226,14 @@ function weightedLeastSquares(X, y, weights, regularization = null) {
     const { alpha = 0, l1_ratio = 0 } = regularization;
     const lambda2 = alpha * (1 - l1_ratio);
 
-    // Ridge regularization (L2)
+    // Ridge regularization (L2). The intercept is NOT penalized: it carries the
+    // scale of y rather than the influence of a predictor, so shrinking it
+    // toward zero pulls the whole fit down and the slopes distort to
+    // compensate — badly enough to flip their signs on a target with a large
+    // mean. Leaving column 0 out is equivalent to centring X and y first, and
+    // is what sklearn's Ridge, glmnet and MASS::lm.ridge all do.
     if (lambda2 > 0) {
-      for (let i = 0; i < p; i++) {
+      for (let i = hasIntercept ? 1 : 0; i < p; i++) {
         XtX.set(i, i, XtX.get(i, i) + lambda2);
       }
     }

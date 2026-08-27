@@ -9,7 +9,7 @@ import json
 import sys
 from sklearn.decomposition import PCA as SklearnPCA
 from sklearn.cluster import KMeans as SklearnKMeans
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.gaussian_process import GaussianProcessRegressor as SkGPR
 from sklearn.gaussian_process.kernels import RBF as SkRBF, WhiteKernel as SkWhite
 from scipy import stats
@@ -230,6 +230,49 @@ def compare_gaussian_process():
 
     return results
 
+def compare_ridge():
+    """Compare GLM ridge regularization with sklearn's Ridge.
+
+    The point of interest is the INTERCEPT: sklearn never penalizes it, and
+    neither should ds. Predictors are on deliberately different scales, because
+    neither implementation standardizes them — that convention has to match too.
+
+    Different data from the inlined fixture in tests/glm-ridge.test.js, so this
+    widens coverage rather than duplicating it.
+    """
+    print("\n" + "=" * 60)
+    print("Testing GLM ridge regularization against sklearn")
+    print("=" * 60)
+
+    np.random.seed(11)
+    n = 60
+    X = np.column_stack([
+        np.random.randn(n),
+        np.random.randn(n) * 5,
+        np.random.randn(n) * 0.2,
+    ])
+    # Large intercept: the case a penalized intercept destroys.
+    y = 100 + 3 * X[:, 0] - 2 * X[:, 1] + 0.5 * X[:, 2] + np.random.randn(n) * 0.4
+
+    alphas = [0.0, 1.0, 10.0, 100.0]
+    # A LIST aligned with `alphas`, not a dict keyed by the float: json turns
+    # 0.0 into a number that JS reads back as 0, so str(alpha) would not match
+    # String(alpha) on the other side.
+    fits = []
+    for a in alphas:
+        r = Ridge(alpha=a, fit_intercept=True, solver="cholesky").fit(X, y)
+        # ds returns [intercept, ...slopes] in one vector.
+        fits.append([float(r.intercept_)] + r.coef_.tolist())
+        print(f"alpha={a:6}: intercept={r.intercept_:.6f}  coef={np.round(r.coef_, 6).tolist()}")
+
+    return {
+        "test": "Ridge",
+        "X": X.tolist(),
+        "y": y.tolist(),
+        "alphas": alphas,
+        "sklearn": {"coefficients": fits},
+    }
+
 def main():
     print("Starting comparison tests with Python implementations")
     print("=" * 60)
@@ -239,7 +282,8 @@ def main():
         "kmeans": compare_kmeans(),
         "logistic": compare_logistic_regression(),
         "linear": compare_linear_regression(),
-        "gp": compare_gaussian_process()
+        "gp": compare_gaussian_process(),
+        "ridge": compare_ridge()
     }
 
     # Save results to JSON for JS to read

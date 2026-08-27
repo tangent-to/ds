@@ -268,6 +268,25 @@ describe('GaussianProcessRegressor - Comparison with sklearn', () => {
   });
 });
 
+describe('GLM ridge - Comparison with sklearn', () => {
+  it.skipIf(!pythonAvailable)('matches sklearn Ridge, intercept left unpenalized', () => {
+    const { X, y, alphas, sklearn } = pythonResults.ridge;
+
+    alphas.forEach((alpha, idx) => {
+      const model = new GLM({
+        family: 'gaussian',
+        regularization: { alpha, l1_ratio: 0 },
+      });
+      model.fit(X, y);
+
+      const js = model.model?.coefficients ?? model.coefficients;
+      const ref = sklearn.coefficients[idx];
+      console.log(`alpha=${alpha} JS intercept:`, js[0], 'Python:', ref[0]);
+      js.forEach((c, i) => expect(c).toBeCloseTo(ref[i], 9));
+    });
+  });
+});
+
 describe('Safeguards - Verify new functionality', () => {
   it('should throw Observable-friendly error when predict called before fit', () => {
     const pca = new PCA({ n_components: 2 });

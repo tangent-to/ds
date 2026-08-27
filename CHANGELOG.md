@@ -32,6 +32,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   optimizer's own likelihood — previously the optimizer would have tuned the
   kernel under a different noise model than the final fit used.
 
+### Fixed
+
+- **`GLM` ridge regularization no longer penalizes the intercept.** The penalty
+  was applied to every column of the design matrix, intercept included. Since
+  the intercept carries the scale of `y` rather than the influence of a
+  predictor, shrinking it dragged the whole fit toward zero and the slopes
+  distorted to compensate — on a target with mean ~100, `alpha: 1` already sent
+  slopes of `3` and `-2` to `9.1` and `+5.0`, a sign flip. Coefficients now
+  match `sklearn.linear_model.Ridge(fit_intercept=True)` to ~1e-14.
+
+  Like sklearn, predictors are still not standardized, so the penalty remains
+  scale-dependent — scale them yourself if you want uniform shrinkage.
+
+  With `intercept: false` every column is penalized, as before.
+
 ### Changed
 
 - **BREAKING — `GaussianProcessRegressor` no longer tunes `alpha`.** `alpha` is
