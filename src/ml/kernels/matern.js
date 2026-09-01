@@ -13,7 +13,11 @@ const SUPPORTED_NU = [0.5, 1.5, 2.5, Infinity];
 export class Matern extends Kernel {
   constructor(lengthScaleOrOpts = 1.0, nu = 1.5, variance = 1.0) {
     super();
-    if (typeof lengthScaleOrOpts === "object") {
+    // An ARD length scale is an ARRAY, and `typeof [] === 'object'`, so the
+    // options branch would swallow it: `new Matern([1.1, 0.9], 2.5)` used to
+    // find no .lengthScale on the array and silently fall back to the
+    // defaults, discarding every argument. Arrays take the positional path.
+    if (typeof lengthScaleOrOpts === "object" && !Array.isArray(lengthScaleOrOpts)) {
       const {
         lengthScale = 1.0,
         nu: nuOpt = 1.5,

@@ -17,7 +17,12 @@
 import { Regressor } from '../../core/estimators/estimator.js';
 import { cholesky, choleskySolve, toMatrix } from '../../core/linalg.js';
 import { prepareXY } from '../../core/table.js';
-import { lbfgs } from '../../core/optimize.js';
+import { lbfgs, makeBoundsTransform } from '../../core/optimize.js';
+import {
+  add, addDiag, cholesky as gCholesky, diagPart, dot, exp as gExp, log as gLog,
+  mul, sum as gSum, triangularSolve, valueAndGrad,
+} from '@tangent.to/grad';
+import { kernelConstants, kernelMatrixAD, supportsAutodiff } from '../kernels/autodiff.js';
 import {
   Kernel,
   RBF,
@@ -154,7 +159,13 @@ function collectHypers(kernel) {
       entries.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
       entries.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
       if (k.alpha !== undefined) {
-        entries.push({ get: () => k.alpha, set: (v) => { k.alpha = v; }, min: 1e-5 });
+        // The shape parameter is degenerate upward: as alpha grows the kernel
+        // converges to an RBF, so the likelihood surface has an unbounded
+        // ridge and an exact gradient will happily march along it forever —
+        // observed running to 1e13 and costing 24s before this bound. The
+        // derivative-free search never exploited it because it was too weak to
+        // follow. sklearn bounds this at 1e5 for the same reason.
+        entries.push({ get: () => k.alpha, set: (v) => { k.alpha = v; }, min: 1e-5, max: 1e5 });
       }
     } else if (name === "WhiteKernel") {
       entries.push({ get: () => k.noiseLevel, set: (v) => { k.noiseLevel = v; }, min: 1e-10 });
@@ -171,6 +182,15 @@ function collectHypers(kernel) {
 }
 
 /**
+ * Hold a hyperparameter inside its own bounds. `max` is optional and only set
+ * where the likelihood surface is unbounded in that direction. @private
+ */
+function clampHyper(h, v) {
+  const lo = Math.max(h.min, v);
+  return h.max === undefined ? lo : Math.min(h.max, lo);
+}
+
+/**
  * Derivative-free coordinate pattern search in log-space. Minimizes `evalNeg`
  * by stepping each hyperparameter up/down by a shrinking factor. Robust for the
  * smooth, low-dimensional marginal-likelihood surface. @private
@@ -178,8 +198,7 @@ function collectHypers(kernel) {
  * @returns {{ vals:number[], f:number }} best raw values and objective.
  */
 function _patternSearch(hypers, evalNeg) {
-  const apply = (logVals) =>
-    hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(logVals[i]))));
+  const apply = (logVals) => hypers.forEach((h, i) => h.set(clampHyper(h, Math.exp(logVals[i]))));
   let x = hypers.map((h) => Math.log(h.get()));
   apply(x);
   let f = evalNeg();
@@ -501,7 +520,7 @@ export class GaussianProcessRegressor extends Regressor {
    * @returns {{loss:number, gradient:number[]}}
    */
   _negLogMLGrad(logVals, hypers) {
-    hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(logVals[i]))));
+    hypers.forEach((h, i) => h.set(clampHyper(h, Math.exp(logVals[i]))));
     const parts = this._analyticParts();
     const k = parts.find((p) => p.kind === "matern").kernel;
     const whites = parts.filter((p) => p.kind === "white").map((p) => p.kernel);
@@ -588,6 +607,67 @@ export class GaussianProcessRegressor extends Regressor {
   }
 
   /**
+   * Negative log marginal likelihood and its gradient w.r.t. log-hyperparameters,
+   * by reverse-mode autodiff over a kernel matrix rebuilt in @tangent.to/grad
+   * ops.
+   *
+   * This is what closes the gap the hand-derived {@link _negLogMLGrad} left.
+   * That one covers the Matérn family only; every other kernel used to fall
+   * back to a derivative-free coordinate search, which stops early at a
+   * markedly worse optimum — the quality of a fit depended on which kernel you
+   * happened to choose. Here the same six lines serve every kernel
+   * {@link supportsAutodiff} accepts.
+   *
+   * Differentiating with respect to LOG hyperparameters directly, rather than
+   * differentiating in the raw parameters and chaining by hand, is what makes
+   * it short: the exp() is on the tape.
+   *
+   * `alpha` stays out of it — it is fixed, known noise, never a hyperparameter
+   * (a learnable noise level belongs in a WhiteKernel, which this does cover).
+   *
+   * @private
+   * @param {number[]} logVals - log hyperparameters, collectHypers order
+   * @param {Array<Object>} hypers - accessors, applied before evaluating
+   * @param {Object} consts - from kernelConstants(X), reused across steps
+   * @returns {{loss: number, gradient: number[]}}
+   */
+  _negLogMLGradAD(logVals, hypers, consts) {
+    hypers.forEach((h, i) => h.set(clampHyper(h, Math.exp(logVals[i]))));
+    const y = this._yTrain;
+    const n = y.length;
+    const noise = this._alphaDiag === null ? this.alpha : this._alphaDiag;
+
+    const build = (logTheta) => {
+      const { K } = kernelMatrixAD(this.kernel, consts, gExp(logTheta), 0);
+      const Kn = addDiag(K, noise);
+      // ONE factorization for both halves. Writing this as
+      // solvePSD(Kn, y) + logdetPSD(Kn) would be shorter and would factorize
+      // Kn twice — and the Cholesky adjoint is itself O(n³), so the second one
+      // costs as much again on the way back. With b = L⁻¹y:
+      //   yᵀK⁻¹y = bᵀb   and   log|K| = 2·Σ log Lᵢᵢ
+      const L = gCholesky(Kn);
+      const b = triangularSolve(L, y, { lower: true });
+      // ½ bᵀb + Σ log Lᵢᵢ; the n/2·log(2π) term is constant in θ.
+      return add(mul(0.5, dot(b, b)), gSum(gLog(diagPart(L))));
+    };
+
+    let out;
+    try {
+      out = valueAndGrad(build)(logVals);
+    } catch {
+      // K left the positive-definite cone under these hyperparameters. Same
+      // heavy penalty the likelihood path reports, with a zero gradient so the
+      // line search backs off instead of chasing a meaningless direction.
+      return { loss: 1e12, gradient: logVals.map(() => 0) };
+    }
+    const loss = out.value + 0.5 * n * Math.log(2 * Math.PI);
+    if (!Number.isFinite(loss)) {
+      return { loss: 1e12, gradient: logVals.map(() => 0) };
+    }
+    return { loss, gradient: out.gradient };
+  }
+
+  /**
    * Maximize the log marginal likelihood over the kernel's hyperparameters:
    * length scale(s), variance, and the `noiseLevel` of any WhiteKernel term.
    *
@@ -605,6 +685,10 @@ export class GaussianProcessRegressor extends Regressor {
     if (hypers.length === 0) return;
 
     const analytic = this._analyticParts() !== null;
+    // Everything the specialized Matérn path does not cover, but autodiff can.
+    // Only what neither reaches falls through to the derivative-free search.
+    const autodiff = !analytic && supportsAutodiff(this.kernel);
+    const consts = autodiff ? kernelConstants(this._XTrain.to2DArray()) : null;
     const initial = hypers.map((h) => h.get());
     const evalNeg = () => this._negLogML();
     const rng = mulberry32(this._seed);
@@ -619,14 +703,48 @@ export class GaussianProcessRegressor extends Regressor {
         // Random restart: perturb each hyperparameter in log-space.
         hypers.forEach((h, i) => {
           const factor = Math.exp((rng() * 2 - 1) * 2.0); // ×[e⁻², e²]
-          h.set(Math.max(h.min, initial[i] * factor));
+          h.set(clampHyper(h, initial[i] * factor));
         });
       }
       let vals;
-      if (analytic) {
+      if (analytic || autodiff) {
         const x0 = hypers.map((h) => Math.log(h.get()));
-        const res = lbfgs((x) => this._negLogMLGrad(x, hypers), x0, { maxIter: 100, tol: 1e-5 });
-        hypers.forEach((h, i) => h.set(Math.max(h.min, Math.exp(res.x[i]))));
+        const gradFn = analytic
+          ? (x) => this._negLogMLGrad(x, hypers)
+          : (x) => this._negLogMLGradAD(x, hypers, consts);
+        // Bounds matter for any hyperparameter whose likelihood ridge is
+        // unbounded — RationalQuadratic's alpha converges the kernel to an RBF
+        // as it grows, so an exact gradient marches along it indefinitely.
+        // Clamping the value is not enough: the optimizer does not see the
+        // clamp and keeps pushing. @tangent.to/opt's MINUIT-style transform
+        // reparameterizes into unbounded internal coordinates and chain-rules
+        // the gradient, so the search itself cannot leave the box.
+        // Everything here is already in log space, so the box is too.
+        const bounded = hypers.some((h) => h.max !== undefined);
+        let res;
+        if (bounded) {
+          const box = hypers.map((h) => [
+            Math.log(h.min),
+            h.max === undefined ? null : Math.log(h.max),
+          ]);
+          const T = makeBoundsTransform(box, x0.length);
+          // Chain the gradient through the transform: d/d(internal) =
+          // d/d(external) · d ext/d int. opt ships a wrapObjective helper that
+          // does this, but not in the published 0.1.1, so it is spelled out.
+          const inner = lbfgs(
+            (xInt) => {
+              const out = gradFn(T.toExternal(xInt));
+              const d = T.dExtDInt(xInt);
+              return { loss: out.loss, gradient: out.gradient.map((g, i) => g * d[i]) };
+            },
+            T.toInternal(x0),
+            { maxIter: 100, tol: 1e-5 },
+          );
+          res = { x: T.toExternal(inner.x) };
+        } else {
+          res = lbfgs(gradFn, x0, { maxIter: 100, tol: 1e-5 });
+        }
+        hypers.forEach((h, i) => h.set(clampHyper(h, Math.exp(res.x[i]))));
         vals = hypers.map((h) => h.get());
       } else {
         ({ vals } = _patternSearch(hypers, evalNeg));

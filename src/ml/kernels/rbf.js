@@ -28,7 +28,11 @@ export class RBF extends Kernel {
   constructor(lengthScaleOrOpts = 1.0, variance = 1.0) {
     super();
     
-    if (typeof lengthScaleOrOpts === 'object') {
+    // An ARD length scale is an ARRAY, and `typeof [] === 'object'`, so the
+    // options branch would swallow it: `new RBF([1.3, 0.7], 0.8)` used to
+    // find no .lengthScale on the array and silently fall back to the
+    // defaults, discarding BOTH arguments. Arrays take the positional path.
+    if (typeof lengthScaleOrOpts === 'object' && !Array.isArray(lengthScaleOrOpts)) {
       // Object-style constructor
       this.lengthScale = lengthScaleOrOpts.lengthScale ?? lengthScaleOrOpts.length_scale ?? 1.0;
       this.variance = lengthScaleOrOpts.variance ?? lengthScaleOrOpts.amplitude ?? 1.0;
