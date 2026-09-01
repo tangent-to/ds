@@ -129,3 +129,54 @@ describe('variable names on a bare-matrix PCA', () => {
     expect(cfg.data.loadings.map((d) => d.label ?? d.variable)).toEqual(names);
   });
 });
+
+describe('ordiplot accepts a fitted estimator', () => {
+  const objs = Array.from({ length: 40 }, (_, i) => {
+    const f = Math.sin(i);
+    return { a: 40 + 3 * f, b: 17 - 2 * f, c: 200 + 10 * f };
+  });
+  const cols = ['a', 'b', 'c'];
+  const fitted = () => new PCA({ scale: true }).fit({ data: objs, columns: cols });
+
+  it('takes the estimator directly, not only a hand-built result object', () => {
+    // `new PCA().fit(...)` is the natural thing to pass, but scores and
+    // loadings live on `.model`, so this used to fail type detection.
+    const cfg = ordiplot(fitted(), { showLoadings: true });
+    expect(cfg.type).toBe('ordiplot');
+    expect(cfg.data.scores).toHaveLength(objs.length);
+    expect(cfg.data.loadings.map((d) => d.label ?? d.variable)).toEqual(cols);
+  });
+
+  it('gives the same result as passing the model', () => {
+    const pca = fitted();
+    const viaEstimator = ordiplot(pca, { showLoadings: true });
+    const viaModel = ordiplot(pca.model, { showLoadings: true });
+    expect(viaEstimator.data.scores).toEqual(viaModel.data.scores);
+    expect(viaEstimator.data.loadings).toEqual(viaModel.data.loadings);
+  });
+
+  it('keeps the model\'s non-enumerable source rows reachable', () => {
+    // attachSourceRows() attaches them non-enumerably, so unwrapping by
+    // spreading would silently drop them and break colorBy-by-column-name for
+    // exactly the input the unwrapping exists to support.
+    const pca = fitted();
+    const viaEstimator = ordiplot(pca, { colorBy: 'a' });
+    const viaModel = ordiplot(pca.model, { colorBy: 'a' });
+    expect(viaEstimator.data.scores.map((d) => d.group))
+      .toEqual(viaModel.data.scores.map((d) => d.group));
+  });
+
+  it('still takes a plain result object', () => {
+    const pca = fitted();
+    const cfg = ordiplot({
+      scores: pca.getScores('sites'),
+      loadings: pca.getScores('loadings'),
+      eigenvalues: pca.model.eigenvalues,
+    }, { showLoadings: true });
+    expect(cfg.type).toBe('ordiplot');
+  });
+
+  it('says an unfitted estimator is unfitted, rather than undetectable', () => {
+    expect(() => ordiplot(new PCA({ scale: true }))).toThrow(/not fitted yet/);
+  });
+});

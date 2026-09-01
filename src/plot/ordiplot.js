@@ -99,6 +99,13 @@ export function ordiplot(result, {
   predictorTextColor = null,
   pointRadius = 4
 } = {}) {
+  // Accept a fitted estimator as well as a plain result object. `new
+  // PCA().fit(...)` is the natural thing to pass, but it keeps its scores and
+  // loadings on `.model`, so type detection saw an object with none of them and
+  // reported "Cannot detect ordination type" — leaving people to rebuild the
+  // plain object by hand. Every mva estimator follows the same convention.
+  result = unwrapEstimator(result);
+
   // Auto-detect ordination type if not specified
   if (!type) {
     type = detectOrdinationType(result);
@@ -468,6 +475,37 @@ function repelLabels(anchors, ctx) {
       side: L.px >= L.ax ? 'right' : 'left',
       leader: drift > L.h * 0.9
     };
+  });
+}
+
+/**
+ * Unwrap a fitted mva estimator to the result object the rest of this module
+ * reads. Anything that is already a result passes through untouched, so a
+ * hand-built `{ scores, loadings, eigenvalues }` still works.
+ *
+ * The estimator's own fields are kept alongside the model's, so `colorBy` can
+ * still name a column of the source data.
+ * @private
+ */
+function unwrapEstimator(result) {
+  if (!result || typeof result !== 'object') return result;
+  // An unfitted estimator has `model: null`, so it would otherwise fall through
+  // to type detection and report "Cannot detect ordination type" — true, but
+  // unhelpful when the real problem is that fit() was never called.
+  if (result.model === null && 'fitted' in result && !result.fitted) {
+    throw new Error('ordiplot: the estimator is not fitted yet. Call fit() first.');
+  }
+  const m = result.model;
+  const isEstimator = m && typeof m === 'object' &&
+    (m.scores !== undefined || m.canonicalScores !== undefined);
+  if (!isEstimator) return result;
+  // Copy DESCRIPTORS, not values. attachSourceRows() puts the model's source
+  // rows on it as a non-enumerable property, and a spread would silently drop
+  // them — breaking `colorBy: 'columnName'` for exactly the input this branch
+  // exists to support.
+  return Object.defineProperties({}, {
+    ...Object.getOwnPropertyDescriptors(result),
+    ...Object.getOwnPropertyDescriptors(m),
   });
 }
 
