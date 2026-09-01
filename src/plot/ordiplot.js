@@ -24,9 +24,19 @@ import { resolveGroupValues } from './utils.js';
  * @param {number} options.axis2 - Second axis to plot (default: 2)
  * @param {number} options.width - Plot width (default: 640)
  * @param {number} options.height - Plot height (default: 400)
- * @param {number} options.loadingScale - Scale factor for loading vectors (default: 3)
- * @param {number} options.loadingFactor - Multiplier applied to loading vectors (default: 1, set 0 for auto)
- * @param {number|null} options.predictorFactor - Multiplier for predictor arrows (RDA only, default: inherits loadingFactor; set 0 for auto)
+ * @param {number} options.loadingScale - Constant applied to loading vectors
+ *   before `loadingFactor` (default: 3). Under the default auto-scaling it has
+ *   no effect: the auto-fit normalizes by the longest vector, which cancels any
+ *   constant prefactor. It only bites when `loadingFactor` is set explicitly.
+ * @param {number} options.loadingFactor - Multiplier applied to loading vectors.
+ *   Default 0 = AUTO: fit the longest vector to 90% of the score cloud's radius,
+ *   so arrows and points are readable against each other. Set a number to
+ *   override — 1 draws the loadings at their raw length, which for PCA is
+ *   usually far larger than the scores (site scores are normalized to unit
+ *   column norm, hence of order 1/sqrt(n), while loadings stay of order 1) and
+ *   leaves the points crushed into a dot at the origin.
+ * @param {number|null} options.predictorFactor - Multiplier for predictor arrows
+ *   (RDA only, default: inherits loadingFactor, so auto as well; set a number to override)
  * @param {number} options.minLoadingContribution - Hide loading/predictor vectors
  *   whose contribution to the two displayed axes is below this fraction (0-1) of
  *   the total, i.e. squared vector length / summed squared length. Default 0 shows
@@ -69,7 +79,13 @@ export function ordiplot(result, {
   width = 640,
   height = 400,
   loadingScale = 3,
-  loadingFactor = 1,
+  // Auto by default. Arrows and points come off a PCA on scales that differ by
+  // roughly sqrt(n) — site scores are normalized to unit column norm, loadings
+  // are not — so drawing both at face value produces a biplot whose points are
+  // a dot at the origin. A biplot whose two halves are not comparable is not
+  // really a biplot; fitting the arrows to the cloud is the useful default, and
+  // an explicit number still gets raw lengths.
+  loadingFactor = 0,
   predictorFactor = null,
   minLoadingContribution = 0,
   labelNudge = 1,
@@ -194,7 +210,7 @@ export function ordiplot(result, {
 
   // Add loadings for PCA, LDA, and RDA
   if (showLoadings && loadingsData && (type === 'pca' || type === 'lda' || type === 'rda')) {
-    // Auto-scale (factor 0) fits the longest vector to ARROW_HEADROOM x the score-cloud
+    // Auto-scale (factor 0, the default) fits the longest vector to ARROW_HEADROOM x the score-cloud
     // radius, so arrow tips stay inside the cloud and leave room for their labels rather
     // than landing on the frame edge (which clips the text).
     const ARROW_HEADROOM = 0.9;

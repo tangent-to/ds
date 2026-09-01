@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING (visual) — `ordiplot`'s `loadingFactor` now defaults to `0` (auto)
+  instead of `1`.** Arrows are fitted to 90% of the score cloud's radius, so
+  the two halves of a biplot are readable against each other.
+
+  A PCA hands back its halves on scales that differ by roughly √n: site scores
+  are normalized to unit column norm, so each is of order 1/√n, while loadings
+  stay of order 1. At the old default, and with `loadingScale`'s 3× on top, a
+  333-row PCA drew arrows **13× longer** than the score cloud — the points
+  rendered as a dot at the origin. A biplot whose two halves are not comparable
+  is not really a biplot.
+
+  Every existing biplot will change. Pass `loadingFactor: 1` to get the old
+  lengths back. Note that `loadingScale` is inert under auto-scaling: the fit
+  normalizes by the longest vector, which cancels any constant prefactor.
+
+
 ### Added
 
 - **`WhiteKernel`** — independent Gaussian noise on each observation,
