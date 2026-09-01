@@ -196,6 +196,20 @@ export function fit(
   });
 
   const scores = toScoreObjects(scaled.scores, 'pc');
+  // Names come from the table's columns, or from an explicit `columns` when
+  // fitting a bare matrix. A count mismatch used to fall through to var1..varN
+  // in silence: you passed labels, saw "var1" on the biplot, and had nothing
+  // to go on. Say so instead — the fallback still applies, so nothing breaks.
+  if (
+    Array.isArray(featureNames) &&
+    featureNames.length &&
+    featureNames.length !== rawLoadingMatrix.length
+  ) {
+    console.warn(
+      `PCA: ${featureNames.length} column name(s) given for ${rawLoadingMatrix.length} ` +
+        'variables; falling back to var1..varN. Pass one name per column of the matrix.',
+    );
+  }
   const variableNames =
     Array.isArray(featureNames) && featureNames.length === rawLoadingMatrix.length
       ? featureNames

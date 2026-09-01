@@ -9,7 +9,7 @@
  * to do by default.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PCA } from '../src/mva/estimators/PCA.js';
 import { ordiplot } from '../src/plot/ordiplot.js';
 
@@ -84,5 +84,48 @@ describe('loading arrow scaling', () => {
     const degenerate = { ...result, scores: result.scores.map((d) => ({ ...d, pc1: 0, pc2: 0 })) };
     const cfg = ordiplot(degenerate, { type: 'pca', showLoadings: true });
     expect(cfg.data.loadings.every((d) => Number.isFinite(d.x2) && Number.isFinite(d.y2))).toBe(true);
+  });
+});
+
+describe('variable names on a bare-matrix PCA', () => {
+  // Fitting a matrix carries no column names, so loadings come back as
+  // var1..varN and a biplot is labelled with them. `columns` names them.
+  const matrix = Array.from({ length: 40 }, (_, i) => {
+    const f = Math.sin(i);
+    return [40 + 3 * f, 17 - 2 * f, 200 + 10 * f, 4200 + 400 * f];
+  });
+  const names = ['Beak Length (mm)', 'Beak Depth (mm)', 'Flipper Length (mm)', 'Body Mass (g)'];
+  const varsOf = (pca) => pca.getScores('loadings').map((d) => d.variable);
+
+  it('falls back to var1..varN with no names', () => {
+    expect(varsOf(new PCA({ scale: true }).fit(matrix))).toEqual(['var1', 'var2', 'var3', 'var4']);
+  });
+
+  it('names them from constructor params', () => {
+    expect(varsOf(new PCA({ scale: true, columns: names }).fit(matrix))).toEqual(names);
+  });
+
+  it('names them from fit options', () => {
+    expect(varsOf(new PCA({ scale: true }).fit(matrix, { columns: names }))).toEqual(names);
+  });
+
+  it('warns instead of silently ignoring a mismatched count', () => {
+    // The trap: pass labels, see "var1" on the biplot, no clue why.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const vars = varsOf(new PCA({ scale: true, columns: ['a', 'b'] }).fit(matrix));
+    expect(vars).toEqual(['var1', 'var2', 'var3', 'var4']);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('2 column name(s) given for 4'));
+    warn.mockRestore();
+  });
+
+  it('carries the names through to the biplot arrows', () => {
+    const pca = new PCA({ scale: true, columns: names }).fit(matrix);
+    const cfg = ordiplot({
+      scores: pca.getScores('sites'),
+      loadings: pca.getScores('loadings'),
+      eigenvalues: pca.model.eigenvalues,
+      varianceExplained: pca.model.varianceExplained,
+    }, { type: 'pca', showLoadings: true });
+    expect(cfg.data.loadings.map((d) => d.label ?? d.variable)).toEqual(names);
   });
 });

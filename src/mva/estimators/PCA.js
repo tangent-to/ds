@@ -10,6 +10,11 @@
  *   pca.fit({ data: table, columns: ['bill_length_mm', 'bill_depth_mm'] });
  *   const scores = pca.transform({ data: table, columns: ['bill_length_mm', 'bill_depth_mm'] });
  *
+ * Fitting a bare matrix works too, but carries no column names, so loadings
+ * come back as `var1`..`varN`. Pass `columns` to name them:
+ *
+ *   new PCA({ scale: true, columns: measurements }).fit(matrix);
+ *
  * The fitted PCA model is stored on `this.model` and exposes helper methods
  * such as summary(), toJSON(), and fromJSON().
  */
@@ -44,7 +49,11 @@ export class PCA extends Transformer {
    * @param {Object} [opts] - Fitting options (used for the numeric-matrix call form)
    * @param {boolean} [opts.center] - Whether to mean-center the columns
    * @param {boolean} [opts.scale] - Whether to scale columns to unit variance
-   * @param {Array<string>} [opts.columns] - Column names to use for declarative inputs
+   * @param {Array<string>} [opts.columns] - Column names. For a declarative
+   *   `{ data, columns }` input these select the columns; for a bare numeric
+   *   matrix they NAME them, which is what labels the loadings on a biplot —
+   *   without them the variables come back as `var1`..`varN`. One name per
+   *   column; a mismatched count warns and falls back to the generic names.
    * @param {boolean} [opts.omit_missing] - Whether to drop rows with missing values
    * @param {number} [opts.scaling] - Ordination scaling convention
    * @returns {this} The fitted estimator (for chaining)
