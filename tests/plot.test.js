@@ -115,6 +115,74 @@ describe('Plot Configuration Generators', () => {
         expect(lenOf(kept)).toBeCloseTo(lenOf(match), 10);
       }
     });
+
+    describe('minPredictorContribution', () => {
+      // Two responses that the constraints explain well, plus one they barely
+      // touch; several predictors, some of them near-inert. The point is that the
+      // two groups want different thresholds.
+      const Y = [
+        [10, 2.0, 5.01], [12, 2.4, 4.99], [14, 2.9, 5.00], [16, 3.3, 5.02],
+        [18, 3.8, 4.98], [20, 4.2, 5.01], [22, 4.7, 5.00], [24, 5.1, 4.99],
+      ];
+      const X = [
+        [1, 0.5, 1.00], [2, 0.6, 1.01], [3, 0.4, 0.99], [4, 0.5, 1.00],
+        [5, 0.6, 1.01], [6, 0.4, 0.99], [7, 0.5, 1.00], [8, 0.6, 1.01],
+      ];
+      const fit = () => mva.rda.fit(Y, X, {
+        scale: true, scaling: 2,
+        responseNames: ['strong', 'medium', 'inert'],
+        predictorNames: ['p1', 'p2', 'p3'],
+      });
+      const opts = { type: 'rda', showLoadings: true, loadingFactor: 0, predictorFactor: 0 };
+
+      it('defaults to minLoadingContribution, so existing callers are unchanged', () => {
+        const inherited = plot.ordiplot(fit(), { ...opts, minLoadingContribution: 0.02 });
+        const explicit = plot.ordiplot(fit(), {
+          ...opts, minLoadingContribution: 0.02, minPredictorContribution: 0.02,
+        });
+        expect(inherited.data.predictors.map((p) => p.variable))
+          .toEqual(explicit.data.predictors.map((p) => p.variable));
+      });
+
+      it('filters predictors without touching responses', () => {
+        const config = plot.ordiplot(fit(), {
+          ...opts, minLoadingContribution: 0, minPredictorContribution: 0.05,
+        });
+        const unfiltered = plot.ordiplot(fit(), { ...opts, minLoadingContribution: 0 });
+        // every response survives, because its own threshold is 0
+        expect(config.data.loadings.length).toBe(3);
+        expect(config.data.predictors.length)
+          .toBeLessThanOrEqual(unfiltered.data.predictors.length);
+      });
+
+      it('filters responses without touching predictors', () => {
+        const config = plot.ordiplot(fit(), {
+          ...opts, minLoadingContribution: 0.05, minPredictorContribution: 0,
+        });
+        const unfiltered = plot.ordiplot(fit(), { ...opts, minLoadingContribution: 0 });
+        expect(config.data.predictors.length).toBe(unfiltered.data.predictors.length);
+        expect(config.data.loadings.length).toBeLessThanOrEqual(3);
+      });
+
+      it('0 means keep everything, even when the other group filters', () => {
+        const config = plot.ordiplot(fit(), {
+          ...opts, minLoadingContribution: 0.5, minPredictorContribution: 0,
+        });
+        expect(config.data.predictors.length).toBe(3);
+      });
+
+      it('leaves kept predictor magnitudes alone', () => {
+        const lenOf = (v) => Math.hypot(v.x2 || 0, v.y2 || 0);
+        const all = plot.ordiplot(fit(), { ...opts, minLoadingContribution: 0 });
+        const filtered = plot.ordiplot(fit(), {
+          ...opts, minLoadingContribution: 0, minPredictorContribution: 0.05,
+        });
+        for (const kept of filtered.data.predictors) {
+          const match = all.data.predictors.find((p) => p.variable === kept.variable);
+          expect(lenOf(kept)).toBeCloseTo(lenOf(match), 10);
+        }
+      });
+    });
   });
 
   describe('plotScree', () => {

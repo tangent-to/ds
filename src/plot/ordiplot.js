@@ -37,12 +37,21 @@ import { resolveGroupValues } from './utils.js';
  *   leaves the points crushed into a dot at the origin.
  * @param {number|null} options.predictorFactor - Multiplier for predictor arrows
  *   (RDA only, default: inherits loadingFactor, so auto as well; set a number to override)
- * @param {number} options.minLoadingContribution - Hide loading/predictor vectors
- *   whose contribution to the two displayed axes is below this fraction (0-1) of
- *   the total, i.e. squared vector length / summed squared length. Default 0 shows
+ * @param {number} options.minLoadingContribution - Hide loading vectors whose
+ *   contribution to the two displayed axes is below this fraction (0-1) of the
+ *   total, i.e. squared vector length / summed squared length. Default 0 shows
  *   every vector at its true relative length. Use e.g. 0.02 to drop near-zero
  *   vectors that only clutter the plot, keeping magnitudes honest (vectors are NOT
- *   rescaled - negligible ones are removed, not inflated).
+ *   rescaled - negligible ones are removed, not inflated). On an RDA this governs
+ *   the response arrows, and {@link minPredictorContribution} the predictor ones.
+ * @param {number|null} options.minPredictorContribution - Same filter for RDA
+ *   predictor arrows (default: null, inherits minLoadingContribution). Each group
+ *   is measured against its own summed length, and an RDA typically has a handful
+ *   of responses against many predictors, so one threshold rarely suits both: a
+ *   response competing with three others clears 2% easily, while the same arrow
+ *   among twenty predictors may not. Set this to declutter the predictors while
+ *   keeping every response visible - a response dropping out is usually a finding
+ *   (these axes carry none of it), not clutter.
  * @param {number} options.labelNudge - Multiplier on the radial distance a loading/
  *   predictor label sits past its arrow tip (default 1). Larger pushes labels
  *   further out from the tips before de-collision.
@@ -88,6 +97,7 @@ export function ordiplot(result, {
   loadingFactor = 0,
   predictorFactor = null,
   minLoadingContribution = 0,
+  minPredictorContribution = null,
   labelNudge = 1,
   labelRepel = true,
   color = null,
@@ -247,22 +257,28 @@ export function ordiplot(result, {
     // vectors declutters the plot WITHOUT distorting the magnitudes of the ones
     // kept (they are not rescaled). Scaling is uniform, so contribution is
     // scale-invariant; filtering before or after scaling gives the same set.
-    const filterByContribution = (vectors) => {
-      if (!(minLoadingContribution > 0) || vectors.length === 0) return vectors;
+    // The threshold is per group: responses and predictors are filtered against
+    // their own summed length, and an RDA usually has few of the first and many
+    // of the second, so one threshold rarely suits both.
+    const filterByContribution = (vectors, threshold) => {
+      if (!(threshold > 0) || vectors.length === 0) return vectors;
       const sq = vectors.map((v) => (v.x2 || 0) ** 2 + (v.y2 || 0) ** 2);
       const total = sq.reduce((a, b) => a + b, 0);
       if (total <= 0) return vectors;
-      return vectors.filter((_, i) => sq[i] / total >= minLoadingContribution);
+      return vectors.filter((_, i) => sq[i] / total >= threshold);
     };
 
     const appliedLoadingFactor = computeFactor(loadingsData, loadingFactor);
-    const scaledLoadings = filterByContribution(appliedLoadingFactor === 1
-      ? loadingsData
-      : loadingsData.map((loading) => ({
-          ...loading,
-          x2: (loading.x2 || 0) * appliedLoadingFactor,
-          y2: (loading.y2 || 0) * appliedLoadingFactor
-        })));
+    const scaledLoadings = filterByContribution(
+      appliedLoadingFactor === 1
+        ? loadingsData
+        : loadingsData.map((loading) => ({
+            ...loading,
+            x2: (loading.x2 || 0) * appliedLoadingFactor,
+            y2: (loading.y2 || 0) * appliedLoadingFactor
+          })),
+      minLoadingContribution
+    );
 
     config.data.loadings = scaledLoadings;
 
@@ -271,13 +287,16 @@ export function ordiplot(result, {
         predictorData,
         predictorFactor === null ? loadingFactor : predictorFactor
       );
-      const scaledPredictors = filterByContribution(appliedPredictorFactor === 1
-        ? predictorData
-        : predictorData.map((pred) => ({
-            ...pred,
-            x2: (pred.x2 || 0) * appliedPredictorFactor,
-            y2: (pred.y2 || 0) * appliedPredictorFactor
-          })));
+      const scaledPredictors = filterByContribution(
+        appliedPredictorFactor === 1
+          ? predictorData
+          : predictorData.map((pred) => ({
+              ...pred,
+              x2: (pred.x2 || 0) * appliedPredictorFactor,
+              y2: (pred.y2 || 0) * appliedPredictorFactor
+            })),
+        minPredictorContribution === null ? minLoadingContribution : minPredictorContribution
+      );
       config.data.predictors = scaledPredictors;
     }
 
