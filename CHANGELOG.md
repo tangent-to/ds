@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Gaussian process: ARD by block.** `Matern` and `RBF` take `blocks`, mapping
+  each input dimension to an entry of `lengthScale`, so a group of features
+  shares one length scale. Three blocks cost three hyperparameters where
+  per-feature ARD on 37 features cost 37. On a 340-row agronomic model that
+  took the held-out RMSE from 9.9 to 9.1 and 95% interval coverage from 73%
+  to 93%, with a learned noise that stayed put across folds where the
+  per-feature version's collapsed to zero in four of seven. Forward, autodiff
+  gradient, hyperparameter collection and `getParams` all follow the map.
+- **Gaussian process: hyperparameter bounds.** `lengthScaleBounds`,
+  `varianceBounds` (Matern, RBF) and `noiseLevelBounds` (WhiteKernel), as
+  `[low, high]`, honoured by the optimizer in place of the hard-coded floors.
+  A floor on the noise is the usual reason to set one.
+- **`GaussianProcessRegressor.predictGradient(x)`.** The predictive mean and
+  standard deviation at one input with their gradients in that input, from
+  the autodiff path, compiled once per fit. What a gradient-based search over
+  the input space needs. Stationary kernels only.
+
+### Fixed
+
+- A blocked `Matern` took the hand-derived likelihood gradient, which knows
+  nothing of blocks: it indexed `lengthScale` by dimension, read `undefined`
+  past the block count, and handed the optimizer NaN, which stopped at the
+  initial values without a word. Blocked kernels go through the autodiff
+  gradient.
+
 ### Changed
 
 - **BREAKING (visual) — `ordiplot`'s `loadingFactor` now defaults to `0` (auto)
