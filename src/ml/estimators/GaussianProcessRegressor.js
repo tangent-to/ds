@@ -509,7 +509,12 @@ export class GaussianProcessRegressor extends Regressor {
    * @returns {Array<{kind:'matern'|'white', kernel:Kernel}>|null}
    */
   _analyticParts() {
-    const ok = (k) => k instanceof Matern && [1.5, 2.5, Infinity].includes(k.nu);
+    // ARD by block is not in the hand-derived gradient; it goes through the
+    // autodiff path, which reads the block map. Without this guard the
+    // analytic path indexed lengthScale by dimension, found undefined past the
+    // block count, and handed the optimizer NaN, which stopped it at the
+    // initial values without a word.
+    const ok = (k) => k instanceof Matern && [1.5, 2.5, Infinity].includes(k.nu) && !k.blocks;
     const k = this.kernel;
     if (ok(k)) return [{ kind: "matern", kernel: k }];
     if (!(k instanceof SumKernel)) return null;

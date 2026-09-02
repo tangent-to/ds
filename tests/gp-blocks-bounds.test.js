@@ -59,7 +59,17 @@ describe('ARD by block', () => {
     });
   });
 
-  it('tunes two scales under optimize: true and keeps them shared', () => {
+  it('tunes two scales under optimize: true, moving them, and keeps them shared', () => {
+    // A blocked Matérn must take the autodiff gradient, not the hand-derived
+    // one, which knows nothing of blocks: it indexed lengthScale by
+    // dimension, read undefined past the block count, and handed the
+    // optimizer NaN, which stopped at the initial values without a word.
+    // So the assertion is that the scales MOVED and the likelihood rose.
+    const before = new GaussianProcessRegressor({
+      kernel: new Matern({ lengthScale: [1, 1], blocks: [0, 0, 1], nu: 2.5 }), alpha: 0.05,
+    });
+    before.fit(X, y);
+    const nllBefore = before._negLogML();
     const gp = new GaussianProcessRegressor({
       kernel: new Matern({ lengthScale: [1, 1], blocks: [0, 0, 1], nu: 2.5 }), alpha: 0.05, optimize: true, nRestarts: 0,
     });
@@ -67,6 +77,17 @@ describe('ARD by block', () => {
     expect(gp.kernel.lengthScale).toHaveLength(2);
     expect(gp.kernel.blocks).toEqual([0, 0, 1]);
     expect(gp.kernel.lengthScale.every((l) => l > 0 && Number.isFinite(l))).toBe(true);
+    expect(gp.kernel.lengthScale).not.toEqual([1, 1]);
+    expect(gp._negLogML()).toBeLessThan(nllBefore);
+  });
+
+  it('with a WhiteKernel in the sum, still moves', () => {
+    const gp = new GaussianProcessRegressor({
+      kernel: new SumKernel({ kernels: [new Matern({ lengthScale: [1, 1], blocks: [0, 0, 1], nu: 2.5 }), new WhiteKernel(0.1)] }),
+      alpha: 1e-10, optimize: true, nRestarts: 0,
+    });
+    gp.fit(X, y);
+    expect(gp.kernel.kernels[0].lengthScale).not.toEqual([1, 1]);
   });
 
   it('survives getParams and a rebuild', () => {
