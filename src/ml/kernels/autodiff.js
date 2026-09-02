@@ -20,7 +20,7 @@
  * reproduces `kernel.call(X)` exactly.
  */
 
-import { add, div, exp, log, mul, reshape, slice, sqrt, square } from '@tangent.to/grad';
+import { add, div, exp, log, matmul, mul, reshape, slice, sqrt, square, sub } from '@tangent.to/grad';
 
 /**
  * Precompute everything about the inputs that no hyperparameter can change.
@@ -84,10 +84,38 @@ const MATERN_SQRT_FLOOR = 1e-30;
  * RBF and Matérn families. Handles both an isotropic scale and an ARD vector.
  * @private
  */
-function scaledSquared(consts, theta, offset, isArd) {
+function scaledSquared(consts, theta, offset, kernel) {
+  const isArd = Array.isArray(kernel.lengthScale);
   if (!isArd) {
     const l = at(theta, offset);
     return { value: div(consts.total, square(l)), next: offset + 1 };
+  }
+  if (kernel.blocks) {
+    // One length scale per block: the squared distances of a block's
+    // dimensions are summed once, as a constant, and divided by that block's
+    // scale. The sums are cached on consts, keyed by the block map, since
+    // this is rebuilt on every gradient evaluation.
+    const key = kernel.blocks.join(',');
+    consts.blockSums = consts.blockSums || {};
+    if (!consts.blockSums[key]) {
+      const nBlocks = kernel.lengthScale.length;
+      const sums = Array.from({ length: nBlocks }, () =>
+        Array.from({ length: consts.n }, () => new Array(consts.n).fill(0)));
+      for (let k = 0; k < consts.d; k++) {
+        const b = kernel.blocks[k];
+        const M = consts.perDim[k];
+        const S = sums[b];
+        for (let i = 0; i < consts.n; i++) for (let j = 0; j < consts.n; j++) S[i][j] += M[i][j];
+      }
+      consts.blockSums[key] = sums;
+    }
+    const sums = consts.blockSums[key];
+    let acc = null;
+    for (let b = 0; b < sums.length; b++) {
+      const term = div(sums[b], square(at(theta, offset + b)));
+      acc = acc === null ? term : add(acc, term);
+    }
+    return { value: acc, next: offset + sums.length };
   }
   let acc = null;
   for (let k = 0; k < consts.d; k++) {
@@ -122,15 +150,13 @@ export function kernelMatrixAD(kernel, consts, theta, offset) {
   }
 
   if (name === 'RBF') {
-    const isArd = Array.isArray(kernel.lengthScale);
-    const { value: sq, next } = scaledSquared(consts, theta, offset, isArd);
+    const { value: sq, next } = scaledSquared(consts, theta, offset, kernel);
     const v = at(theta, next);
     return { K: mul(v, exp(mul(-0.5, sq))), next: next + 1 };
   }
 
   if (name === 'Matern') {
-    const isArd = Array.isArray(kernel.lengthScale);
-    const { value: sq, next } = scaledSquared(consts, theta, offset, isArd);
+    const { value: sq, next } = scaledSquared(consts, theta, offset, kernel);
     const v = at(theta, next);
     const nu = kernel.nu;
     if (nu === Infinity) {
@@ -245,4 +271,87 @@ export function supportsAutodiff(kernel) {
   if (name === 'SumKernel') return (kernel.kernels || []).every(supportsAutodiff);
   if (name === 'Matern') return [0.5, 1.5, 2.5, Infinity].includes(kernel.nu);
   return SUPPORTED.has(name);
+}
+
+
+/**
+ * Per-dimension weights 1/l² for a stationary kernel, as a plain vector:
+ * isotropic, ARD, or ARD by block. @private
+ */
+function inverseSquaredScales(kernel, d) {
+  const l = kernel.lengthScale;
+  const w = new Array(d);
+  for (let k = 0; k < d; k++) {
+    const lk = Array.isArray(l) ? l[kernel.blocks ? kernel.blocks[k] : k] : l;
+    w[k] = 1 / (lk * lk);
+  }
+  return w;
+}
+
+/**
+ * The cross-covariance vector k(x*, X) between ONE test point, held as a grad
+ * `Var`, and the training inputs, held as constants. Differentiable in x*,
+ * which is what a gradient-based search over the input needs: the predictive
+ * mean is k(x*, X)·α and its derivative falls out of this.
+ *
+ * Hyperparameters are read from the kernel as numbers, since they are fixed
+ * once the model is fitted. Supported: RBF, Matérn (any supported ν),
+ * ConstantKernel, WhiteKernel (zero: a new point shares no noise with any
+ * training point), and sums of those.
+ *
+ * @param {Object} kernel
+ * @param {number[][]} XTrain - n × d
+ * @param {Object} xVar - grad Var of shape [d]
+ * @returns {Object} grad Var of shape [n]
+ */
+export function crossKernelAD(kernel, XTrain, xVar) {
+  const name = kernel.constructor.name;
+  const d = XTrain[0].length;
+
+  if (name === 'SumKernel') {
+    let acc = null;
+    for (const child of kernel.kernels) {
+      const part = crossKernelAD(child, XTrain, xVar);
+      acc = acc === null ? part : add(acc, part);
+    }
+    return acc;
+  }
+  if (name === 'WhiteKernel') return mul(0, XTrain.map(() => 0));
+  if (name === 'ConstantKernel') {
+    const c = kernel.value !== undefined ? kernel.value : kernel.variance;
+    return mul(c, XTrain.map(() => 1));
+  }
+  if (name !== 'RBF' && name !== 'Matern') {
+    throw new Error(`crossKernelAD: ${name} is not supported (use RBF, Matern, WhiteKernel, ConstantKernel or a sum of them)`);
+  }
+
+  // x* broadcast to every training row, then the weighted squared distance
+  // per row: (X - 1·x*ᵀ)² · w. grad broadcasts only a scalar, so the row
+  // replication is an explicit rank-one product.
+  const ones = XTrain.map(() => [1]);
+  const Xs = matmul(ones, reshape(xVar, [1, d]));
+  const sq = square(sub(XTrain, Xs));
+  const scaledSq = matmul(sq, inverseSquaredScales(kernel, d));
+  const v = kernel.variance;
+
+  if (name === 'RBF' || kernel.nu === Infinity) return mul(v, exp(mul(-0.5, scaledSq)));
+  const nu = kernel.nu;
+  const sc = mul(Math.sqrt(2 * nu), sqrt(add(scaledSq, MATERN_SQRT_FLOOR)));
+  const decay = exp(mul(-1, sc));
+  if (nu === 0.5) return mul(v, decay);
+  if (nu === 1.5) return mul(v, mul(add(1, sc), decay));
+  if (nu === 2.5) return mul(v, mul(add(add(1, sc), mul(1 / 3, square(sc))), decay));
+  throw new Error(`crossKernelAD: Matern nu=${nu} is not supported`);
+}
+
+/**
+ * Is k(x, x) the same for every x? True for the stationary kernels above,
+ * which is what lets the predictive variance's first term be a constant.
+ * @param {Object} kernel
+ * @returns {boolean}
+ */
+export function isStationary(kernel) {
+  const name = kernel.constructor.name;
+  if (name === 'SumKernel') return kernel.kernels.every(isStationary);
+  return ['RBF', 'Matern', 'WhiteKernel', 'ConstantKernel'].includes(name);
 }

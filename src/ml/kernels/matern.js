@@ -6,11 +6,28 @@
  * implementation lightweight and dependency-free.
  */
 
-import { Kernel } from "./base.js";
+import { Kernel, checkBlocks } from "./base.js";
 
 const SUPPORTED_NU = [0.5, 1.5, 2.5, Infinity];
 
 export class Matern extends Kernel {
+  /**
+   * @param {number|number[]|Object} [lengthScaleOrOpts=1] - a length scale, one
+   *   per input dimension (ARD), or an options object
+   * @param {number|number[]} [lengthScaleOrOpts.lengthScale=1]
+   * @param {number} [lengthScaleOrOpts.nu=1.5] - 0.5, 1.5, 2.5 or Infinity
+   * @param {number} [lengthScaleOrOpts.variance=1] - also `amplitude`
+   * @param {number[]} [lengthScaleOrOpts.blocks] - ARD by block: `blocks[i]` is
+   *   the index into `lengthScale` that input dimension i uses, so a group of
+   *   features shares one length scale. Three blocks cost three hyperparameters
+   *   where per-feature ARD on 37 features costs 37, which is what keeps
+   *   marginal-likelihood tuning honest on a few hundred rows.
+   * @param {number[]} [lengthScaleOrOpts.lengthScaleBounds] - `[low, high]`
+   *   honoured by hyperparameter optimization
+   * @param {number[]} [lengthScaleOrOpts.varianceBounds] - likewise
+   * @param {number} [nu=1.5]
+   * @param {number} [variance=1]
+   */
   constructor(lengthScaleOrOpts = 1.0, nu = 1.5, variance = 1.0) {
     super();
     // An ARD length scale is an ARRAY, and `typeof [] === 'object'`, so the
@@ -23,15 +40,28 @@ export class Matern extends Kernel {
         nu: nuOpt = 1.5,
         variance: varianceOpt = 1.0,
         amplitude,
+        blocks,
+        lengthScaleBounds,
+        varianceBounds,
       } = lengthScaleOrOpts;
       this.lengthScale = lengthScale;
       this.nu = nuOpt;
       this.variance = amplitude ?? varianceOpt;
+      // ARD by block: `blocks[i]` is the index into `lengthScale` that input
+      // dimension i uses, so several dimensions share one length scale. A soil
+      // block, a tissue block and a season, say, cost three hyperparameters
+      // instead of one per feature, which is what keeps marginal-likelihood
+      // tuning honest on a few hundred rows.
+      this.blocks = blocks;
+      // Optional [low, high] bounds honoured by hyperparameter optimization.
+      this.lengthScaleBounds = lengthScaleBounds;
+      this.varianceBounds = varianceBounds;
     } else {
       this.lengthScale = lengthScaleOrOpts;
       this.nu = nu;
       this.variance = variance;
     }
+    checkBlocks(this, "Matern");
 
     if (!SUPPORTED_NU.includes(this.nu)) {
       throw new Error(
@@ -46,11 +76,13 @@ export class Matern extends Kernel {
     // its own length scale; large values down-weight irrelevant features.
     const l = this.lengthScale;
     const isArr = Array.isArray(l);
+    const blocks = this.blocks;
 
     // Distance with the length scale(s) folded in: Σ ((x1_i - x2_i) / l_i)².
+    // With `blocks`, dimension i uses the length scale of its block.
     let scaledSq = 0;
     for (let i = 0; i < x1.length; i++) {
-      const li = isArr ? l[i] : l;
+      const li = isArr ? l[blocks ? blocks[i] : i] : l;
       const s = (x1[i] - x2[i]) / li;
       scaledSq += s * s;
     }
@@ -78,11 +110,11 @@ export class Matern extends Kernel {
   }
 
   getParams() {
-    return {
-      lengthScale: this.lengthScale,
-      nu: this.nu,
-      variance: this.variance,
-    };
+    const p = { lengthScale: this.lengthScale, nu: this.nu, variance: this.variance };
+    if (this.blocks) p.blocks = this.blocks;
+    if (this.lengthScaleBounds) p.lengthScaleBounds = this.lengthScaleBounds;
+    if (this.varianceBounds) p.varianceBounds = this.varianceBounds;
+    return p;
   }
 
   setParams({ lengthScale, nu, variance, amplitude }) {

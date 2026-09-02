@@ -88,3 +88,26 @@ export class Kernel {
     return new this.constructor(this.getParams());
   }
 }
+
+
+/**
+ * Validate a `blocks` map on an ARD kernel: one entry per input dimension,
+ * each an index into `lengthScale`, every length scale used. Shared by RBF
+ * and Matérn.
+ * @param {Object} k - the kernel
+ * @param {string} name - for messages
+ */
+export function checkBlocks(k, name) {
+  if (k.blocks === undefined) return;
+  const l = k.lengthScale;
+  if (!Array.isArray(l)) {
+    throw new Error(`${name}: blocks needs an array lengthScale with one entry per block`);
+  }
+  if (!Array.isArray(k.blocks) || k.blocks.some((b) => !Number.isInteger(b) || b < 0 || b >= l.length)) {
+    throw new Error(`${name}: blocks must be an array of indices into lengthScale (0 to ${l.length - 1})`);
+  }
+  const used = new Set(k.blocks);
+  if (used.size !== l.length) {
+    throw new Error(`${name}: lengthScale has ${l.length} entries but blocks uses ${used.size} of them`);
+  }
+}

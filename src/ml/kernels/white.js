@@ -32,17 +32,26 @@ import { toMatrix } from "../../core/linalg.js";
 export class WhiteKernel extends Kernel {
   /**
    * @param {number|Object} noiseLevelOrOpts - Noise variance, or an options
-   *   object `{ noiseLevel }` (aliases: `noise_level`, `variance`)
+   *   object `{ noiseLevel, noiseLevelBounds }` (aliases: `noise_level`,
+   *   `variance`, `noise_level_bounds`). `noiseLevelBounds` is `[low, high]`,
+   *   honoured by hyperparameter optimization; a floor is the usual reason to
+   *   set it, since marginal likelihood with many ARD length scales can drive
+   *   the noise to zero and explain everything through the kernel.
    *
    * @example
    * new WhiteKernel(0.1)
-   * new WhiteKernel({ noiseLevel: 0.1 })
+   * new WhiteKernel({ noiseLevel: 0.1, noiseLevelBounds: [0.05, 2] })
    */
   constructor(noiseLevelOrOpts = 1.0) {
     super();
     if (typeof noiseLevelOrOpts === "object" && noiseLevelOrOpts !== null) {
       const o = noiseLevelOrOpts;
       this.noiseLevel = o.noiseLevel ?? o.noise_level ?? o.variance ?? 1.0;
+      // [low, high], honoured by hyperparameter optimization. A floor is the
+      // usual reason to set it: marginal likelihood with many ARD length
+      // scales can drive the noise to zero and explain everything through
+      // the kernel, and a floor at the noise you know is there stops that.
+      this.noiseLevelBounds = o.noiseLevelBounds ?? o.noise_level_bounds;
     } else {
       this.noiseLevel = noiseLevelOrOpts;
     }
@@ -79,7 +88,9 @@ export class WhiteKernel extends Kernel {
   }
 
   getParams() {
-    return { noiseLevel: this.noiseLevel };
+    const p = { noiseLevel: this.noiseLevel };
+    if (this.noiseLevelBounds) p.noiseLevelBounds = this.noiseLevelBounds;
+    return p;
   }
 
   setParams({ noiseLevel, noise_level, variance }) {

@@ -10,7 +10,7 @@
  * - variance (amplitude) controls the amplitude of the function
  */
 
-import { Kernel } from './base.js';
+import { Kernel, checkBlocks } from './base.js';
 
 export class RBF extends Kernel {
   /**
@@ -25,6 +25,14 @@ export class RBF extends Kernel {
    * // Object arguments
    * new RBF({ lengthScale: 1.0, amplitude: 1.0 })
    */
+  /**
+   * @param {number|number[]|Object} [lengthScaleOrOpts=1] - a length scale, one
+   *   per input dimension (ARD), or an options object with `lengthScale`,
+   *   `variance`, and optionally `blocks` (ARD by block, see Matern),
+   *   `lengthScaleBounds` and `varianceBounds` (`[low, high]`, honoured by
+   *   hyperparameter optimization)
+   * @param {number} [variance=1]
+   */
   constructor(lengthScaleOrOpts = 1.0, variance = 1.0) {
     super();
     
@@ -36,20 +44,26 @@ export class RBF extends Kernel {
       // Object-style constructor
       this.lengthScale = lengthScaleOrOpts.lengthScale ?? lengthScaleOrOpts.length_scale ?? 1.0;
       this.variance = lengthScaleOrOpts.variance ?? lengthScaleOrOpts.amplitude ?? 1.0;
+      // ARD by block and optional bounds; see Matern for the reasoning.
+      this.blocks = lengthScaleOrOpts.blocks;
+      this.lengthScaleBounds = lengthScaleOrOpts.lengthScaleBounds;
+      this.varianceBounds = lengthScaleOrOpts.varianceBounds;
     } else {
       // Positional arguments
       this.lengthScale = lengthScaleOrOpts;
       this.variance = variance;
     }
+    checkBlocks(this, 'RBF');
   }
 
   compute(x1, x2) {
     // Length scale may be scalar (isotropic) or a per-dimension array (ARD).
     const l = this.lengthScale;
     const isArr = Array.isArray(l);
+    const blocks = this.blocks;
     let scaledSq = 0;
     for (let i = 0; i < x1.length; i++) {
-      const li = isArr ? l[i] : l;
+      const li = isArr ? l[blocks ? blocks[i] : i] : l;
       const s = (x1[i] - x2[i]) / li;
       scaledSq += s * s;
     }
@@ -57,10 +71,11 @@ export class RBF extends Kernel {
   }
 
   getParams() {
-    return {
-      lengthScale: this.lengthScale,
-      variance: this.variance
-    };
+    const p = { lengthScale: this.lengthScale, variance: this.variance };
+    if (this.blocks) p.blocks = this.blocks;
+    if (this.lengthScaleBounds) p.lengthScaleBounds = this.lengthScaleBounds;
+    if (this.varianceBounds) p.varianceBounds = this.varianceBounds;
+    return p;
   }
 
   setParams({ lengthScale, variance, amplitude }) {

@@ -19,10 +19,10 @@ import { cholesky, choleskySolve, toMatrix } from '../../core/linalg.js';
 import { prepareXY } from '../../core/table.js';
 import { lbfgs, makeBoundsTransform } from '../../core/optimize.js';
 import {
-  add, addDiag, cholesky as gCholesky, diagPart, dot, exp as gExp, log as gLog,
-  mul, sum as gSum, triangularSolve, valueAndGrad,
+  add, addDiag, cholesky as gCholesky, compile, diagPart, dot, exp as gExp, log as gLog,
+  maximum, mul, sqrt as gSqrt, sub as gSub, sum as gSum, triangularSolve, valueAndGrad,
 } from '@tangent.to/grad';
-import { kernelConstants, kernelMatrixAD, supportsAutodiff } from '../kernels/autodiff.js';
+import { crossKernelAD, isStationary, kernelConstants, kernelMatrixAD, supportsAutodiff } from '../kernels/autodiff.js';
 import {
   Kernel,
   RBF,
@@ -137,6 +137,15 @@ function buildAlphaDiag(alpha, n) {
  * handles, descending into SumKernel children. Length-scale arrays (ARD)
  * contribute one entry per dimension. @private
  */
+/** `{min, max}` from a kernel's `[low, high]` bounds, with a default floor. @private */
+function bounds(b, floor) {
+  if (b === undefined || b === null) return { min: floor };
+  if (!Array.isArray(b) || b.length !== 2 || !(b[0] > 0) || !(b[1] >= b[0])) {
+    throw new Error(`hyperparameter bounds must be [low, high] with 0 < low <= high; got ${JSON.stringify(b)}`);
+  }
+  return { min: b[0], max: b[1] };
+}
+
 function collectHypers(kernel) {
   const entries = [];
   const visit = (k) => {
@@ -147,14 +156,19 @@ function collectHypers(kernel) {
       return;
     }
     if (name === "Matern" || name === "RBF") {
+      // One entry per length scale: per dimension for plain ARD, per block
+      // with `blocks`, one for an isotropic scale. Bounds come from the kernel
+      // when it carries them, sklearn's length_scale_bounds, else the floor
+      // that keeps the scale positive.
+      const lb = bounds(k.lengthScaleBounds, 1e-5);
       if (Array.isArray(k.lengthScale)) {
         k.lengthScale.forEach((_, i) =>
-          entries.push({ get: () => k.lengthScale[i], set: (v) => { k.lengthScale[i] = v; }, min: 1e-5 }),
+          entries.push({ get: () => k.lengthScale[i], set: (v) => { k.lengthScale[i] = v; }, ...lb }),
         );
       } else {
-        entries.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
+        entries.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, ...lb });
       }
-      entries.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
+      entries.push({ get: () => k.variance, set: (v) => { k.variance = v; }, ...bounds(k.varianceBounds, 1e-8) });
     } else if (name === "RationalQuadratic") {
       entries.push({ get: () => k.lengthScale, set: (v) => { k.lengthScale = v; }, min: 1e-5 });
       entries.push({ get: () => k.variance, set: (v) => { k.variance = v; }, min: 1e-8 });
@@ -168,7 +182,7 @@ function collectHypers(kernel) {
         entries.push({ get: () => k.alpha, set: (v) => { k.alpha = v; }, min: 1e-5, max: 1e5 });
       }
     } else if (name === "WhiteKernel") {
-      entries.push({ get: () => k.noiseLevel, set: (v) => { k.noiseLevel = v; }, min: 1e-10 });
+      entries.push({ get: () => k.noiseLevel, set: (v) => { k.noiseLevel = v; }, ...bounds(k.noiseLevelBounds, 1e-10) });
     } else if (name === "DotProduct") {
       entries.push({ get: () => k.sigma0, set: (v) => { k.sigma0 = v; }, min: 1e-8 });
     } else if (name === "ConstantKernel") {
@@ -423,6 +437,7 @@ export class GaussianProcessRegressor extends Regressor {
    * Uses the current kernel hyperparameters and noise. @private
    */
   _refit() {
+    this._predictAD = null; // built lazily by predictGradient, against the factor below
     const K = this._addNoise(this.kernel.call(this._XTrain));
     try {
       this._L = cholesky(K);
@@ -804,6 +819,56 @@ export class GaussianProcessRegressor extends Regressor {
     }
 
     return result;
+  }
+
+  /**
+   * The predictive mean and standard deviation at ONE input, with their
+   * gradients with respect to that input.
+   *
+   * What a gradient-based search over the input space needs, where `predict`
+   * gives the value only. Maximizing a lower confidence bound over an ionome,
+   * say, is a smooth problem in a dozen dimensions; a quasi-Newton method
+   * with this gradient converges in tens of evaluations where a
+   * derivative-free simplex needs thousands and grows unreliable past ten
+   * dimensions.
+   *
+   * The mean is k(x, X)·α and the variance k(x, x) − ‖L⁻¹k(x, X)‖²; both are
+   * written in @tangent.to/grad ops with x as the variable and everything the
+   * fit produced as constants, compiled once per fit and replayed per call.
+   * Stationary kernels only (RBF, Matérn, White, Constant and sums), so that
+   * k(x, x) is a constant. `normalizeY` is undone as in `predict`.
+   *
+   * @param {number[]} x - one input, length d
+   * @returns {{mean: number, std: number, meanGradient: number[], stdGradient: number[]}}
+   */
+  predictGradient(x) {
+    this._ensureFitted('predictGradient');
+    if (!Array.isArray(x) || x.length !== this._XTrain.columns) {
+      throw new Error(`predictGradient: expected one input of length ${this._XTrain.columns}`);
+    }
+    if (!this._predictAD) {
+      if (!isStationary(this.kernel)) {
+        throw new Error('predictGradient: needs a stationary kernel (RBF, Matern, WhiteKernel, ConstantKernel or a sum of them)');
+      }
+      const XTrain = this._XTrain.to2DArray();
+      const L = this._L.to2DArray();
+      const alpha = Array.from(this._alphaVector);
+      const kss = this.kernel.compute(x, x); // constant for a stationary kernel
+      const yStd = this._yStd;
+      const yMean = this._yMean;
+      const meanFn = compile((xv) => add(mul(dot(crossKernelAD(this.kernel, XTrain, xv), alpha), yStd), yMean));
+      const stdFn = compile((xv) => {
+        const k = crossKernelAD(this.kernel, XTrain, xv);
+        const v = triangularSolve(L, k);
+        // The clamp guards a variance that rounds negative at a training
+        // point; its gradient is then zero, which is the honest answer there.
+        return mul(gSqrt(maximum(gSub(kss, dot(v, v)), 1e-300)), yStd);
+      });
+      this._predictAD = { meanFn, stdFn };
+    }
+    const m = this._predictAD.meanFn(x);
+    const s = this._predictAD.stdFn(x);
+    return { mean: m.value, std: s.value, meanGradient: m.gradient, stdGradient: s.gradient };
   }
 
   /**
