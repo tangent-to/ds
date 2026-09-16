@@ -306,6 +306,23 @@ export function max(arr, options = {}) {
 }
 
 /**
+ * Compute the extent (min and max) of an array
+ * @param {Array<number>} arr - Array of numbers
+ * @param {Object} options - Options { naOmit: boolean }
+ * @returns {[number, number]} [min, max] extent or [NaN, NaN] if empty
+ *
+ * @example
+ * extent([3, 1, 4, 1, 5, 9]) // [1, 9]
+ * extent([42]) // [42, 42]
+ * extent([]) // [NaN, NaN]
+ */
+export function extent(arr, options = {}) {
+  const data = sanitizeNumericArray(arr, options);
+  if (!data.length) return [NaN, NaN];
+  return [Math.min(...data), Math.max(...data)];
+}
+
+/**
  * Generate a sequence of numbers
  * @param {number} start - Start value (inclusive)
  * @param {number} stop - Stop value (inclusive)
