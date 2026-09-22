@@ -175,13 +175,19 @@ poly.fit(X, y);
 ### Neural Networks
 
 ```javascript
+// A chain of dense layers on @tangent.to/nn, as an estimator
 const mlp = new ml.MLPRegressor({
-  layerSizes: [10, 8, 1],
+  layerSizes: [10, 8, 1],   // [inputs, ...hidden, outputs]
   activation: 'relu',
+  dropout: 0.1,
   epochs: 100,
-  learningRate: 0.01
+  learningRate: 0.01,
+  seed: 42
 });
 mlp.fit(X_train, y_train);
+mlp.predict(X_test);
+mlp.predict(X_test, { samples: 100 });   // Monte Carlo dropout: { mean, std, ... }
+// Branches, other losses, learned dropout: import nn from '@tangent.to/nn'
 ```
 
 ### Model Selection

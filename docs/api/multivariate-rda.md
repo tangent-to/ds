@@ -18,7 +18,7 @@ function fit(
    options?): Object;
 ```
 
-Defined in: [src/mva/rda.js:29](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/rda.js#L29)
+Defined in: [src/mva/rda.js:29](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/rda.js#L29)
 
 Fit RDA model.
 
@@ -64,7 +64,7 @@ RDA model
 function permutationTest(model, options?): Object;
 ```
 
-Defined in: [src/mva/rda.js:373](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/rda.js#L373)
+Defined in: [src/mva/rda.js:373](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/rda.js#L373)
 
 Permutation test of the global RDA (equivalent to vegan's
 `anova.cca(model)`): tests H0 that the constraints explain no more response
@@ -121,7 +121,7 @@ function transform(
    X): Object[];
 ```
 
-Defined in: [src/mva/rda.js:455](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/rda.js#L455)
+Defined in: [src/mva/rda.js:455](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/rda.js#L455)
 
 Transform new data using fitted RDA model
 

@@ -11,6 +11,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`MLPRegressor` on `@tangent.to/nn`.** The same estimator, its `layerSizes`,
+  `activation`, `learningRate`, `epochs`, `batchSize` and `verbose` unchanged,
+  now a chain of nn layers differentiated by grad and trained with opt's
+  update rules or L-BFGS (`optimizer`). It gains `dropout`, `seed`,
+  `normalizeY` (on by default), `predict(X, { samples })` for Monte Carlo
+  dropout and `predictGradient(x)`; `summary().network` is nn's. Branches,
+  other losses and learned dropout are nn's own API.
+
+### Changed
+
+- `MLPRegressor.predict` returns a flat array for one output, as the other
+  regressors do, and rows only for several. `layerSizes` is checked against
+  the data: its first entry must be the feature count, its last the number of
+  targets.
+- `ml.loss` functions return the loss alone, a number, no longer
+  `{ loss, gradient }`: the gradients existed for `ml.train`, which is gone.
+- `RandomForest` draws its seeded randomness from proba's generator.
+- Dependencies: grad ^0.3.1, opt ^0.2.0, proba ^0.2.1, and nn ^0.1.1 (for `fitSync`).
+
+### Removed
+
+- `ml.mlp` (the hand-written network) and `ml.train` (its loop and
+  callbacks). The callbacks live in `@tangent.to/nn` as `nn.callbacks`.
+
 - **Gaussian process: ARD by block.** `Matern` and `RBF` take `blocks`, mapping
   each input dimension to an entry of `lengthScale`, so a group of features
   shares one length scale. Three blocks cost three hyperparameters where

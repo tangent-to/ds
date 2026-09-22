@@ -7,7 +7,6 @@ import * as dbscan from "./dbscan.js";
 import * as hca from "./hca.js";
 import * as polynomial from "./polynomial.js";
 import * as silhouette from "./silhouette.js";
-import * as mlp from "./mlp.js";
 import * as validation from "./validation.js";
 import * as preprocessing from "./preprocessing.js";
 import * as metrics from "./metrics.js";
@@ -17,7 +16,6 @@ import * as utils from "./utils.js";
 import * as interpret from "./interpret.js";
 import * as explain from "./explain.js";
 import * as loss from "./loss.js";
-import * as train from "./train.js";
 import * as tuning from "./tuning.js";
 import { GridSearchCV, Pipeline } from "./pipeline.js";
 import { Recipe, recipe } from "./recipe.js";
@@ -137,8 +135,7 @@ export {
   distances,
   // Impurity criteria
   criteria,
-  // Multilayer Perceptron
-  mlp,
+  // Multilayer perceptron, on @tangent.to/nn
   MLPRegressor,
   // Pipeline
   Pipeline,
@@ -154,8 +151,6 @@ export {
   recipe,
   // Silhouette analysis utilities
   silhouette,
-  // Training utilities
-  train,
   // Hyperparameter tuning
   tuning,
   // Utilities

@@ -12,10 +12,10 @@ permalink: /api/machine-learning/loss
 ### mseLoss()
 
 ```ts
-function mseLoss(yTrue, yPred): Object;
+function mseLoss(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/loss.js:12](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L12)
+Defined in: [src/ml/loss.js:13](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L13)
 
 Mean Squared Error Loss
 
@@ -35,19 +35,17 @@ Predicted values
 
 #### Returns
 
-`Object`
-
-{loss, gradient}
+`number`
 
 ***
 
 ### maeLoss()
 
 ```ts
-function maeLoss(yTrue, yPred): Object;
+function maeLoss(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/loss.js:38](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L38)
+Defined in: [src/ml/loss.js:33](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L33)
 
 Mean Absolute Error Loss
 
@@ -67,9 +65,7 @@ Predicted values
 
 #### Returns
 
-`Object`
-
-{loss, gradient}
+`number`
 
 ***
 
@@ -79,10 +75,10 @@ Predicted values
 function logLoss(
    yTrue, 
    yPred, 
-   epsilon?): Object;
+   epsilon?): number;
 ```
 
-Defined in: [src/ml/loss.js:65](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L65)
+Defined in: [src/ml/loss.js:53](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L53)
 
 Binary Cross-Entropy Loss (Log Loss)
 
@@ -108,9 +104,7 @@ Small value to avoid log(0)
 
 #### Returns
 
-`Object`
-
-{loss, gradient}
+`number`
 
 ***
 
@@ -120,10 +114,10 @@ Small value to avoid log(0)
 function crossEntropy(
    yTrue, 
    yPred, 
-   epsilon?): Object;
+   epsilon?): number;
 ```
 
-Defined in: [src/ml/loss.js:96](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L96)
+Defined in: [src/ml/loss.js:77](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L77)
 
 Categorical Cross-Entropy Loss
 
@@ -149,19 +143,17 @@ Small value to avoid log(0)
 
 #### Returns
 
-`Object`
-
-{loss, gradient}
+`number`
 
 ***
 
 ### hingeLoss()
 
 ```ts
-function hingeLoss(yTrue, yPred): Object;
+function hingeLoss(yTrue, yPred): number;
 ```
 
-Defined in: [src/ml/loss.js:130](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L130)
+Defined in: [src/ml/loss.js:100](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L100)
 
 Hinge Loss (for SVM)
 
@@ -181,9 +173,7 @@ Predicted scores
 
 #### Returns
 
-`Object`
-
-{loss, gradient}
+`number`
 
 ***
 
@@ -193,10 +183,10 @@ Predicted scores
 function huberLoss(
    yTrue, 
    yPred, 
-   delta?): Object;
+   delta?): number;
 ```
 
-Defined in: [src/ml/loss.js:160](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L160)
+Defined in: [src/ml/loss.js:120](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L120)
 
 Huber Loss (robust to outliers)
 
@@ -222,9 +212,7 @@ Threshold for switching from quadratic to linear
 
 #### Returns
 
-`Object`
-
-{loss, gradient}
+`number`
 
 ***
 
@@ -234,7 +222,7 @@ Threshold for switching from quadratic to linear
 function getLossFunction(name): Function;
 ```
 
-Defined in: [src/ml/loss.js:195](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/loss.js#L195)
+Defined in: [src/ml/loss.js:143](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/loss.js#L143)
 
 Get loss function by name
 

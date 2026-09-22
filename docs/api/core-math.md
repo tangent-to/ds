@@ -15,7 +15,7 @@ permalink: /api/core/math
 const EPSILON: 1e-10 = 1e-10;
 ```
 
-Defined in: [src/core/math.js:6](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L6)
+Defined in: [src/core/math.js:6](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L6)
 
 Core mathematical utilities and constants
 
@@ -27,7 +27,7 @@ Core mathematical utilities and constants
 const PI: number = Math.PI;
 ```
 
-Defined in: [src/core/math.js:7](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L7)
+Defined in: [src/core/math.js:7](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L7)
 
 ***
 
@@ -37,7 +37,7 @@ Defined in: [src/core/math.js:7](https://github.com/tangent-to/ds/blob/906004976
 const E: number = Math.E;
 ```
 
-Defined in: [src/core/math.js:8](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L8)
+Defined in: [src/core/math.js:8](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L8)
 
 ***
 
@@ -47,7 +47,7 @@ Defined in: [src/core/math.js:8](https://github.com/tangent-to/ds/blob/906004976
 const std: (arr, sample, options?) => number = stddev;
 ```
 
-Defined in: [src/core/math.js:152](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L152)
+Defined in: [src/core/math.js:152](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L152)
 
 Alias for stddev (standard deviation)
 
@@ -109,7 +109,7 @@ Standard deviation
 const sd: (arr, sample, options?) => number = stddev;
 ```
 
-Defined in: [src/core/math.js:161](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L161)
+Defined in: [src/core/math.js:161](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L161)
 
 Alias for stddev (standard deviation) - R-style naming
 
@@ -174,7 +174,7 @@ function approxEqual(
    tolerance?): boolean;
 ```
 
-Defined in: [src/core/math.js:17](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L17)
+Defined in: [src/core/math.js:17](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L17)
 
 Approximate equality comparison for floating point numbers
 
@@ -212,7 +212,7 @@ True if approximately equal
 function guardFinite(value, name?): number;
 ```
 
-Defined in: [src/core/math.js:28](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L28)
+Defined in: [src/core/math.js:28](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L28)
 
 Guard against non-finite values
 
@@ -248,7 +248,7 @@ If value is not finite
 function guardPositive(value, name?): number;
 ```
 
-Defined in: [src/core/math.js:42](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L42)
+Defined in: [src/core/math.js:42](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L42)
 
 Guard against negative values
 
@@ -284,7 +284,7 @@ If value is negative
 function guardProbability(value, name?): number;
 ```
 
-Defined in: [src/core/math.js:56](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L56)
+Defined in: [src/core/math.js:56](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L56)
 
 Guard against values outside [0, 1]
 
@@ -320,7 +320,7 @@ If value is outside [0, 1]
 function sum(arr, options?): number;
 ```
 
-Defined in: [src/core/math.js:68](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L68)
+Defined in: [src/core/math.js:68](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L68)
 
 Sum of array
 
@@ -348,7 +348,7 @@ Sum
 function mean(arr, options?): number;
 ```
 
-Defined in: [src/core/math.js:85](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L85)
+Defined in: [src/core/math.js:85](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L85)
 
 Mean of array
 
@@ -383,7 +383,7 @@ function variance(
    options?): number;
 ```
 
-Defined in: [src/core/math.js:104](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L104)
+Defined in: [src/core/math.js:104](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L104)
 
 Variance of array
 
@@ -424,7 +424,7 @@ function stddev(
    options?): number;
 ```
 
-Defined in: [src/core/math.js:141](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L141)
+Defined in: [src/core/math.js:141](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L141)
 
 Standard deviation of array
 
@@ -465,7 +465,7 @@ function quantile(
    options?): number | number[];
 ```
 
-Defined in: [src/core/math.js:205](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L205)
+Defined in: [src/core/math.js:205](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L205)
 
 Compute the quantile(s) of an array
 
@@ -513,7 +513,7 @@ Quantile value, or array of quantiles if p is an array
 function median(arr, options?): number;
 ```
 
-Defined in: [src/core/math.js:244](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L244)
+Defined in: [src/core/math.js:244](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L244)
 
 Compute the median of an array
 
@@ -558,7 +558,7 @@ function percentile(
    options?): number;
 ```
 
-Defined in: [src/core/math.js:256](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L256)
+Defined in: [src/core/math.js:256](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L256)
 
 Compute the proportion of values less than or equal to a given value
 
@@ -603,7 +603,7 @@ function summaryQuantiles(
    options?): Object;
 ```
 
-Defined in: [src/core/math.js:276](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L276)
+Defined in: [src/core/math.js:276](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L276)
 
 Compute a set of quantiles keyed by probability
 
@@ -651,7 +651,7 @@ Object mapping each probability to its quantile value
 function min(arr, options?): number;
 ```
 
-Defined in: [src/core/math.js:290](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L290)
+Defined in: [src/core/math.js:290](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L290)
 
 Compute minimum value of an array
 
@@ -683,7 +683,7 @@ Minimum value or NaN if empty
 function max(arr, options?): number;
 ```
 
-Defined in: [src/core/math.js:302](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L302)
+Defined in: [src/core/math.js:302](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L302)
 
 Compute maximum value of an array
 
@@ -718,7 +718,7 @@ function range(
    step?): number[];
 ```
 
-Defined in: [src/core/math.js:320](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/core/math.js#L320)
+Defined in: [src/core/math.js:320](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/math.js#L320)
 
 Generate a sequence of numbers
 

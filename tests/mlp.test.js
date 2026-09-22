@@ -1,172 +1,62 @@
 import { describe, it, expect } from 'vitest';
-import { createNetwork, fit, predict, evaluate } from '../src/ml/mlp.js';
 import { MLPRegressor } from '../src/ml/index.js';
+import { Pipeline } from '../src/ml/pipeline.js';
+import { StandardScaler } from '../src/ml/preprocessing.js';
 
-describe('multilayer perceptron', () => {
-  describe('createNetwork', () => {
-    it('should create network with correct structure', () => {
-      const layers = createNetwork([2, 3, 1], 'relu');
-      
-      expect(layers.length).toBe(2); // 2 layers: input->hidden, hidden->output
-      expect(layers[0].weights.length).toBe(3); // 3 hidden neurons
-      expect(layers[0].weights[0].length).toBe(2); // 2 inputs
-      expect(layers[1].weights.length).toBe(1); // 1 output
-      expect(layers[1].weights[0].length).toBe(3); // from 3 hidden
-    });
+const X = Array.from({ length: 40 }, (_, i) => [i / 10, (i % 7) / 7]);
+const y = X.map(([a, b]) => 2 * a - b + 0.5);
 
-    it('should initialize with different activations', () => {
-      // Use 3-layer networks to test hidden layer activations
-      const layers1 = createNetwork([2, 3, 2], 'sigmoid');
-      const layers2 = createNetwork([2, 3, 2], 'relu');
-      const layers3 = createNetwork([2, 3, 2], 'tanh');
-      
-      // Hidden layer should have specified activation
-      expect(layers1[0].activation).toBe('sigmoid');
-      expect(layers2[0].activation).toBe('relu');
-      expect(layers3[0].activation).toBe('tanh');
-      
-      // Output layer should always be linear
-      expect(layers1[1].activation).toBe('linear');
-      expect(layers2[1].activation).toBe('linear');
-      expect(layers3[1].activation).toBe('linear');
-    });
-
-    it('should throw error for invalid network', () => {
-      expect(() => createNetwork([2], 'relu')).toThrow();
-      expect(() => createNetwork([2, 3], 'invalid')).toThrow();
-    });
+describe('MLPRegressor on nn', () => {
+  it('fits a linear map with L-BFGS and predicts a flat array', () => {
+    const m = new MLPRegressor({ layerSizes: [2, 1], optimizer: 'lbfgs', epochs: 100, seed: 1 });
+    m.fit(X, y);
+    const pred = m.predict([[1, 0.5]]);
+    expect(pred).toHaveLength(1);
+    expect(pred[0]).toBeCloseTo(2 - 0.5 + 0.5, 3);
+    expect(m.evaluate(X, y)).toBeLessThan(1e-4);
+    expect(m.predictGradient([1, 0.5]).map((g) => +g.toFixed(3))).toEqual([2, -1]);
   });
 
-  describe('fit', () => {
-    it('should train on simple linear data', () => {
-      // y = 2x
-      const X = [[1], [2], [3], [4]];
-      const y = [2, 4, 6, 8];
-      
-      const model = fit(X, y, {
-        layerSizes: [1, 4, 1],
-        epochs: 100,
-        learningRate: 0.01
-      });
-      
-      expect(model.layers.length).toBe(2);
-      expect(model.losses.length).toBe(100);
-      // Loss should decrease
-      expect(model.losses[model.losses.length - 1]).toBeLessThan(model.losses[0]);
-    });
-
-    it('should train on XOR-like data', () => {
-      // Simple non-linear pattern
-      const X = [[0, 0], [0, 1], [1, 0], [1, 1]];
-      const y = [0, 1, 1, 0];
-      
-      const model = fit(X, y, {
-        layerSizes: [2, 4, 1],
-        activation: 'relu',
-        epochs: 200,
-        learningRate: 0.1,
-        batchSize: 4
-      });
-      
-      expect(model.epochs).toBe(200);
-      expect(model.losses.length).toBe(200);
-    });
-
-    it('should handle 2D output', () => {
-      const X = [[1], [2], [3]];
-      const y = [[1, 2], [2, 4], [3, 6]];
-      
-      const model = fit(X, y, {
-        layerSizes: [1, 3, 2],
-        epochs: 50
-      });
-      
-      expect(model.layerSizes).toEqual([1, 3, 2]);
-    });
+  it('defaults to one hidden layer, trains with Adam, and reports a summary', () => {
+    const m = new MLPRegressor({ epochs: 30, learningRate: 0.02, seed: 2 });
+    m.fit(X, y);
+    const s = m.summary();
+    expect(s.layerSizes).toEqual([2, 4, 1]);
+    expect(s.epochs).toBe(30);
+    expect(s.losses).toHaveLength(30);
+    expect(s.finalLoss).toBeLessThan(s.initialLoss);
+    expect(s.network).toContain('dense_1');
   });
 
-  describe('predict', () => {
-    it('should make predictions', () => {
-      const X = [[1], [2], [3]];
-      const y = [2, 4, 6];
-      
-      const model = fit(X, y, {
-        layerSizes: [1, 4, 1],
-        epochs: 100,
-        learningRate: 0.01
-      });
-      
-      const predictions = predict(model, [[4]]);
-      
-      expect(predictions.length).toBe(1);
-      expect(predictions[0].length).toBe(1);
-      expect(typeof predictions[0][0]).toBe('number');
-    });
-
-    it('should handle multiple predictions', () => {
-      const X = [[1], [2]];
-      const y = [1, 2];
-      
-      const model = fit(X, y, {
-        layerSizes: [1, 2, 1],
-        epochs: 50
-      });
-      
-      const predictions = predict(model, [[3], [4]]);
-      
-      expect(predictions.length).toBe(2);
-    });
+  it('checks layerSizes against the data', () => {
+    expect(() => new MLPRegressor({ layerSizes: [3, 4, 1] }).fit(X, y)).toThrow(/X has 2 features/);
+    expect(() => new MLPRegressor({ layerSizes: [2, 4, 2] }).fit(X, y)).toThrow(/y has 1 column/);
   });
 
-  describe('evaluate', () => {
-    it('should evaluate model performance', () => {
-      const X = [[1], [2], [3], [4]];
-      const y = [2, 4, 6, 8];
-      
-      const model = fit(X, y, {
-        layerSizes: [1, 4, 1],
-        epochs: 100,
-        learningRate: 0.01
-      });
-      
-      const metrics = evaluate(model, X, y);
-      
-      expect(metrics.mse).toBeGreaterThanOrEqual(0);
-      expect(metrics.mae).toBeGreaterThanOrEqual(0);
-    });
-  });
-});
-
-describe('MLPRegressor (class API)', () => {
-  it('should train and predict via class wrapper', () => {
-    const X = [[1], [2], [3], [4]];
-    const y = [2, 4, 6, 8];
-
-    const mlpReg = new MLPRegressor({
-      layerSizes: [1, 4, 1],
-      epochs: 50,
-      learningRate: 0.05,
-      batchSize: 2
-    });
-
-    mlpReg.fit(X, y);
-    const preds = mlpReg.predict([[5]]);
-
-    expect(preds.length).toBe(1);
-    expect(preds[0].length).toBe(1);
-    expect(typeof preds[0][0]).toBe('number');
+  it('dropout gives Monte Carlo intervals, and a seed makes them repeatable', () => {
+    const m = new MLPRegressor({ layerSizes: [2, 8, 1], dropout: 0.2, epochs: 20, seed: 3 });
+    m.fit(X, y);
+    const a = m.predict(X.slice(0, 3), { samples: 20, seed: 1 });
+    const b = m.predict(X.slice(0, 3), { samples: 20, seed: 1 });
+    expect(a.mean).toEqual(b.mean);
+    expect(Math.max(...a.epistemic)).toBeGreaterThan(0);
   });
 
-  it('should expose training summary', () => {
-    const X = [[1], [2]];
-    const y = [2, 4];
+  it('sits in a Pipeline and round-trips through JSON', () => {
+    const p = new Pipeline([new StandardScaler(), new MLPRegressor({ layerSizes: [2, 1], optimizer: 'lbfgs', epochs: 50, seed: 1 })]);
+    p.fit(X, y);
+    const pred = p.predict(X.slice(0, 2));
+    expect(pred[0]).toBeCloseTo(y[0], 2);
+    const m = p.params.steps[1];
+    const again = MLPRegressor.fromJSON(JSON.parse(JSON.stringify(m)));
+    expect(again.predict(X.slice(0, 2))).toEqual(m.predict(X.slice(0, 2)));
+    expect(again.summary().layerSizes).toEqual([2, 1]);
+  });
 
-    const mlpReg = new MLPRegressor({ layerSizes: [1, 3, 1], epochs: 20 });
-    mlpReg.fit(X, y);
-
-    const summary = mlpReg.summary();
-    expect(summary.epochs).toBe(20);
-    expect(summary.layerSizes).toEqual([1, 3, 1]);
-    expect(summary.finalLoss).toBeDefined();
+  it('accepts the declarative spec', () => {
+    const data = X.map(([a, b], i) => ({ a, b, y: y[i] }));
+    const m = new MLPRegressor({ layerSizes: [2, 1], optimizer: 'lbfgs', epochs: 50, seed: 1 });
+    m.fit({ X: ['a', 'b'], y: 'y', data });
+    expect(m.predict({ columns: ['a', 'b'], data: data.slice(0, 1) })[0]).toBeCloseTo(y[0], 2);
   });
 });

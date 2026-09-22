@@ -35,7 +35,7 @@ into row arrays ready for Observable Plot (beeswarm / bar).
 
 ### KernelExplainer
 
-Defined in: [src/ml/explain.js:164](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L164)
+Defined in: [src/ml/explain.js:164](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L164)
 
 Model-agnostic SHAP via the KernelSHAP weighted-linear-regression estimator.
 
@@ -60,7 +60,7 @@ const { values, baseValue } = ex.shapValues(Xtest);
 new KernelExplainer(opts?): KernelExplainer;
 ```
 
-Defined in: [src/ml/explain.js:173](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L173)
+Defined in: [src/ml/explain.js:173](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L173)
 
 ###### Parameters
 
@@ -103,7 +103,7 @@ Optional feature labels.
 _predict: (rows) => number[];
 ```
 
-Defined in: [src/ml/explain.js:177](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L177)
+Defined in: [src/ml/explain.js:177](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L177)
 
 ###### Parameters
 
@@ -121,7 +121,7 @@ Defined in: [src/ml/explain.js:177](https://github.com/tangent-to/ds/blob/906004
 background: any[];
 ```
 
-Defined in: [src/ml/explain.js:178](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L178)
+Defined in: [src/ml/explain.js:178](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L178)
 
 ##### nFeatures
 
@@ -129,7 +129,7 @@ Defined in: [src/ml/explain.js:178](https://github.com/tangent-to/ds/blob/906004
 nFeatures: any;
 ```
 
-Defined in: [src/ml/explain.js:179](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L179)
+Defined in: [src/ml/explain.js:179](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L179)
 
 ##### featureNames
 
@@ -137,7 +137,7 @@ Defined in: [src/ml/explain.js:179](https://github.com/tangent-to/ds/blob/906004
 featureNames: string[];
 ```
 
-Defined in: [src/ml/explain.js:180](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L180)
+Defined in: [src/ml/explain.js:180](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L180)
 
 ##### expectedValue
 
@@ -145,7 +145,7 @@ Defined in: [src/ml/explain.js:180](https://github.com/tangent-to/ds/blob/906004
 expectedValue: number;
 ```
 
-Defined in: [src/ml/explain.js:183](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L183)
+Defined in: [src/ml/explain.js:183](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L183)
 
 #### Methods
 
@@ -155,7 +155,7 @@ Defined in: [src/ml/explain.js:183](https://github.com/tangent-to/ds/blob/906004
 shapValues(X, opts?): object;
 ```
 
-Defined in: [src/ml/explain.js:200](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L200)
+Defined in: [src/ml/explain.js:200](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L200)
 
 Compute SHAP values.
 
@@ -222,7 +222,7 @@ featureNames: string[];
 
 ### TreeExplainer
 
-Defined in: [src/ml/explain.js:388](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L388)
+Defined in: [src/ml/explain.js:388](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L388)
 
 Exact SHAP for tree models using the path-dependent algorithm of
 Lundberg et al. (2018). Runs in O(T·L·D²) and uses each node's training
@@ -246,7 +246,7 @@ const { values, baseValue } = ex.shapValues(Xtest);
 new TreeExplainer(opts?): TreeExplainer;
 ```
 
-Defined in: [src/ml/explain.js:394](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L394)
+Defined in: [src/ml/explain.js:394](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L394)
 
 ###### Parameters
 
@@ -274,7 +274,7 @@ Fitted tree or forest regressor.
 roots: any;
 ```
 
-Defined in: [src/ml/explain.js:395](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L395)
+Defined in: [src/ml/explain.js:395](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L395)
 
 ##### nFeatures
 
@@ -282,7 +282,7 @@ Defined in: [src/ml/explain.js:395](https://github.com/tangent-to/ds/blob/906004
 nFeatures: number;
 ```
 
-Defined in: [src/ml/explain.js:402](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L402)
+Defined in: [src/ml/explain.js:402](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L402)
 
 ##### featureNames
 
@@ -290,7 +290,7 @@ Defined in: [src/ml/explain.js:402](https://github.com/tangent-to/ds/blob/906004
 featureNames: string[];
 ```
 
-Defined in: [src/ml/explain.js:403](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L403)
+Defined in: [src/ml/explain.js:403](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L403)
 
 ##### \_treeBase
 
@@ -298,7 +298,7 @@ Defined in: [src/ml/explain.js:403](https://github.com/tangent-to/ds/blob/906004
 _treeBase: any;
 ```
 
-Defined in: [src/ml/explain.js:406](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L406)
+Defined in: [src/ml/explain.js:406](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L406)
 
 ##### expectedValue
 
@@ -306,7 +306,7 @@ Defined in: [src/ml/explain.js:406](https://github.com/tangent-to/ds/blob/906004
 expectedValue: number;
 ```
 
-Defined in: [src/ml/explain.js:407](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L407)
+Defined in: [src/ml/explain.js:407](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L407)
 
 #### Methods
 
@@ -316,7 +316,7 @@ Defined in: [src/ml/explain.js:407](https://github.com/tangent-to/ds/blob/906004
 shapValues(X): object;
 ```
 
-Defined in: [src/ml/explain.js:415](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L415)
+Defined in: [src/ml/explain.js:415](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L415)
 
 ###### Parameters
 
@@ -356,7 +356,7 @@ featureNames: string[];
 
 ### PermutationExplainer
 
-Defined in: [src/ml/explain.js:623](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L623)
+Defined in: [src/ml/explain.js:623](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L623)
 
 Model-agnostic SHAP by sampling random feature orderings and accumulating
 each feature's marginal contribution as it is "turned on" (its value swapped
@@ -379,7 +379,7 @@ const { values, baseValue } = ex.shapValues(Xtest, { nPermutations: 64 });
 new PermutationExplainer(opts?): PermutationExplainer;
 ```
 
-Defined in: [src/ml/explain.js:627](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L627)
+Defined in: [src/ml/explain.js:627](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L627)
 
 ###### Parameters
 
@@ -401,7 +401,7 @@ Defined in: [src/ml/explain.js:627](https://github.com/tangent-to/ds/blob/906004
 _predict: (rows) => number[];
 ```
 
-Defined in: [src/ml/explain.js:631](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L631)
+Defined in: [src/ml/explain.js:631](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L631)
 
 ###### Parameters
 
@@ -419,7 +419,7 @@ Defined in: [src/ml/explain.js:631](https://github.com/tangent-to/ds/blob/906004
 background: any[];
 ```
 
-Defined in: [src/ml/explain.js:632](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L632)
+Defined in: [src/ml/explain.js:632](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L632)
 
 ##### nFeatures
 
@@ -427,7 +427,7 @@ Defined in: [src/ml/explain.js:632](https://github.com/tangent-to/ds/blob/906004
 nFeatures: any;
 ```
 
-Defined in: [src/ml/explain.js:633](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L633)
+Defined in: [src/ml/explain.js:633](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L633)
 
 ##### featureNames
 
@@ -435,7 +435,7 @@ Defined in: [src/ml/explain.js:633](https://github.com/tangent-to/ds/blob/906004
 featureNames: any;
 ```
 
-Defined in: [src/ml/explain.js:634](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L634)
+Defined in: [src/ml/explain.js:634](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L634)
 
 ##### expectedValue
 
@@ -443,7 +443,7 @@ Defined in: [src/ml/explain.js:634](https://github.com/tangent-to/ds/blob/906004
 expectedValue: number;
 ```
 
-Defined in: [src/ml/explain.js:636](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L636)
+Defined in: [src/ml/explain.js:636](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L636)
 
 #### Methods
 
@@ -453,7 +453,7 @@ Defined in: [src/ml/explain.js:636](https://github.com/tangent-to/ds/blob/906004
 shapValues(X, opts?): object;
 ```
 
-Defined in: [src/ml/explain.js:647](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L647)
+Defined in: [src/ml/explain.js:647](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L647)
 
 ###### Parameters
 
@@ -512,7 +512,7 @@ function kernelShap(
    opts): object;
 ```
 
-Defined in: [src/ml/explain.js:733](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L733)
+Defined in: [src/ml/explain.js:733](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L733)
 
 Convenience: KernelSHAP in one call. See [KernelExplainer](#kernelexplainer).
 
@@ -584,7 +584,7 @@ optional featureNames?: string[];
 function treeShap(spec, X): object;
 ```
 
-Defined in: [src/ml/explain.js:748](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L748)
+Defined in: [src/ml/explain.js:748](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L748)
 
 Convenience: TreeSHAP in one call. See [TreeExplainer](#treeexplainer).
 
@@ -638,7 +638,7 @@ optional featureNames?: string[];
 function importanceData(res): object[];
 ```
 
-Defined in: [src/ml/explain.js:763](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L763)
+Defined in: [src/ml/explain.js:763](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L763)
 
 Global feature importance = mean(|SHAP|) per feature, sorted descending.
 Plug into `Plot.barX(importanceData(res), { x: "importance", y: "feature" })`.
@@ -669,7 +669,7 @@ shapValues() output.
 function summaryData(res, X): object[];
 ```
 
-Defined in: [src/ml/explain.js:786](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/explain.js#L786)
+Defined in: [src/ml/explain.js:786](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/explain.js#L786)
 
 Tidy long-form rows for a beeswarm / summary plot: one row per
 (instance, feature) carrying the SHAP value and the original feature value.

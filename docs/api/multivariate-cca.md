@@ -18,7 +18,7 @@ function fit(
    options?): Object;
 ```
 
-Defined in: [src/mva/cca.js:28](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L28)
+Defined in: [src/mva/cca.js:28](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/cca.js#L28)
 
 Fit CCA model.
 
@@ -84,7 +84,7 @@ function transformX(
    options?): Object[];
 ```
 
-Defined in: [src/mva/cca.js:211](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L211)
+Defined in: [src/mva/cca.js:211](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/cca.js#L211)
 
 Project new X data onto the fitted X canonical variates
 
@@ -125,7 +125,7 @@ function transformY(
    options?): Object[];
 ```
 
-Defined in: [src/mva/cca.js:235](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L235)
+Defined in: [src/mva/cca.js:235](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/cca.js#L235)
 
 Project new Y data onto the fitted Y canonical variates
 
@@ -167,7 +167,7 @@ function transform(
    options?): Object;
 ```
 
-Defined in: [src/mva/cca.js:260](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/cca.js#L260)
+Defined in: [src/mva/cca.js:260](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/cca.js#L260)
 
 Project new X and Y data onto their fitted canonical variates
 

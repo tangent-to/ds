@@ -15,7 +15,7 @@ permalink: /api/machine-learning/hca
 function fit(X, options?): Object;
 ```
 
-Defined in: [src/ml/hca.js:132](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/hca.js#L132)
+Defined in: [src/ml/hca.js:132](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/hca.js#L132)
 
 Fit hierarchical clustering
 
@@ -47,7 +47,7 @@ Data matrix
 function cut(model, k): number[];
 ```
 
-Defined in: [src/ml/hca.js:233](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/hca.js#L233)
+Defined in: [src/ml/hca.js:233](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/hca.js#L233)
 
 Cut a hierarchical clustering dendrogram into k flat clusters
 
@@ -79,7 +79,7 @@ Cluster label for each of the n samples
 function cutHeight(model, height): number[];
 ```
 
-Defined in: [src/ml/hca.js:287](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/ml/hca.js#L287)
+Defined in: [src/ml/hca.js:287](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/hca.js#L287)
 
 Cut a hierarchical clustering dendrogram at a given merge height
 

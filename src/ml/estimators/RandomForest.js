@@ -2,6 +2,7 @@
  * Random Forest estimators built on top of Decision Trees.
  */
 
+import { createRng } from '@tangent.to/proba';
 import { Classifier, Regressor, Estimator } from "../../core/estimators/estimator.js";
 import { prepareXY, prepareX } from "../../core/table.js";
 import {
@@ -32,15 +33,10 @@ function bootstrapSample(X, y, random, maxSamples = null) {
   return { XSample, ySample, indices, oobIndices: Array.from(oobIndices) };
 }
 
+/** Seeded draws from proba's generator, the one the suite seeds with; Math.random when unseeded. */
 function createRandomGenerator(seed) {
-  if (seed === null || seed === undefined) {
-    return Math.random;
-  }
-  let state = seed >>> 0;
-  return () => {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    return state / 4294967296;
-  };
+  if (seed === null || seed === undefined) return Math.random;
+  return createRng(seed).float;
 }
 
 function prepareDataset(X, y) {

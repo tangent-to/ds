@@ -1,13 +1,14 @@
 /**
- * Differentiable loss functions for optimization
- * Each function returns {loss, gradient}
+ * Loss functions on plain arrays, each returning a number. For a loss to
+ * train a network with, see `@tangent.to/nn`, whose losses are expressions
+ * on the tape and differentiate themselves.
  */
 
 /**
  * Mean Squared Error Loss
  * @param {Array<number>} yTrue - True values
  * @param {Array<number>} yPred - Predicted values
- * @returns {Object} {loss, gradient}
+ * @returns {number}
  */
 export function mseLoss(yTrue, yPred) {
   const n = yTrue.length;
@@ -20,20 +21,14 @@ export function mseLoss(yTrue, yPred) {
   }
   loss /= n;
   
-  // Compute gradient
-  const gradient = [];
-  for (let i = 0; i < n; i++) {
-    gradient.push((2 / n) * (yPred[i] - yTrue[i]));
-  }
-  
-  return { loss, gradient };
+  return loss;
 }
 
 /**
  * Mean Absolute Error Loss
  * @param {Array<number>} yTrue - True values
  * @param {Array<number>} yPred - Predicted values
- * @returns {Object} {loss, gradient}
+ * @returns {number}
  */
 export function maeLoss(yTrue, yPred) {
   const n = yTrue.length;
@@ -45,14 +40,7 @@ export function maeLoss(yTrue, yPred) {
   }
   loss /= n;
   
-  // Compute gradient (subgradient at 0)
-  const gradient = [];
-  for (let i = 0; i < n; i++) {
-    const diff = yPred[i] - yTrue[i];
-    gradient.push((1 / n) * Math.sign(diff));
-  }
-  
-  return { loss, gradient };
+  return loss;
 }
 
 /**
@@ -60,7 +48,7 @@ export function maeLoss(yTrue, yPred) {
  * @param {Array<number>} yTrue - True labels (0 or 1)
  * @param {Array<number>} yPred - Predicted probabilities
  * @param {number} epsilon - Small value to avoid log(0)
- * @returns {Object} {loss, gradient}
+ * @returns {number}
  */
 export function logLoss(yTrue, yPred, epsilon = 1e-15) {
   const n = yTrue.length;
@@ -76,14 +64,7 @@ export function logLoss(yTrue, yPred, epsilon = 1e-15) {
   }
   loss /= n;
   
-  // Compute gradient
-  const gradient = [];
-  for (let i = 0; i < n; i++) {
-    gradient.push((1 / n) * ((yPredClipped[i] - yTrue[i]) / 
-                  (yPredClipped[i] * (1 - yPredClipped[i]))));
-  }
-  
-  return { loss, gradient };
+  return loss;
 }
 
 /**
@@ -91,7 +72,7 @@ export function logLoss(yTrue, yPred, epsilon = 1e-15) {
  * @param {Array<Array<number>>} yTrue - One-hot encoded true labels
  * @param {Array<Array<number>>} yPred - Predicted probabilities
  * @param {number} epsilon - Small value to avoid log(0)
- * @returns {Object} {loss, gradient}
+ * @returns {number}
  */
 export function crossEntropy(yTrue, yPred, epsilon = 1e-15) {
   const n = yTrue.length;
@@ -107,25 +88,14 @@ export function crossEntropy(yTrue, yPred, epsilon = 1e-15) {
   }
   loss /= n;
   
-  // Compute gradient
-  const gradient = [];
-  for (let i = 0; i < n; i++) {
-    const gradRow = [];
-    for (let j = 0; j < k; j++) {
-      const pred = Math.max(epsilon, Math.min(1 - epsilon, yPred[i][j]));
-      gradRow.push((1 / n) * (-yTrue[i][j] / pred));
-    }
-    gradient.push(gradRow);
-  }
-  
-  return { loss, gradient };
+  return loss;
 }
 
 /**
  * Hinge Loss (for SVM)
  * @param {Array<number>} yTrue - True labels (-1 or 1)
  * @param {Array<number>} yPred - Predicted scores
- * @returns {Object} {loss, gradient}
+ * @returns {number}
  */
 export function hingeLoss(yTrue, yPred) {
   const n = yTrue.length;
@@ -137,17 +107,7 @@ export function hingeLoss(yTrue, yPred) {
   }
   loss /= n;
   
-  // Compute gradient (subgradient)
-  const gradient = [];
-  for (let i = 0; i < n; i++) {
-    if (yTrue[i] * yPred[i] < 1) {
-      gradient.push((1 / n) * (-yTrue[i]));
-    } else {
-      gradient.push(0);
-    }
-  }
-  
-  return { loss, gradient };
+  return loss;
 }
 
 /**
@@ -155,7 +115,7 @@ export function hingeLoss(yTrue, yPred) {
  * @param {Array<number>} yTrue - True values
  * @param {Array<number>} yPred - Predicted values
  * @param {number} delta - Threshold for switching from quadratic to linear
- * @returns {Object} {loss, gradient}
+ * @returns {number}
  */
 export function huberLoss(yTrue, yPred, delta = 1.0) {
   const n = yTrue.length;
@@ -172,19 +132,7 @@ export function huberLoss(yTrue, yPred, delta = 1.0) {
   }
   loss /= n;
   
-  // Compute gradient
-  const gradient = [];
-  for (let i = 0; i < n; i++) {
-    const diff = yPred[i] - yTrue[i];
-    const absDiff = Math.abs(diff);
-    if (absDiff <= delta) {
-      gradient.push((1 / n) * diff);
-    } else {
-      gradient.push((1 / n) * delta * Math.sign(diff));
-    }
-  }
-  
-  return { loss, gradient };
+  return loss;
 }
 
 /**

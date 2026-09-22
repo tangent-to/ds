@@ -18,7 +18,7 @@ function fit(
    options?): Object;
 ```
 
-Defined in: [src/mva/lda.js:34](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/lda.js#L34)
+Defined in: [src/mva/lda.js:34](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/lda.js#L34)
 
 Fit LDA model
 
@@ -84,7 +84,7 @@ Fitted LDA model
 function transform(model, X): Object[];
 ```
 
-Defined in: [src/mva/lda.js:402](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/lda.js#L402)
+Defined in: [src/mva/lda.js:390](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/lda.js#L390)
 
 Project new data onto the fitted discriminant axes
 
@@ -116,7 +116,7 @@ Discriminant score objects, one per row
 function predict(model, X): (string | number)[];
 ```
 
-Defined in: [src/mva/lda.js:451](https://github.com/tangent-to/ds/blob/906004976edc5a867a581f4e234a37a94ce2f592/src/mva/lda.js#L451)
+Defined in: [src/mva/lda.js:439](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/lda.js#L439)
 
 Predict class labels for new data using nearest class-mean in discriminant space
 
