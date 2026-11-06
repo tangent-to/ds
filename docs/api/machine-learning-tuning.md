@@ -15,7 +15,7 @@ permalink: /api/machine-learning/tuning
 const distributions: object;
 ```
 
-Defined in: [src/ml/tuning.js:308](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/tuning.js#L308)
+Defined in: [src/ml/tuning.js:308](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/ml/tuning.js#L308)
 
 Create parameter distribution objects
 
@@ -119,7 +119,7 @@ function GridSearchCV(
    options?): Object;
 ```
 
-Defined in: [src/ml/tuning.js:20](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/tuning.js#L20)
+Defined in: [src/ml/tuning.js:20](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/ml/tuning.js#L20)
 
 Grid Search Cross-Validation
 
@@ -181,7 +181,7 @@ function RandomSearchCV(
    options?): Object;
 ```
 
-Defined in: [src/ml/tuning.js:123](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/tuning.js#L123)
+Defined in: [src/ml/tuning.js:123](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/ml/tuning.js#L123)
 
 Random Search Cross-Validation
 

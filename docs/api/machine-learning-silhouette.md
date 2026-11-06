@@ -15,7 +15,7 @@ permalink: /api/machine-learning/silhouette
 function silhouetteSamples(X, labels): object[];
 ```
 
-Defined in: [src/ml/silhouette.js:60](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/silhouette.js#L60)
+Defined in: [src/ml/silhouette.js:60](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/ml/silhouette.js#L60)
 
 Compute the silhouette value for each sample
 
@@ -51,7 +51,7 @@ Per-sample silhouette records
 function silhouetteByCluster(X, labels): object[];
 ```
 
-Defined in: [src/ml/silhouette.js:130](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/ml/silhouette.js#L130)
+Defined in: [src/ml/silhouette.js:130](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/ml/silhouette.js#L130)
 
 Group per-sample silhouette values by cluster and compute cluster averages
 

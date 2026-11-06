@@ -11,7 +11,7 @@ permalink: /api/multivariate/composition
 
 ### CompositionalImputer
 
-Defined in: [src/mva/composition.js:519](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L519)
+Defined in: [src/mva/composition.js:571](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L571)
 
 Fit/transform wrapper around [imputeMissing](#imputemissing) for leakage-free
 cross-validation. `fit()` learns the CLR mean of a training composition
@@ -38,7 +38,7 @@ const testZ  = imp.transform(testComp);  // completed with train-only stats
 new CompositionalImputer(opts?): CompositionalImputer;
 ```
 
-Defined in: [src/mva/composition.js:525](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L525)
+Defined in: [src/mva/composition.js:577](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L577)
 
 ###### Parameters
 
@@ -68,7 +68,7 @@ Convergence tolerance for the training fit.
 maxIter: number;
 ```
 
-Defined in: [src/mva/composition.js:526](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L526)
+Defined in: [src/mva/composition.js:578](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L578)
 
 ##### tol
 
@@ -76,7 +76,7 @@ Defined in: [src/mva/composition.js:526](https://github.com/tangent-to/ds/blob/e
 tol: number;
 ```
 
-Defined in: [src/mva/composition.js:527](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L527)
+Defined in: [src/mva/composition.js:579](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L579)
 
 ##### fitted
 
@@ -84,7 +84,7 @@ Defined in: [src/mva/composition.js:527](https://github.com/tangent-to/ds/blob/e
 fitted: boolean;
 ```
 
-Defined in: [src/mva/composition.js:528](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L528)
+Defined in: [src/mva/composition.js:580](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L580)
 
 ##### meanClr
 
@@ -92,7 +92,7 @@ Defined in: [src/mva/composition.js:528](https://github.com/tangent-to/ds/blob/e
 meanClr: any[] | undefined;
 ```
 
-Defined in: [src/mva/composition.js:552](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L552)
+Defined in: [src/mva/composition.js:604](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L604)
 
 ##### D
 
@@ -100,7 +100,7 @@ Defined in: [src/mva/composition.js:552](https://github.com/tangent-to/ds/blob/e
 D: any;
 ```
 
-Defined in: [src/mva/composition.js:553](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L553)
+Defined in: [src/mva/composition.js:605](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L605)
 
 #### Methods
 
@@ -110,7 +110,7 @@ Defined in: [src/mva/composition.js:553](https://github.com/tangent-to/ds/blob/e
 fit(mat): CompositionalImputer;
 ```
 
-Defined in: [src/mva/composition.js:541](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L541)
+Defined in: [src/mva/composition.js:593](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L593)
 
 Learn the CLR mean of the (imputed) training composition.
 
@@ -134,7 +134,7 @@ this
 transform(mat): number[][];
 ```
 
-Defined in: [src/mva/composition.js:563](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L563)
+Defined in: [src/mva/composition.js:615](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L615)
 
 Complete each row of `mat` toward the learned CLR mean.
 
@@ -158,7 +158,7 @@ Strictly-positive completed composition.
 fitTransform(mat): number[][];
 ```
 
-Defined in: [src/mva/composition.js:595](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L595)
+Defined in: [src/mva/composition.js:647](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L647)
 
 Convenience: fit then transform the same matrix.
 
@@ -180,7 +180,7 @@ Strictly-positive completed composition
 
 ### CompositionalOutlierDetector
 
-Defined in: [src/mva/composition.js:620](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L620)
+Defined in: [src/mva/composition.js:672](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L672)
 
 Detect compositional outliers via the Mahalanobis distance in log-ratio
 space, tested as a chi-squared variable (Filzmoser & Hron; Parent & Dafir,
@@ -229,7 +229,7 @@ Log-ratio coordinates to use.
 new CompositionalOutlierDetector(opts?): CompositionalOutlierDetector;
 ```
 
-Defined in: [src/mva/composition.js:626](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L626)
+Defined in: [src/mva/composition.js:678](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L678)
 
 ###### Parameters
 
@@ -259,7 +259,7 @@ Significance level for the outlier flag.
 transform: "clr" | "ilr";
 ```
 
-Defined in: [src/mva/composition.js:627](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L627)
+Defined in: [src/mva/composition.js:679](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L679)
 
 ##### alpha
 
@@ -267,7 +267,7 @@ Defined in: [src/mva/composition.js:627](https://github.com/tangent-to/ds/blob/e
 alpha: number;
 ```
 
-Defined in: [src/mva/composition.js:628](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L628)
+Defined in: [src/mva/composition.js:680](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L680)
 
 ##### fitted
 
@@ -275,7 +275,7 @@ Defined in: [src/mva/composition.js:628](https://github.com/tangent-to/ds/blob/e
 fitted: boolean;
 ```
 
-Defined in: [src/mva/composition.js:629](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L629)
+Defined in: [src/mva/composition.js:681](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L681)
 
 ##### nParts
 
@@ -283,7 +283,7 @@ Defined in: [src/mva/composition.js:629](https://github.com/tangent-to/ds/blob/e
 nParts: any;
 ```
 
-Defined in: [src/mva/composition.js:643](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L643)
+Defined in: [src/mva/composition.js:695](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L695)
 
 ##### dim
 
@@ -291,7 +291,7 @@ Defined in: [src/mva/composition.js:643](https://github.com/tangent-to/ds/blob/e
 dim: any;
 ```
 
-Defined in: [src/mva/composition.js:644](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L644)
+Defined in: [src/mva/composition.js:696](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L696)
 
 ##### df
 
@@ -299,7 +299,7 @@ Defined in: [src/mva/composition.js:644](https://github.com/tangent-to/ds/blob/e
 df: any;
 ```
 
-Defined in: [src/mva/composition.js:645](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L645)
+Defined in: [src/mva/composition.js:697](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L697)
 
 ##### center
 
@@ -307,7 +307,7 @@ Defined in: [src/mva/composition.js:645](https://github.com/tangent-to/ds/blob/e
 center: any[] | undefined;
 ```
 
-Defined in: [src/mva/composition.js:650](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L650)
+Defined in: [src/mva/composition.js:702](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L702)
 
 ##### covInverse
 
@@ -315,7 +315,7 @@ Defined in: [src/mva/composition.js:650](https://github.com/tangent-to/ds/blob/e
 covInverse: any;
 ```
 
-Defined in: [src/mva/composition.js:661](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L661)
+Defined in: [src/mva/composition.js:713](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L713)
 
 #### Methods
 
@@ -325,7 +325,7 @@ Defined in: [src/mva/composition.js:661](https://github.com/tangent-to/ds/blob/e
 fit(mat): CompositionalOutlierDetector;
 ```
 
-Defined in: [src/mva/composition.js:638](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L638)
+Defined in: [src/mva/composition.js:690](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L690)
 
 Estimate the centroid and (pseudo-inverse) covariance in log-ratio space
 from a reference composition - e.g. a healthy / high-yielding subpopulation.
@@ -350,7 +350,7 @@ this
 distance(mat): number[];
 ```
 
-Defined in: [src/mva/composition.js:667](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L667)
+Defined in: [src/mva/composition.js:719](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L719)
 
 Squared Mahalanobis distance in log-ratio space for each row of `mat`.
 
@@ -370,7 +370,7 @@ Squared Mahalanobis distance in log-ratio space for each row of `mat`.
 pValue(mat): number[];
 ```
 
-Defined in: [src/mva/composition.js:684](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L684)
+Defined in: [src/mva/composition.js:736](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L736)
 
 Chi-squared p-value (1 − CDF) for each row's Mahalanobis distance.
 
@@ -390,7 +390,7 @@ Chi-squared p-value (1 − CDF) for each row's Mahalanobis distance.
 test(mat): object;
 ```
 
-Defined in: [src/mva/composition.js:694](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L694)
+Defined in: [src/mva/composition.js:746](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L746)
 
 Test rows for compositional outlyingness against the fitted reference.
 
@@ -439,7 +439,7 @@ df: number;
 const centralize: (mat) => any[] | any[][] = center;
 ```
 
-Defined in: [src/mva/composition.js:167](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L167)
+Defined in: [src/mva/composition.js:219](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L219)
 
 Alias for center
 
@@ -467,7 +467,7 @@ Centered composition
 function closure(mat): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:89](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L89)
+Defined in: [src/mva/composition.js:89](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L89)
 
 Normalizes rows to sum to 1 (closure operation)
 
@@ -493,9 +493,28 @@ Closed composition (rows sum to 1)
 function multiplicativeReplacement(mat, delta?): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:110](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L110)
+Defined in: [src/mva/composition.js:137](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L137)
 
-Replaces zeros with small delta values before closure
+Multiplicative replacement of zeros (Martín-Fernández, Barceló-Vidal &
+Pawlowsky-Glahn, 2003).
+
+Each row is first closed to sum to 1, so `delta` is a proportion of the row
+total. For a closed row `x` and thresholds `δ_j`:
+
+- `r_j = δ_j` where `x_j = 0`;
+- `r_j = x_j · (1 − Σ_{k : x_k = 0} δ_k)` elsewhere.
+
+Equivalently, on a row of total `c`, zeros become `δ_j · c` and the non-zero
+parts are multiplied by `1 − Σ_{k : x_k = 0} δ_k`. The total does not change.
+Non-zero parts are rescaled by a common factor, so their ratios are kept:
+`r_i / r_j = x_i / x_j`. This is the subcompositional coherence that the
+method exists for. A row with no zeros is only closed. The result is closed
+(rows sum to 1).
+
+Reference: Martín-Fernández, J. A., Barceló-Vidal, C. & Pawlowsky-Glahn, V.
+(2003). Dealing with zeros and missing values in compositional data sets
+using nonparametric imputation. *Mathematical Geology*, 35(3), 253–278.
+https://doi.org/10.1023/A:1023866030544
 
 #### Parameters
 
@@ -503,19 +522,29 @@ Replaces zeros with small delta values before closure
 
 `any`[] \| `any`[][]
 
-Input compositional data
+Compositional data: non-negative, every
+  row with a positive total. Rows need not be closed.
 
 ##### delta?
 
-`number` = `1e-6`
+`number` \| `number`[]
 
-Replacement value for zeros (default: 1e-6)
+Threshold for the zeros, as a
+  proportion of the row total. Pass one number for every part, or an array
+  with one threshold per part (default: 1e-6).
 
 #### Returns
 
 `any`[] \| `any`[][]
 
-Composition with zeros replaced
+Closed composition with no zeros, in the shape
+  of the input (vector or matrix).
+
+#### Throws
+
+If `mat` has a negative value, if a row has a zero total,
+  if `delta` is not positive or (as an array) does not have one entry per
+  part, or if a row's thresholds for its zeros sum to 1 or more.
 
 ***
 
@@ -525,7 +554,7 @@ Composition with zeros replaced
 function power(mat, pow): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:135](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L135)
+Defined in: [src/mva/composition.js:187](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L187)
 
 Raises components to a power and renormalizes
 
@@ -555,7 +584,7 @@ Powered and renormalized composition
 function center(mat): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:149](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L149)
+Defined in: [src/mva/composition.js:201](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L201)
 
 Centers compositions by geometric mean
 
@@ -584,7 +613,7 @@ function clr(
    delta?): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:176](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L176)
+Defined in: [src/mva/composition.js:228](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L228)
 
 Centered log-ratio transformation (CLR)
 
@@ -604,9 +633,9 @@ If true, replace zeros before transform
 
 ##### delta?
 
-`number` = `1e-6`
+`number` \| `number`[]
 
-Replacement value for zeros
+Threshold for zeros, passed to [multiplicativeReplacement](#multiplicativereplacement)
 
 #### Returns
 
@@ -622,7 +651,7 @@ CLR-transformed data
 function clrInv(mat): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:200](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L200)
+Defined in: [src/mva/composition.js:252](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L252)
 
 Inverse centered log-ratio transformation
 
@@ -652,7 +681,7 @@ function alr(
    delta?): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:217](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L217)
+Defined in: [src/mva/composition.js:269](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L269)
 
 Additive log-ratio transformation (ALR)
 Uses the last component as the reference denominator
@@ -679,9 +708,9 @@ If true, replace zeros before transform
 
 ##### delta?
 
-`number` = `1e-6`
+`number` \| `number`[]
 
-Replacement value for zeros
+Threshold for zeros, passed to [multiplicativeReplacement](#multiplicativereplacement)
 
 #### Returns
 
@@ -697,7 +726,7 @@ ALR-transformed data (dimension reduced by 1)
 function alrInv(mat, denomIdx?): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:254](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L254)
+Defined in: [src/mva/composition.js:306](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L306)
 
 Inverse additive log-ratio transformation
 
@@ -729,7 +758,7 @@ Composition (rows sum to 1)
 function sbpBasis(partition): any[][];
 ```
 
-Defined in: [src/mva/composition.js:283](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L283)
+Defined in: [src/mva/composition.js:335](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L335)
 
 Constructs orthonormal basis from sequential binary partition
 
@@ -759,7 +788,7 @@ function ilr(
    delta?): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:317](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L317)
+Defined in: [src/mva/composition.js:369](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L369)
 
 Isometric log-ratio transformation (ILR)
 
@@ -785,9 +814,9 @@ If true, replace zeros before transform
 
 ##### delta?
 
-`number` = `1e-6`
+`number` \| `number`[]
 
-Replacement value for zeros
+Threshold for zeros, passed to [multiplicativeReplacement](#multiplicativereplacement)
 
 #### Returns
 
@@ -803,7 +832,7 @@ ILR-transformed data
 function ilrInv(mat, basis?): any[] | any[][];
 ```
 
-Defined in: [src/mva/composition.js:355](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L355)
+Defined in: [src/mva/composition.js:407](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L407)
 
 Inverse isometric log-ratio transformation
 
@@ -835,7 +864,7 @@ Composition (rows sum to 1)
 function inner(x, y): number | any[];
 ```
 
-Defined in: [src/mva/composition.js:387](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L387)
+Defined in: [src/mva/composition.js:439](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L439)
 
 Computes inner product in the Aitchison simplex
 
@@ -867,7 +896,7 @@ Inner product(s)
 function imputeMissing(mat, opts?): number[][];
 ```
 
-Defined in: [src/mva/composition.js:434](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L434)
+Defined in: [src/mva/composition.js:486](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L486)
 
 Impute missing values in compositional data, respecting the simplex.
 
@@ -917,7 +946,7 @@ Completed, strictly-positive composition.
 function compositionalOutliers(mat, opts?): object;
 ```
 
-Defined in: [src/mva/composition.js:721](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/composition.js#L721)
+Defined in: [src/mva/composition.js:773](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/composition.js#L773)
 
 Detect compositional outliers via the Mahalanobis distance in log-ratio
 space, tested as a chi-squared variable (Filzmoser & Hron; Parent & Dafir,

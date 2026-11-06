@@ -102,25 +102,77 @@ export function closure(mat) {
 }
 
 /**
- * Replaces zeros with small delta values before closure
- * @param {Array|Array<Array>} mat - Input compositional data
- * @param {number} delta - Replacement value for zeros (default: 1e-6)
- * @returns {Array|Array<Array>} Composition with zeros replaced
+ * Multiplicative replacement of zeros (Martín-Fernández, Barceló-Vidal &
+ * Pawlowsky-Glahn, 2003).
+ *
+ * Each row is first closed to sum to 1, so `delta` is a proportion of the row
+ * total. For a closed row `x` and thresholds `δ_j`:
+ *
+ * - `r_j = δ_j` where `x_j = 0`;
+ * - `r_j = x_j · (1 − Σ_{k : x_k = 0} δ_k)` elsewhere.
+ *
+ * Equivalently, on a row of total `c`, zeros become `δ_j · c` and the non-zero
+ * parts are multiplied by `1 − Σ_{k : x_k = 0} δ_k`. The total does not change.
+ * Non-zero parts are rescaled by a common factor, so their ratios are kept:
+ * `r_i / r_j = x_i / x_j`. This is the subcompositional coherence that the
+ * method exists for. A row with no zeros is only closed. The result is closed
+ * (rows sum to 1).
+ *
+ * Reference: Martín-Fernández, J. A., Barceló-Vidal, C. & Pawlowsky-Glahn, V.
+ * (2003). Dealing with zeros and missing values in compositional data sets
+ * using nonparametric imputation. *Mathematical Geology*, 35(3), 253–278.
+ * https://doi.org/10.1023/A:1023866030544
+ *
+ * @param {Array|Array<Array>} mat - Compositional data: non-negative, every
+ *   row with a positive total. Rows need not be closed.
+ * @param {number|Array<number>} delta - Threshold for the zeros, as a
+ *   proportion of the row total. Pass one number for every part, or an array
+ *   with one threshold per part (default: 1e-6).
+ * @returns {Array|Array<Array>} Closed composition with no zeros, in the shape
+ *   of the input (vector or matrix).
+ * @throws {Error} If `mat` has a negative value, if a row has a zero total,
+ *   if `delta` is not positive or (as an array) does not have one entry per
+ *   part, or if a row's thresholds for its zeros sum to 1 or more.
  */
 export function multiplicativeReplacement(mat, delta = 1e-6) {
   const { mat: mat2d, was1d } = _ensureMatrix(mat);
   _checkPositive(mat2d, 'mat');
 
-  const replaced = mat2d.map((row) => {
-    const numZeros = row.filter((x) => x === 0).length;
-    if (numZeros === 0) {
-      return row;
+  const D = mat2d[0]?.length ?? 0;
+  const deltas = Array.isArray(delta) ? delta : new Array(D).fill(delta);
+  if (deltas.length !== D) {
+    throw new Error(
+      `delta has ${deltas.length} entries but the composition has ${D} parts`,
+    );
+  }
+  if (!deltas.every((d) => typeof d === 'number' && Number.isFinite(d) && d > 0)) {
+    throw new Error('delta must be a positive finite number, or an array of them');
+  }
+
+  const replaced = mat2d.map((row, i) => {
+    if (row.length !== D) {
+      throw new Error(`row ${i} has ${row.length} parts, expected ${D}`);
+    }
+    const total = row.reduce((sum, x) => sum + x, 0);
+    if (!(total > 0)) {
+      throw new Error(`row ${i} has a zero total: it cannot be closed`);
+    }
+    const closed = row.map((x) => x / total);
+
+    let zeroDelta = 0;
+    for (let j = 0; j < D; j++) {
+      if (row[j] === 0) zeroDelta += deltas[j];
+    }
+    if (zeroDelta === 0) return closed;
+    if (zeroDelta >= 1) {
+      throw new Error(
+        `row ${i}: the thresholds of its zeros sum to ${zeroDelta}, which is ` +
+          'not below the row total (1 once closed); lower delta',
+      );
     }
 
-    const numNonZeros = row.length - numZeros;
-    const adjustment = (delta * numZeros) / numNonZeros;
-
-    return row.map((x) => x === 0 ? delta : x - adjustment);
+    const factor = 1 - zeroDelta;
+    return closed.map((x, j) => (row[j] === 0 ? deltas[j] : x * factor));
   });
 
   return _restoreShape(closure(replaced), was1d);
@@ -170,7 +222,7 @@ export const centralize = center;
  * Centered log-ratio transformation (CLR)
  * @param {Array|Array<Array>} mat - Input compositional data (positive values)
  * @param {boolean} handleZeros - If true, replace zeros before transform
- * @param {number} delta - Replacement value for zeros
+ * @param {number|Array<number>} delta - Threshold for zeros, passed to {@link multiplicativeReplacement}
  * @returns {Array|Array<Array>} CLR-transformed data
  */
 export function clr(mat, handleZeros = false, delta = 1e-6) {
@@ -211,7 +263,7 @@ export function clrInv(mat) {
  * @param {Array|Array<Array>} mat - Input compositional data
  * @param {number|null} denomIdx - Index of denominator component (default: last)
  * @param {boolean} handleZeros - If true, replace zeros before transform
- * @param {number} delta - Replacement value for zeros
+ * @param {number|Array<number>} delta - Threshold for zeros, passed to {@link multiplicativeReplacement}
  * @returns {Array|Array<Array>} ALR-transformed data (dimension reduced by 1)
  */
 export function alr(mat, denomIdx = null, handleZeros = false, delta = 1e-6) {
@@ -311,7 +363,7 @@ export function sbpBasis(partition) {
  * @param {Array|Array<Array>} mat - Input compositional data
  * @param {Array<Array>|null} basis - Orthonormal basis (default: Gram-Schmidt basis)
  * @param {boolean} handleZeros - If true, replace zeros before transform
- * @param {number} delta - Replacement value for zeros
+ * @param {number|Array<number>} delta - Threshold for zeros, passed to {@link multiplicativeReplacement}
  * @returns {Array|Array<Array>} ILR-transformed data
  */
 export function ilr(mat, basis = null, handleZeros = false, delta = 1e-6) {

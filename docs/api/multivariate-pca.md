@@ -15,7 +15,7 @@ permalink: /api/multivariate/pca
 function fit(X, options?): Object;
 ```
 
-Defined in: [src/mva/pca.js:62](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/pca.js#L62)
+Defined in: [src/mva/pca.js:62](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/pca.js#L62)
 
 Fit PCA model
 
@@ -47,7 +47,7 @@ PCA model
 function transform(model, X): Object[];
 ```
 
-Defined in: [src/mva/pca.js:255](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/pca.js#L255)
+Defined in: [src/mva/pca.js:255](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/pca.js#L255)
 
 Transform new data using fitted PCA model
 
@@ -79,7 +79,7 @@ Transformed scores
 function cumulativeVariance(model): number[];
 ```
 
-Defined in: [src/mva/pca.js:316](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/mva/pca.js#L316)
+Defined in: [src/mva/pca.js:316](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/mva/pca.js#L316)
 
 Get cumulative variance explained
 

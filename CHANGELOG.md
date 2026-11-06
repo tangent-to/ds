@@ -9,6 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-06
+
+### Fixed
+
+- **`mva.composition.multiplicativeReplacement` now does a multiplicative
+  replacement. Results change for every composition that contains a zero**,
+  and so do `clr`, `alr` and `ilr` called with `handleZeros: true`.
+
+  The old code subtracted one amount from every non-zero part of a row:
+
+  ```
+  l   = delta · nZeros / (D − nZeros)
+  r_j = delta     if x_j = 0
+  r_j = x_j − l   otherwise          (then closure)
+  ```
+
+  The function now follows Martín-Fernández, Barceló-Vidal & Pawlowsky-Glahn
+  (2003, *Mathematical Geology* 35(3), 253–278). It first closes the row, so
+  `delta` is a proportion of the row total, then:
+
+  ```
+  r_j = δ_j                          if x_j = 0
+  r_j = x_j · (1 − Σ_{k : x_k = 0} δ_k)   otherwise
+  ```
+
+  The old formula had three defects. (1) A small part went negative as soon as
+  it was below `l`, and `closure` then threw "mat cannot contain negative
+  values". With seven parties and `delta = (1/7)²`, the row
+  `[0, 0, 0.45, 0.038, 0.47, 0.008, 0.033]` failed this way. (2) Ratios
+  between non-zero parts were not kept, and keeping them (subcompositional
+  coherence) is what justifies the method. (3) It worked on the raw row and
+  assumed a total of 1, so a rounded poll summing to 0.98 or 1.03 got
+  replacements on the wrong scale.
+
+  `delta` can now also be an array with one threshold per part. The signature
+  is unchanged, and there is no option to restore the old formula. The
+  function now throws clear errors for a negative value, a row with a zero
+  total, a `delta` array of the wrong length or a non-positive `delta`, and a
+  row whose zeros' thresholds sum to 1 or more. The zero-total and threshold
+  errors name the row.
+
+## [0.15.0] - 2026-09-22
+
 ### Added
 
 - **`MLPRegressor` on `@tangent.to/nn`.** The same estimator, its `layerSizes`,
@@ -35,6 +78,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ml.mlp` (the hand-written network) and `ml.train` (its loop and
   callbacks). The callbacks live in `@tangent.to/nn` as `nn.callbacks`.
 
+## [0.14.0] - 2026-09-02
+
+### Added
+
 - **Gaussian process: ARD by block.** `Matern` and `RBF` take `blocks`, mapping
   each input dimension to an entry of `lengthScale`, so a group of features
   shares one length scale. Three blocks cost three hyperparameters where
@@ -60,6 +107,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   initial values without a word. Blocked kernels go through the autodiff
   gradient.
 
+## [0.13.1] - 2026-09-01
+
+### Added
+
+- `ordiplot` takes `minPredictorContribution`, a contribution threshold for an
+  RDA's predictor arrows separate from `minLoadingContribution` (which now
+  governs the response arrows). By default it inherits `minLoadingContribution`.
+
+## [0.13.0] - 2026-09-01
+
+### Added
+
+- `ordiplot` accepts a fitted mva estimator (`ordiplot(pca, …)`) as well as
+  its `.model`. An unfitted estimator says that `fit()` was never called.
+
+### Fixed
+
+- `PCA` warns when the `columns` it was given do not match the matrix width,
+  instead of falling back to `var1..varN` in silence.
+
 ### Changed
 
 - **BREAKING (visual) — `ordiplot`'s `loadingFactor` now defaults to `0` (auto)
@@ -77,6 +144,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lengths back. Note that `loadingScale` is inert under auto-scaling: the fit
   normalizes by the longest vector, which cancels any constant prefactor.
 
+
+## [0.12.0] - 2026-09-01
+
+### Added
+
+- Autodiff gradients of the GP log marginal likelihood for every kernel (RBF,
+  Matérn at any ν, RationalQuadratic, DotProduct, ConstantKernel, WhiteKernel,
+  Periodic and their sums). Kernels other than Matérn previously fell back to a
+  derivative-free search that stopped early.
+
+### Fixed
+
+- `new RBF([…], v)` and `new Matern([…], v)` discarded a positional ARD length
+  scale and the variance, and fell back to the defaults.
+- `RationalQuadratic`'s shape parameter is bounded during optimization, so it no
+  longer runs off to ~1e13.
+
+## [0.11.0] - 2026-09-01
 
 ### Added
 
@@ -155,3 +240,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The analytic-gradient fast path (Matérn with ν ∈ {1.5, 2.5, ∞}, L-BFGS) now
   also covers a Matérn summed with a `WhiteKernel`, in either child order, so
   learning a noise level does not fall back to the derivative-free search.
+
+[Unreleased]: https://github.com/tangent-to/ds/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/tangent-to/ds/compare/v0.15.0...v0.16.0
+[0.15.0]: https://github.com/tangent-to/ds/compare/v0.14.0...v0.15.0
+[0.14.0]: https://github.com/tangent-to/ds/compare/v0.13.1...v0.14.0
+[0.13.1]: https://github.com/tangent-to/ds/compare/v0.13.0...v0.13.1
+[0.13.0]: https://github.com/tangent-to/ds/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/tangent-to/ds/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/tangent-to/ds/releases/tag/v0.11.0

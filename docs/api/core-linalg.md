@@ -11,7 +11,7 @@ permalink: /api/core/linalg
 
 ### SingularValueDecomposition
 
-Defined in: [src/core/linalg.js:218](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L218)
+Defined in: [src/core/linalg.js:218](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L218)
 
 SVD with the decomposition-object interface of ml-matrix, for
 least-squares solves and pseudoinverses reusing one factorization.
@@ -24,7 +24,7 @@ least-squares solves and pseudoinverses reusing one factorization.
 new SingularValueDecomposition(data): SingularValueDecomposition;
 ```
 
-Defined in: [src/core/linalg.js:222](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L222)
+Defined in: [src/core/linalg.js:222](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L222)
 
 ###### Parameters
 
@@ -46,7 +46,7 @@ Input matrix (any shape)
 _U: any;
 ```
 
-Defined in: [src/core/linalg.js:224](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L224)
+Defined in: [src/core/linalg.js:224](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L224)
 
 ##### \_s
 
@@ -54,7 +54,7 @@ Defined in: [src/core/linalg.js:224](https://github.com/tangent-to/ds/blob/eb374
 _s: any;
 ```
 
-Defined in: [src/core/linalg.js:225](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L225)
+Defined in: [src/core/linalg.js:225](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L225)
 
 ##### \_V
 
@@ -62,7 +62,7 @@ Defined in: [src/core/linalg.js:225](https://github.com/tangent-to/ds/blob/eb374
 _V: any;
 ```
 
-Defined in: [src/core/linalg.js:226](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L226)
+Defined in: [src/core/linalg.js:226](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L226)
 
 ##### \_m
 
@@ -70,7 +70,7 @@ Defined in: [src/core/linalg.js:226](https://github.com/tangent-to/ds/blob/eb374
 _m: any;
 ```
 
-Defined in: [src/core/linalg.js:227](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L227)
+Defined in: [src/core/linalg.js:227](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L227)
 
 ##### \_n
 
@@ -78,7 +78,7 @@ Defined in: [src/core/linalg.js:227](https://github.com/tangent-to/ds/blob/eb374
 _n: any;
 ```
 
-Defined in: [src/core/linalg.js:228](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L228)
+Defined in: [src/core/linalg.js:228](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L228)
 
 #### Accessors
 
@@ -90,7 +90,7 @@ Defined in: [src/core/linalg.js:228](https://github.com/tangent-to/ds/blob/eb374
 get leftSingularVectors(): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:231](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L231)
+Defined in: [src/core/linalg.js:231](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L231)
 
 ###### Returns
 
@@ -104,7 +104,7 @@ Defined in: [src/core/linalg.js:231](https://github.com/tangent-to/ds/blob/eb374
 get rightSingularVectors(): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:235](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L235)
+Defined in: [src/core/linalg.js:235](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L235)
 
 ###### Returns
 
@@ -118,7 +118,7 @@ Defined in: [src/core/linalg.js:235](https://github.com/tangent-to/ds/blob/eb374
 get diagonal(): any;
 ```
 
-Defined in: [src/core/linalg.js:239](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L239)
+Defined in: [src/core/linalg.js:239](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L239)
 
 ###### Returns
 
@@ -132,7 +132,7 @@ Defined in: [src/core/linalg.js:239](https://github.com/tangent-to/ds/blob/eb374
 _cutoff(): number;
 ```
 
-Defined in: [src/core/linalg.js:243](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L243)
+Defined in: [src/core/linalg.js:243](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L243)
 
 ###### Returns
 
@@ -144,7 +144,7 @@ Defined in: [src/core/linalg.js:243](https://github.com/tangent-to/ds/blob/eb374
 solve(b): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:252](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L252)
+Defined in: [src/core/linalg.js:252](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L252)
 
 Minimum-norm least-squares solution of A x = b
 
@@ -168,7 +168,7 @@ Solution x
 inverse(): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:269](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L269)
+Defined in: [src/core/linalg.js:269](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L269)
 
 Pseudoinverse from the computed factorization
 
@@ -182,7 +182,7 @@ Pseudoinverse
 
 ### Matrix
 
-Defined in: [src/core/matrix.js:22](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L22)
+Defined in: [src/core/matrix.js:22](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L22)
 
 #### Constructors
 
@@ -192,7 +192,7 @@ Defined in: [src/core/matrix.js:22](https://github.com/tangent-to/ds/blob/eb3745
 new Matrix(rowsOrData, columns?): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:28](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L28)
+Defined in: [src/core/matrix.js:28](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L28)
 
 ###### Parameters
 
@@ -221,7 +221,7 @@ Column count when rowsOrData is a number
 data: any;
 ```
 
-Defined in: [src/core/matrix.js:30](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L30)
+Defined in: [src/core/matrix.js:30](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L30)
 
 #### Accessors
 
@@ -233,7 +233,7 @@ Defined in: [src/core/matrix.js:30](https://github.com/tangent-to/ds/blob/eb3745
 get rows(): any;
 ```
 
-Defined in: [src/core/matrix.js:71](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L71)
+Defined in: [src/core/matrix.js:71](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L71)
 
 ###### Returns
 
@@ -247,7 +247,7 @@ Defined in: [src/core/matrix.js:71](https://github.com/tangent-to/ds/blob/eb3745
 get columns(): any;
 ```
 
-Defined in: [src/core/matrix.js:75](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L75)
+Defined in: [src/core/matrix.js:75](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L75)
 
 ###### Returns
 
@@ -261,7 +261,7 @@ Defined in: [src/core/matrix.js:75](https://github.com/tangent-to/ds/blob/eb3745
 static zeros(rows, columns): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:40](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L40)
+Defined in: [src/core/matrix.js:40](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L40)
 
 ###### Parameters
 
@@ -283,7 +283,7 @@ Defined in: [src/core/matrix.js:40](https://github.com/tangent-to/ds/blob/eb3745
 static ones(rows, columns): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:44](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L44)
+Defined in: [src/core/matrix.js:44](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L44)
 
 ###### Parameters
 
@@ -305,7 +305,7 @@ Defined in: [src/core/matrix.js:44](https://github.com/tangent-to/ds/blob/eb3745
 static eye(rows, columns?): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:50](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L50)
+Defined in: [src/core/matrix.js:50](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L50)
 
 ###### Parameters
 
@@ -327,7 +327,7 @@ Defined in: [src/core/matrix.js:50](https://github.com/tangent-to/ds/blob/eb3745
 static diag(values): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:56](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L56)
+Defined in: [src/core/matrix.js:56](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L56)
 
 ###### Parameters
 
@@ -345,7 +345,7 @@ Defined in: [src/core/matrix.js:56](https://github.com/tangent-to/ds/blob/eb3745
 static columnVector(values): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:63](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L63)
+Defined in: [src/core/matrix.js:63](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L63)
 
 ###### Parameters
 
@@ -363,7 +363,7 @@ Defined in: [src/core/matrix.js:63](https://github.com/tangent-to/ds/blob/eb3745
 static rowVector(values): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:67](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L67)
+Defined in: [src/core/matrix.js:67](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L67)
 
 ###### Parameters
 
@@ -381,7 +381,7 @@ Defined in: [src/core/matrix.js:67](https://github.com/tangent-to/ds/blob/eb3745
 get(i, j): any;
 ```
 
-Defined in: [src/core/matrix.js:79](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L79)
+Defined in: [src/core/matrix.js:79](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L79)
 
 ###### Parameters
 
@@ -406,7 +406,7 @@ set(
    value): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:83](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L83)
+Defined in: [src/core/matrix.js:83](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L83)
 
 ###### Parameters
 
@@ -432,7 +432,7 @@ Defined in: [src/core/matrix.js:83](https://github.com/tangent-to/ds/blob/eb3745
 getRow(i): any;
 ```
 
-Defined in: [src/core/matrix.js:88](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L88)
+Defined in: [src/core/matrix.js:88](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L88)
 
 ###### Parameters
 
@@ -450,7 +450,7 @@ Defined in: [src/core/matrix.js:88](https://github.com/tangent-to/ds/blob/eb3745
 getColumn(j): any;
 ```
 
-Defined in: [src/core/matrix.js:92](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L92)
+Defined in: [src/core/matrix.js:92](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L92)
 
 ###### Parameters
 
@@ -468,7 +468,7 @@ Defined in: [src/core/matrix.js:92](https://github.com/tangent-to/ds/blob/eb3745
 setRow(i, values): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:96](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L96)
+Defined in: [src/core/matrix.js:96](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L96)
 
 ###### Parameters
 
@@ -490,7 +490,7 @@ Defined in: [src/core/matrix.js:96](https://github.com/tangent-to/ds/blob/eb3745
 setColumn(j, values): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:101](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L101)
+Defined in: [src/core/matrix.js:101](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L101)
 
 ###### Parameters
 
@@ -512,7 +512,7 @@ Defined in: [src/core/matrix.js:101](https://github.com/tangent-to/ds/blob/eb374
 to2DArray(): any;
 ```
 
-Defined in: [src/core/matrix.js:106](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L106)
+Defined in: [src/core/matrix.js:106](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L106)
 
 ###### Returns
 
@@ -524,7 +524,7 @@ Defined in: [src/core/matrix.js:106](https://github.com/tangent-to/ds/blob/eb374
 to1DArray(): any;
 ```
 
-Defined in: [src/core/matrix.js:110](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L110)
+Defined in: [src/core/matrix.js:110](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L110)
 
 ###### Returns
 
@@ -536,7 +536,7 @@ Defined in: [src/core/matrix.js:110](https://github.com/tangent-to/ds/blob/eb374
 clone(): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:114](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L114)
+Defined in: [src/core/matrix.js:114](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L114)
 
 ###### Returns
 
@@ -548,7 +548,7 @@ Defined in: [src/core/matrix.js:114](https://github.com/tangent-to/ds/blob/eb374
 mmul(other): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:123](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L123)
+Defined in: [src/core/matrix.js:123](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L123)
 
 Matrix product; returns a new Matrix.
 
@@ -572,7 +572,7 @@ this * other
 transpose(): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:129](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L129)
+Defined in: [src/core/matrix.js:129](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L129)
 
 ###### Returns
 
@@ -588,7 +588,7 @@ subMatrix(
    endColumn): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:139](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L139)
+Defined in: [src/core/matrix.js:139](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L139)
 
 ###### Parameters
 
@@ -618,7 +618,7 @@ Defined in: [src/core/matrix.js:139](https://github.com/tangent-to/ds/blob/eb374
 _elementWise(other, op): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:147](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L147)
+Defined in: [src/core/matrix.js:147](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L147)
 
 ###### Parameters
 
@@ -640,7 +640,7 @@ Defined in: [src/core/matrix.js:147](https://github.com/tangent-to/ds/blob/eb374
 add(other): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:162](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L162)
+Defined in: [src/core/matrix.js:162](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L162)
 
 ###### Parameters
 
@@ -658,7 +658,7 @@ Defined in: [src/core/matrix.js:162](https://github.com/tangent-to/ds/blob/eb374
 sub(other): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:166](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L166)
+Defined in: [src/core/matrix.js:166](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L166)
 
 ###### Parameters
 
@@ -676,7 +676,7 @@ Defined in: [src/core/matrix.js:166](https://github.com/tangent-to/ds/blob/eb374
 mul(other): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:170](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L170)
+Defined in: [src/core/matrix.js:170](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L170)
 
 ###### Parameters
 
@@ -694,7 +694,7 @@ Defined in: [src/core/matrix.js:170](https://github.com/tangent-to/ds/blob/eb374
 div(other): Matrix;
 ```
 
-Defined in: [src/core/matrix.js:174](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L174)
+Defined in: [src/core/matrix.js:174](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L174)
 
 ###### Parameters
 
@@ -712,7 +712,7 @@ Defined in: [src/core/matrix.js:174](https://github.com/tangent-to/ds/blob/eb374
 mean(by?): number | number[];
 ```
 
-Defined in: [src/core/matrix.js:183](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L183)
+Defined in: [src/core/matrix.js:183](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L183)
 
 Mean of all entries, or per-row/per-column means.
 
@@ -736,7 +736,7 @@ Grand mean, or one mean per row/column
 max(): number;
 ```
 
-Defined in: [src/core/matrix.js:201](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L201)
+Defined in: [src/core/matrix.js:201](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L201)
 
 ###### Returns
 
@@ -748,7 +748,7 @@ Defined in: [src/core/matrix.js:201](https://github.com/tangent-to/ds/blob/eb374
 min(): number;
 ```
 
-Defined in: [src/core/matrix.js:209](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/matrix.js#L209)
+Defined in: [src/core/matrix.js:209](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/matrix.js#L209)
 
 ###### Returns
 
@@ -762,7 +762,7 @@ Defined in: [src/core/matrix.js:209](https://github.com/tangent-to/ds/blob/eb374
 function toMatrix(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:24](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L24)
+Defined in: [src/core/linalg.js:24](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L24)
 
 Convert array-like structure to Matrix
 
@@ -788,7 +788,7 @@ Matrix object
 function solveLeastSquares(A, b): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:37](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L37)
+Defined in: [src/core/linalg.js:37](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L37)
 
 Solve least squares problem: minimize ||Ax - b||^2
 
@@ -820,7 +820,7 @@ Solution x
 function covarianceMatrix(data, center?): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:62](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L62)
+Defined in: [src/core/linalg.js:62](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L62)
 
 Compute covariance matrix
 
@@ -852,7 +852,7 @@ Covariance matrix
 function svd(data): Object;
 ```
 
-Defined in: [src/core/linalg.js:85](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L85)
+Defined in: [src/core/linalg.js:85](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L85)
 
 Singular Value Decomposition (thin: U is m×k, V is n×k, k = min(m, n))
 
@@ -878,7 +878,7 @@ Input matrix
 function eig(data): Object;
 ```
 
-Defined in: [src/core/linalg.js:101](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L101)
+Defined in: [src/core/linalg.js:101](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L101)
 
 Eigenvalue decomposition of a symmetric matrix.
 Eigenvalues are returned in descending order; eigenvectors are the
@@ -906,7 +906,7 @@ Symmetric square matrix
 function eigGeneralized(A, B): Object;
 ```
 
-Defined in: [src/core/linalg.js:123](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L123)
+Defined in: [src/core/linalg.js:123](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L123)
 
 Generalized symmetric eigendecomposition: solve A x = lambda B x for
 symmetric A and symmetric positive (semi)definite B. Eigenvalues are
@@ -945,7 +945,7 @@ Symmetric positive (semi)definite matrix
 function symmetricInverseSqrt(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:137](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L137)
+Defined in: [src/core/linalg.js:137](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L137)
 
 Inverse square root of a symmetric positive semidefinite matrix: the
 symmetric W with W A W = I on A's range, and 0 on its null space
@@ -972,7 +972,7 @@ Symmetric inverse square root
 function mmul(A, B): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:147](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L147)
+Defined in: [src/core/linalg.js:147](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L147)
 
 Matrix multiplication
 
@@ -1004,7 +1004,7 @@ A * B
 function transpose(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:156](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L156)
+Defined in: [src/core/linalg.js:156](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L156)
 
 Matrix transpose
 
@@ -1030,7 +1030,7 @@ Transposed matrix
 function inverse(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:165](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L165)
+Defined in: [src/core/linalg.js:165](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L165)
 
 Matrix inverse
 
@@ -1056,7 +1056,7 @@ Inverse matrix
 function solve(A, b): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:175](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L175)
+Defined in: [src/core/linalg.js:175](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L175)
 
 Solve the linear system Ax = b (square A); throws if singular
 
@@ -1088,7 +1088,7 @@ Solution x
 function cholesky(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:185](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L185)
+Defined in: [src/core/linalg.js:185](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L185)
 
 Cholesky factorization of a symmetric positive definite matrix
 
@@ -1118,7 +1118,7 @@ When the matrix is not symmetric or not positive definite
 function choleskySolve(L, b): number[] | number[][];
 ```
 
-Defined in: [src/core/linalg.js:198](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L198)
+Defined in: [src/core/linalg.js:198](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L198)
 
 Solve A x = b (or A X = B) from the Cholesky factor L of A, by forward then
 back substitution. Passing every right-hand side at once is much cheaper
@@ -1153,7 +1153,7 @@ Solution, matching b's shape
 function pseudoInverse(data): Matrix;
 ```
 
-Defined in: [src/core/linalg.js:210](https://github.com/tangent-to/ds/blob/eb37453b7dcefe351c0f650c2bc55037ca8a784b/src/core/linalg.js#L210)
+Defined in: [src/core/linalg.js:210](https://github.com/tangent-to/ds/blob/09615975dac258601b705b966868b430eb321dc8/src/core/linalg.js#L210)
 
 Moore-Penrose pseudoinverse via SVD with a singular-value cutoff
 scaled by the matrix size and largest singular value (numpy
