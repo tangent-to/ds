@@ -114,6 +114,68 @@ describe('statistical tests', () => {
   });
 
   describe('tukeyHSD', () => {
+    it.each([
+      {
+        name: 'balanced groups',
+        groups: [[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [3, 4, 5, 6, 7]],
+        alpha: 0.05,
+        expected: [
+          [0.5907706083, -3.6678636521, 1.6678636521],
+          [0.1545799684, -4.6678636521, 0.6678636521],
+          [0.5907706083, -3.6678636521, 1.6678636521],
+        ],
+      },
+      {
+        name: 'unequal group sizes and 99% confidence',
+        groups: [[2, 4], [3, 5, 9], [6, 7, 8, 10, 12], [2, 3, 4, 4]],
+        alpha: 0.01,
+        expected: [
+          [0.5531447822, -10.7062727103, 5.3729393769],
+          [0.0468672255, -12.9684206505, 1.7684206505],
+          [0.9990869458, -7.8770399765, 7.3770399765],
+          [0.3029950766, -9.3650181682, 3.4983515015],
+          [0.4909351747, -4.3097503391, 9.1430836724],
+          [0.0182542649, -0.5578797619, 11.2578797619],
+        ],
+      },
+      {
+        name: 'two groups',
+        groups: [[1, 3, 9], [2, 4, 6, 10]],
+        alpha: 0.10,
+        expected: [[0.6993154670, -6.9114200119, 4.5780866785]],
+      },
+    ])('matches R TukeyHSD for $name', ({ groups, alpha, expected }) => {
+      // R's TukeyHSD(aov(y ~ group), conf.level = 1 - alpha) reports j − i.
+      // The intervals below use this API's i − j convention and pair order.
+      const { comparisons } = new TukeyHSD({ alpha }).fit(groups).summary();
+      expect(comparisons).toHaveLength(expected.length);
+      comparisons.forEach(({ pValue, lowerCI, upperCI, significant }, i) => {
+        const [p, lower, upper] = expected[i];
+        expect(pValue).toBeCloseTo(p, 7);
+        expect(lowerCI).toBeCloseTo(lower, 7);
+        expect(upperCI).toBeCloseTo(upper, 7);
+        expect(significant).toBe(p < alpha);
+      });
+    });
+
+    it('handles zero pooled variance and rejects undefined pooled variance', () => {
+      const { comparisons } = TukeyHSD.compute([[1, 1], [1, 1], [3, 3]]);
+      expect(comparisons[0]).toMatchObject({ pValue: 1, qStatistic: 0, lowerCI: 0, upperCI: 0 });
+      expect(comparisons[1]).toMatchObject({ pValue: 0, qStatistic: Infinity, lowerCI: -2, upperCI: -2 });
+      expect(() => TukeyHSD.compute([[1], [3]])).toThrow('positive residual degrees of freedom');
+    });
+
+    it('resolves the upper tail with one residual degree of freedom', () => {
+      // scipy.stats.studentized_range.sf(30, 3, 1) and isf(0.05, 3, 1).
+      const { comparisons, dfWithin } = TukeyHSD.compute([[-1, 1], [0], [30 * Math.SQRT2]]);
+      const { pValue, qStatistic, diff, upperCI, significant } = comparisons[2];
+      expect(dfWithin).toBe(1);
+      expect(qStatistic).toBeCloseTo(30);
+      expect(pValue).toBeCloseTo(0.0449700367, 8);
+      expect((upperCI - diff) / Math.SQRT2).toBeCloseTo(26.9755298695, 6);
+      expect(significant).toBe(true);
+    });
+
     it('should perform Tukey HSD post-hoc test', () => {
       const group1 = [1, 2, 3];
       const group2 = [4, 5, 6];

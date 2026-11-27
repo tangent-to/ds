@@ -5,6 +5,7 @@
 import { chi2, f as fDistribution, studentT } from '@tangent.to/proba';
 import { mean, variance } from '../core/math.js';
 import { normal } from './distribution.js';
+import { studentizedRangeCriticalValue, studentizedRangeSF } from './studentizedRange.js';
 
 // ============= t-Distribution Helper =============
 
@@ -242,37 +243,16 @@ function fCDF(f, d1, d2) {
 // ============= Tukey HSD (Post-hoc test) =============
 
 /**
- * Studentized range distribution CDF approximation
- * @param {number} q - Studentized range statistic
- * @param {number} k - Number of groups
- * @param {number} df - Degrees of freedom
- * @returns {number} Cumulative probability
- */
-function qrangeCDF(q, k, df) {
-  if (q <= 0) return 0;
-
-  // Approximation using normal distribution for large df
-  // For simplicity, we use a conservative approximation
-  // More accurate implementations would use specialized algorithms
-
-  // Transform q to approximate normal
-  const z = (q - Math.sqrt(2 * Math.log(k))) / Math.sqrt(1 / df);
-  const p = normal.cdf(z, { mean: 0, sd: 1 });
-
-  // Adjust for number of comparisons
-  return Math.pow(p, k - 1);
-}
-
-/**
  * Tukey's Honestly Significant Difference (HSD) test
- * Post-hoc test for pairwise comparisons after ANOVA
+ * Post-hoc test for pairwise comparisons after ANOVA. Unequal group sizes
+ * use the Tukey–Kramer standard error.
  *
- * @param {Array<Array<number>>} groups - Array of group samples
+ * @param {number[][]|Object<string, number[]>} groups - Array or named object of group samples
  * @param {Object} options - {alpha: significance level (default 0.05), anovaResult: optional precomputed ANOVA result}
  * @returns {Object} {
  *   comparisons: Array of {groups: [i,j], diff, lowerCI, upperCI, pValue, significant},
  *   groupMeans: Array of group means,
- *   groupNames: Array of group indices,
+ *   groupNames: Array of group labels,
  *   MSwithin: Mean square within groups,
  *   dfWithin: Degrees of freedom,
  *   alpha: Significance level
@@ -299,20 +279,24 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
     throw new Error('Need at least 2 groups for Tukey HSD test');
   }
 
+  if (!Number.isFinite(alpha) || alpha <= 0 || alpha >= 1) {
+    throw new Error('Tukey HSD requires alpha strictly between 0 and 1');
+  }
+  for (const group of groupsArray) {
+    if (!Array.isArray(group) || group.length === 0 || !Array.from(group).every(Number.isFinite)) {
+      throw new Error('Tukey HSD requires non-empty groups of finite numbers');
+    }
+  }
+
   const k = groupsArray.length;
   const groupSizes = groupsArray.map(g => g.length);
-  const _n = groupSizes.reduce((a, b) => a + b, 0);
-
-  // Compute or reuse ANOVA results
-  let MSwithin, dfWithin;
-  if (anovaResult) {
-    MSwithin = anovaResult.MSwithin;
-    dfWithin = anovaResult.dfWithin;
-  } else {
-    const anovaRes = oneWayAnova(groupsArray);
-    MSwithin = anovaRes.MSwithin;
-    dfWithin = anovaRes.dfWithin;
+  const { MSwithin, dfWithin } = anovaResult ?? oneWayAnova(groupsArray);
+  if (!Number.isFinite(dfWithin) || dfWithin < 1 || !Number.isFinite(MSwithin) || MSwithin < 0) {
+    throw new Error('Tukey HSD requires positive residual degrees of freedom and finite within-group variance');
   }
+
+  const sf = studentizedRangeSF(k, dfWithin);
+  const critical = MSwithin === 0 ? 0 : studentizedRangeCriticalValue(sf, alpha);
 
   // Compute group means
   const groupMeans = groupsArray.map(g => mean(g));
@@ -326,20 +310,11 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
       const nj = groupSizes[j];
       const meanDiff = groupMeans[i] - groupMeans[j];
 
-      // Standard error for the difference
-      const se = Math.sqrt(MSwithin * (1 / ni + 1 / nj));
-
-      // Studentized range statistic
-      const q = Math.abs(meanDiff) / (Math.sqrt(MSwithin / 2 * (1 / ni + 1 / nj)));
-
-      // p-value (approximation)
-      const pValue = 1 - qrangeCDF(q, k, dfWithin);
-
-      // Critical value approximation
-      // For accurate results, this should use studentized range tables
-      // Here we use a conservative approximation based on t-distribution
-      const tCrit = approximateQCritical(alpha, k, dfWithin);
-      const margin = tCrit * se;
+      // Studentized-range scale for the pair (Tukey–Kramer).
+      const se = Math.sqrt(MSwithin) * Math.sqrt((1 / ni + 1 / nj) / 2);
+      const q = meanDiff === 0 ? 0 : Math.abs(meanDiff) / se;
+      const pValue = sf(q);
+      const margin = critical * se;
 
       comparisons.push({
         groups: [i, j],
@@ -347,7 +322,7 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
         diff: meanDiff,
         lowerCI: meanDiff - margin,
         upperCI: meanDiff + margin,
-        pValue: Math.max(0, Math.min(1, pValue)),
+        pValue,
         significant: pValue < alpha,
         qStatistic: q
       });
@@ -363,27 +338,6 @@ export function tukeyHSD(groups, { alpha = 0.05, anovaResult = null } = {}) {
     alpha,
     numGroups: k
   };
-}
-
-/**
- * Approximate critical value for studentized range distribution
- * This is a simplified approximation; production code should use tables or more accurate methods
- */
-function approximateQCritical(alpha, k, df) {
-  // Conservative approximation using t-distribution with Bonferroni-like adjustment
-  // Tukey's q is approximately sqrt(2) * t for large df
-  const numComparisons = k * (k - 1) / 2;
-  const adjustedAlpha = alpha / numComparisons;
-
-  // Approximate t critical value
-  // For two-tailed test at adjusted alpha
-  const z = Math.abs(normal.quantile(adjustedAlpha / 2, { mean: 0, sd: 1 }));
-
-  // Adjust for df using t-distribution approximation
-  const tCrit = z * Math.sqrt((df + 1) / df);
-
-  // Scale for studentized range (approximately sqrt(2) times t for pairwise)
-  return tCrit * Math.sqrt(2);
 }
 
 // ============= Paired t-test =============

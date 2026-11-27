@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Tukey HSD uses the studentized-range distribution for adjusted p-values and
+  simultaneous confidence intervals, with Tukey–Kramer scaling for unequal
+  groups.
+
 ## [0.16.0] - 2026-11-06
 
 ### Fixed
