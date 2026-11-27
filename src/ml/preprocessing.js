@@ -165,6 +165,38 @@ export class StandardScaler {
       })
     );
   }
+
+  /** Serialize the scaling statistics and optional table feature order. */
+  toJSON() {
+    if (this.means === null) throw new Error('StandardScaler.toJSON requires a fitted scaler');
+    return {
+      __class__: 'StandardScaler',
+      means: this.means.slice(),
+      stds: this.stds.slice(),
+      columns: this._tableColumns?.slice() ?? null,
+      naOmit: this._tableNaOmit,
+    };
+  }
+
+  /** Restore a fitted scaler from JSON. */
+  static fromJSON(state) {
+    if (state?.__class__ !== 'StandardScaler' ||
+      !Array.isArray(state.means) || state.means.length === 0 || !state.means.every(Number.isFinite) ||
+      !Array.isArray(state.stds) || state.stds.length !== state.means.length ||
+      !state.stds.every((std) => Number.isFinite(std) && std >= 0) ||
+      (state.columns !== null && (!Array.isArray(state.columns) ||
+        state.columns.length !== state.means.length || !state.columns.every((c) => typeof c === 'string'))) ||
+      typeof state.naOmit !== 'boolean') {
+      throw new Error('Invalid StandardScaler state');
+    }
+    const scaler = new StandardScaler();
+    scaler.means = state.means.slice();
+    scaler.stds = state.stds.slice();
+    scaler.nFeatures = scaler.means.length;
+    scaler._tableColumns = state.columns?.slice() ?? null;
+    scaler._tableNaOmit = state.naOmit;
+    return scaler;
+  }
 }
 
 // ============= MinMaxScaler =============

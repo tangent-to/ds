@@ -3,8 +3,13 @@
  */
 
 import { Estimator } from '../core/estimators/estimator.js';
-import { prepareXY } from '../core/table.js';
+import { prepareX, prepareXY } from '../core/table.js';
+import { GLM } from '../stats/estimators/GLM.js';
+import { MLPRegressor } from './estimators/MLPRegressor.js';
+import { StandardScaler } from './preprocessing.js';
 import { kFold } from './validation.js';
+
+const serializableSteps = new Map(Object.entries({ GLM, MLPRegressor, StandardScaler }));
 
 function isTableDescriptor(input) {
   return (
@@ -22,24 +27,40 @@ export class Pipeline extends Estimator {
   /**
    * Create a pipeline
    * @param {Array<Object>} steps - Array of transformers/estimators
+   * @param {Object} [options]
+   * @param {string[]} [options.columns] - Ordered numeric features for named input rows
    */
-  constructor(steps) {
-    super({ steps });
+  constructor(steps, { columns = null } = {}) {
     if (!Array.isArray(steps) || steps.length === 0) {
       throw new Error('Pipeline requires at least one step');
     }
+    if (columns !== null && (!Array.isArray(columns) || columns.length === 0 ||
+      Array.from(columns).some((column) => typeof column !== 'string' || column.length === 0) ||
+      new Set(columns).size !== columns.length)) {
+      throw new Error('Pipeline columns must be a non-empty array of unique feature names');
+    }
 
+    columns = columns?.slice() ?? null;
+    super(columns === null ? { steps } : { steps, columns });
     this.steps = steps;
+    this.columns = columns;
+  }
+
+  _prepareFeatures(X) {
+    // Keep rows aligned with positional targets and predictions. A missing
+    // numeric feature raises an error instead of silently dropping its row.
+    return this.columns === null ? X : prepareX({ data: X, columns: this.columns, naOmit: false }).X;
   }
 
   /**
    * Fit all steps
-   * @param {Array} X - Feature matrix
+   * @param {Array} X - Feature matrix, or named rows when columns are configured
    * @param {Array} y - Target values (optional)
    * @returns {Pipeline} this
    */
   fit(X, y = null) {
-    let XTransformed = X;
+    let XTransformed = this._prepareFeatures(X);
+    this.fitted = false;
 
     // Fit and transform through all but last step
     for (let i = 0; i < this.steps.length - 1; i++) {
@@ -68,13 +89,13 @@ export class Pipeline extends Estimator {
 
   /**
    * Transform data through all steps
-   * @param {Array} X - Feature matrix
+   * @param {Array} X - Feature matrix, or named rows when columns are configured
    * @returns {Array} Transformed data
    */
   transform(X) {
     this._ensureFitted('transform');
 
-    let XTransformed = X;
+    let XTransformed = this._prepareFeatures(X);
 
     for (const step of this.steps) {
       if (typeof step.transform === 'function') {
@@ -87,7 +108,7 @@ export class Pipeline extends Estimator {
 
   /**
    * Fit and transform in one step
-   * @param {Array} X - Feature matrix
+   * @param {Array} X - Feature matrix, or named rows when columns are configured
    * @param {Array} y - Target values (optional)
    * @returns {Array} Transformed data
    */
@@ -104,7 +125,7 @@ export class Pipeline extends Estimator {
   predict(X) {
     this._ensureFitted('predict');
 
-    let XTransformed = X;
+    let XTransformed = this._prepareFeatures(X);
 
     // Transform through all but last step
     for (let i = 0; i < this.steps.length - 1; i++) {
@@ -129,6 +150,44 @@ export class Pipeline extends Estimator {
    */
   getFinalEstimator() {
     return this.steps[this.steps.length - 1];
+  }
+
+  /**
+   * Export a fitted pipeline with the feature order needed at prediction time.
+   * Supports StandardScaler, GLM and MLPRegressor steps.
+   */
+  toJSON() {
+    this._ensureFitted('toJSON');
+    return {
+      format: 'ds/pipeline/1',
+      columns: this.columns?.slice() ?? null,
+      steps: this.steps.map((step, i) => {
+        const Step = step?.constructor;
+        if (![...serializableSteps.values()].includes(Step)) {
+          throw new Error(`Pipeline cannot serialize step ${i} (${Step?.name})`);
+        }
+        return step.toJSON();
+      }),
+    };
+  }
+
+  /** Restore a fitted pipeline from its JSON representation. */
+  static fromJSON(json) {
+    if (json?.format !== 'ds/pipeline/1' || !Array.isArray(json.steps)) {
+      throw new Error('Invalid pipeline format');
+    }
+    const steps = json.steps.map((state, i) => {
+      const Step = serializableSteps.get(state?.__class__);
+      if (!Step) throw new Error(`Pipeline cannot restore step ${i} (${state?.__class__})`);
+      const step = Step.fromJSON(state);
+      if (Step !== StandardScaler && !step.isFitted()) {
+        throw new Error(`Pipeline cannot restore unfitted step ${i}`);
+      }
+      return step;
+    });
+    const pipeline = new Pipeline(steps, { columns: json.columns });
+    pipeline.fitted = true;
+    return pipeline;
   }
 }
 
