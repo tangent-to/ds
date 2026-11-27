@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-11-27
+
 ### Fixed
 
 - GLM fitted-mean confidence intervals use the requested level. Response-scale
