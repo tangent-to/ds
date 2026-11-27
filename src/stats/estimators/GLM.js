@@ -933,8 +933,8 @@ export class GLM extends Estimator {
    * @param {Array|Object} X - Predictors or table-style object
    * @param {Object} options - Prediction options
    * @param {string} options.type - Prediction type: 'link', 'response', 'class' (multiclass), 'proba' (multiclass)
-   * @param {boolean} options.interval - Compute confidence intervals (default: false)
-   * @param {number} options.level - Confidence level (default: 0.95)
+   * @param {boolean} options.interval - For a single-response fixed-effects GLM, return pointwise Wald confidence intervals for the fitted mean (default: false)
+   * @param {number} options.level - Confidence level, strictly between zero and one (default: 0.95)
    * @param {boolean} options.allowNewGroups - For GLMM: allow new groups (default: true)
    * @returns {Array} Predictions
    */
@@ -993,7 +993,7 @@ export class GLM extends Estimator {
     const predOptions = {
       type: options.type || 'response',
       interval: options.interval || false,
-      level: options.level || 0.95,
+      level: options.level ?? 0.95,
       offset: offset || options.offset,
     };
 

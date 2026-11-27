@@ -10,6 +10,7 @@
 
 import { inverse, Matrix, SingularValueDecomposition, solve } from '../core/linalg.js';
 import { createFamily } from './families.js';
+import { normal } from './distribution.js';
 import { mean as _mean, sum } from '../core/math.js';
 
 // ============================================================================
@@ -850,15 +851,15 @@ function computeGLMMStandardErrors(X, _Z, mu, eta, _beta, _u, _theta, weights, f
  * @param {Object} model - Fitted GLM model (with coefficients, family, link, intercept)
  * @param {Array<Array<number>>} X - Design matrix (n × p)
  * @param {Object} options - Prediction options
- * @param {string} [options.type] - Prediction scale: 'link', 'response', 'confidence', or 'prediction'
- * @param {boolean} [options.interval] - Whether to return intervals instead of point predictions
- * @param {number} [options.level] - Confidence level for intervals
+ * @param {'link'|'response'} [options.type='response'] - Prediction scale
+ * @param {boolean} [options.interval=false] - Return pointwise Wald confidence intervals for the fitted mean
+ * @param {number} [options.level=0.95] - Confidence level, strictly between zero and one
  * @param {Array<number>} [options.offset] - Optional offset added to the linear predictor
- * @returns {Array<number>|Object} Predicted values, or an interval object when interval is true
+ * @returns {number[]|Array<{fit: number, lower: number, upper: number}>} One prediction or interval per row
  */
 export function predictGLM(model, X, options = {}) {
   const {
-    type = 'response', // 'link', 'response', 'confidence', 'prediction'
+    type = 'response',
     interval = false,
     level = 0.95,
     offset = null,
@@ -871,22 +872,15 @@ export function predictGLM(model, X, options = {}) {
   // Linear predictor
   const eta = matrixVectorMultiply(Xmat, model.coefficients).map((e, i) => e + off[i]);
 
-  // Create family object for inverse link
-  const familyObj = createFamily({ family: model.family, link: model.link });
+  const { link } = createFamily({ family: model.family, link: model.link });
 
   if (type === 'link') {
-    return interval ? computeIntervals(eta, Xmat, model, level, 'link') : eta;
+    return interval ? computeIntervals(eta, Xmat, model.covarianceMatrix, level) : eta;
   }
-
-  // Response scale
-  const mu = familyObj.link.linkinv(eta);
-
-  if (type === 'response') {
-    return interval ? computeIntervals(mu, Xmat, model, level, 'response', familyObj) : mu;
+  if (type === 'response' && interval) {
+    return computeIntervals(eta, Xmat, model.covarianceMatrix, level, link);
   }
-
-  // Confidence or prediction intervals would go here
-  return mu;
+  return link.linkinv(eta);
 }
 
 /**
@@ -985,35 +979,32 @@ function buildRandomEffectsMatrixForPrediction(n, randomEffectsData, groupInfo, 
 }
 
 /**
- * Compute prediction intervals
+ * Form Wald intervals on the linear predictor and optionally map them to the response scale.
  */
-function computeIntervals(predictions, X, model, _level, scale, familyObj = null) {
-  const n = predictions.length;
-  const _p = model.p;
-  const z = 1.96; // approximation for 95% CI
+function computeIntervals(eta, X, covariance, level, link = null) {
+  if (!Number.isFinite(level) || level <= 0 || level >= 1) {
+    throw new Error('GLM confidence level must be strictly between 0 and 1');
+  }
+  const z = -normal.quantile((1 - level) / 2);
+  const covMatrix = new Matrix(covariance);
 
-  const covMatrix = new Matrix(model.covarianceMatrix);
-  const intervals = new Array(n);
-
-  for (let i = 0; i < n; i++) {
+  return eta.map((fit, i) => {
     const xi = Matrix.rowVector(X[i]);
     const variance = xi.mmul(covMatrix).mmul(xi.transpose()).get(0, 0);
-    const se = Math.sqrt(variance);
+    const margin = z * Math.sqrt(Math.max(0, variance));
+    const lower = fit - margin;
+    const upper = fit + margin;
+    if (!link) return { fit, lower, upper };
 
-    intervals[i] = {
-      fit: predictions[i],
-      lower: predictions[i] - z * se,
-      upper: predictions[i] + z * se,
-    };
-
-    // Transform to response scale if needed
-    if (scale === 'response' && familyObj) {
-      intervals[i].lower = familyObj.link.linkinv([intervals[i].lower])[0];
-      intervals[i].upper = familyObj.link.linkinv([intervals[i].upper])[0];
+    // The square-root and reciprocal links implemented here both turn at
+    // zero. Include that extremum when the interval spans both sides.
+    const predictors = [fit, lower, upper];
+    if (lower < 0 && upper > 0 && (link.name === 'sqrt' || link.name === 'inverse')) {
+      predictors.push(0);
     }
-  }
-
-  return intervals;
+    const [response, ...bounds] = link.linkinv(predictors);
+    return { fit: response, lower: Math.min(...bounds), upper: Math.max(...bounds) };
+  });
 }
 
 // ============================================================================

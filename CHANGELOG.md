@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- GLM fitted-mean confidence intervals use the requested level. Response-scale
+  bounds use the inverse link on the linear predictor's confidence limits.
 - Tukey HSD uses the studentized-range distribution for adjusted p-values and
   simultaneous confidence intervals, with Tukey–Kramer scaling for unequal
   groups.

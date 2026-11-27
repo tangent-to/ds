@@ -4,7 +4,73 @@
 
 import { describe, expect, it } from 'vitest';
 import { GLM } from '../src/stats/estimators/GLM.js';
-import { fitGLM } from '../src/stats/glm.js';
+import { fitGLM, predictGLM } from '../src/stats/glm.js';
+
+describe('GLM confidence intervals for fitted values', () => {
+  it('matches R on the link and response scales and honors the confidence level', () => {
+    const X = Array.from({ length: 75 }, (_, i) => [Math.floor(i / 25)]);
+    const y = X.map(([x], i) => Number(i % 25 < [3, 9, 16][x]));
+    const model = new GLM({ family: 'binomial' }).fit(X, y);
+    const at = [[0], [1.5]];
+    // R glm.control(epsilon = 1e-13), then predict.glm(type = "link",
+    // se.fit = TRUE), qnorm and plogis.
+    const expected = [
+      {
+        level: 0.5,
+        link: [[-1.9137330392, -2.2539681298, -1.5734979485], [-0.0188898894, -0.2117620399, 0.1739822611]],
+        response: [[0.1285620452, 0.0950077313, 0.1717183031], [0.4952776681, 0.4472564419, 0.5433861794]],
+      },
+      {
+        level: 0.99,
+        link: [[-1.9137330392, -3.2130671155, -0.6143989628], [-0.0188898894, -0.7554551774, 0.7176753987]],
+        response: [[0.1285620452, 0.0386769345, 0.3510563893], [0.4952776681, 0.3196338086, 0.6720949188]],
+      },
+    ];
+    for (const type of ['link', 'response']) {
+      const points = model.predict(at, { type });
+      const [narrow, wide] = expected.map(({ level, [type]: reference }) => {
+        const intervals = model.predict(at, { type, interval: true, level });
+        intervals.forEach(({ fit, lower, upper }, i) => {
+          expect(fit).toBe(points[i]);
+          expect(fit).toBeCloseTo(reference[i][0], 7);
+          expect(lower).toBeCloseTo(reference[i][1], 7);
+          expect(upper).toBeCloseTo(reference[i][2], 7);
+          expect(lower).toBeLessThan(fit);
+          expect(upper).toBeGreaterThan(fit);
+        });
+        return intervals;
+      });
+      wide.forEach(({ lower, upper }, i) => {
+        expect(lower).toBeLessThan(narrow[i].lower);
+        expect(upper).toBeGreaterThan(narrow[i].upper);
+      });
+    }
+    for (const level of [0, 1, NaN, -0.1]) {
+      expect(() => model.predict(at, { interval: true, level })).toThrow(/confidence level/);
+    }
+  });
+
+  it('orders response bounds on a decreasing link and accounts for an offset', () => {
+    const model = {
+      coefficients: [2], covarianceMatrix: [[0.25]], family: 'gamma', link: 'inverse', intercept: false,
+    };
+    const [result] = predictGLM(model, [[1]], { interval: true, offset: [1] });
+    const margin = 1.959963984540054 * 0.5;
+    expect(result.fit).toBe(1 / 3);
+    expect(result.lower).toBeCloseTo(1 / (3 + margin), 12);
+    expect(result.upper).toBeCloseTo(1 / (3 - margin), 12);
+  });
+
+  it('includes zero when a square-root link interval crosses it', () => {
+    const model = {
+      coefficients: [0.1], covarianceMatrix: [[0.25]], family: 'poisson', link: 'sqrt', intercept: false,
+    };
+    const [result] = predictGLM(model, [[1]], { interval: true });
+    expect(result.fit).toBeCloseTo(0.01, 12);
+    expect(result.lower).toBe(0);
+    expect(result.upper).toBeCloseTo((0.1 + 1.959963984540054 * 0.5) ** 2, 12);
+  });
+});
 
 describe('GLM - Gaussian Family', () => {
   it('should fit a simple linear regression', () => {
