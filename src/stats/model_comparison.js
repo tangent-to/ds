@@ -429,6 +429,33 @@ export function coefficientComparisonPlot(models, options = {}) {
   };
 }
 
+function buildStatsFolds(n, k = 5, shuffle = true, seed = null) {
+  if (!Number.isInteger(k) || k < 2 || k > n) {
+    throw new Error(`k must be between 2 and ${n}`);
+  }
+
+  let indices = Array.from({ length: n }, (_, i) => i);
+  if (shuffle) {
+    indices = shuffleArray(indices, seed);
+  }
+
+  const baseSize = Math.floor(n / k);
+  const remainder = n % k;
+  const folds = [];
+
+  let cursor = 0;
+  for (let i = 0; i < k; i++) {
+    const size = baseSize + (i < remainder ? 1 : 0);
+    const end = cursor + size;
+    const testIndices = indices.slice(cursor, end);
+    const trainIndices = [...indices.slice(0, cursor), ...indices.slice(end)];
+    cursor = end;
+    folds.push({ trainIndices, testIndices });
+  }
+
+  return folds;
+}
+
 /**
  * K-fold cross-validation for model selection
  * @param {Function} modelFactory - Function that creates and returns a model
@@ -442,31 +469,30 @@ export function crossValidate(modelFactory, X, y, options = {}) {
     k = 5,
     shuffle = true,
     metric = 'mse', // 'mse', 'mae', 'deviance'
-    seed = null
+    seed = null,
+    folds: providedFolds = null
   } = options;
 
   const n = y.length;
-  const foldSize = Math.floor(n / k);
-
-  // Create fold indices
-  let indices = Array.from({ length: n }, (_, i) => i);
-  if (shuffle) {
-    indices = shuffleArray(indices, seed);
-  }
-
-  const folds = [];
-  for (let i = 0; i < k; i++) {
-    const start = i * foldSize;
-    const end = i === k - 1 ? n : (i + 1) * foldSize;
-    folds.push(indices.slice(start, end));
-  }
+  const folds = Array.isArray(providedFolds) && providedFolds.length > 0
+    ? providedFolds.map(f => {
+        if (Array.isArray(f)) {
+          const testSet = new Set(f);
+          const trainIndices = [];
+          for (let i = 0; i < n; i++) {
+            if (!testSet.has(i)) trainIndices.push(i);
+          }
+          return { trainIndices, testIndices: f };
+        }
+        return f;
+      })
+    : buildStatsFolds(n, k, shuffle, seed);
 
   // Perform cross-validation
   const scores = [];
 
-  for (let i = 0; i < k; i++) {
-    const testIndices = folds[i];
-    const trainIndices = indices.filter(idx => !testIndices.includes(idx));
+  for (const fold of folds) {
+    const { trainIndices, testIndices } = fold;
 
     // Split data
     const Xtrain = trainIndices.map(idx => X[idx]);
@@ -486,12 +512,15 @@ export function crossValidate(modelFactory, X, y, options = {}) {
     scores.push(score);
   }
 
+  const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  const std = Math.sqrt(scores.reduce((sum, s) => sum + Math.pow(s - mean, 2), 0) / scores.length);
+
   return {
     scores,
-    mean: scores.reduce((a, b) => a + b, 0) / scores.length,
-    std: Math.sqrt(scores.reduce((sum, s) => sum + Math.pow(s - scores.reduce((a, b) => a + b, 0) / scores.length, 2), 0) / scores.length),
+    mean,
+    std,
     metric,
-    k
+    k: folds.length
   };
 }
 
@@ -504,8 +533,22 @@ export function crossValidate(modelFactory, X, y, options = {}) {
  * @returns {Object} CV comparison results
  */
 export function crossValidateModels(modelFactories, X, y, options = {}) {
+  const {
+    k = 5,
+    shuffle = true,
+    seed = null,
+    folds: providedFolds = null
+  } = options;
+
+  // Share one fold split across all candidate models
+  const sharedFolds = Array.isArray(providedFolds) && providedFolds.length > 0
+    ? providedFolds
+    : buildStatsFolds(y.length, k, shuffle, seed);
+
+  const sharedOptions = { ...options, folds: sharedFolds };
+
   const results = modelFactories.map((factory, i) => {
-    const cv = crossValidate(factory, X, y, options);
+    const cv = crossValidate(factory, X, y, sharedOptions);
     return {
       model: `Model ${i + 1}`,
       ...cv

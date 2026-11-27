@@ -4,6 +4,7 @@
 
 import { Estimator } from '../core/estimators/estimator.js';
 import { prepareXY } from '../core/table.js';
+import { kFold } from './validation.js';
 
 function isTableDescriptor(input) {
   return (
@@ -210,22 +211,25 @@ export class GridSearchCV extends Estimator {
       throw new Error('GridSearchCV.fit expects array inputs for X and y');
     }
 
+    this.bestParams = null;
+    this.bestScore = -Infinity;
+    this.bestEstimator = null;
+    this.cvResults = [];
+
     const combinations = this._generateParamCombinations();
-    const n = dataX.length;
-    const foldSize = Math.floor(n / this.cv);
+    const folds = Array.isArray(this.cv)
+      ? this.cv
+      : kFold(dataX, dataY, this.cv, false);
 
     for (const params of combinations) {
       const scores = [];
 
-      // Cross-validation
-      for (let fold = 0; fold < this.cv; fold++) {
-        const testStart = fold * foldSize;
-        const testEnd = fold === this.cv - 1 ? n : (fold + 1) * foldSize;
-
-        const XTrain = [...dataX.slice(0, testStart), ...dataX.slice(testEnd)];
-        const yTrain = [...dataY.slice(0, testStart), ...dataY.slice(testEnd)];
-        const XTest = dataX.slice(testStart, testEnd);
-        const yTest = dataY.slice(testStart, testEnd);
+      // Cross-validation on the shared balanced folds
+      for (const fold of folds) {
+        const XTrain = fold.trainIndices.map((i) => dataX[i]);
+        const yTrain = fold.trainIndices.map((i) => dataY[i]);
+        const XTest = fold.testIndices.map((i) => dataX[i]);
+        const yTest = fold.testIndices.map((i) => dataY[i]);
 
         const estimator = this.estimatorFn(params);
         estimator.fit(XTrain, yTrain);

@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tukey HSD uses the studentized-range distribution for adjusted p-values and
   simultaneous confidence intervals, with Tukey–Kramer scaling for unequal
   groups.
+- Stratified and standard k-fold splits spread remainder samples evenly across
+  folds so every fold stays nonempty and balanced, and hyperparameter search and
+  cross-validation model comparisons reuse one shared fold split per search.
 
 ## [0.16.0] - 2026-11-06
 

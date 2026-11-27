@@ -251,7 +251,7 @@ export function trainTestSplit(X, y = null, options = {}) {
 }
 
 function baseKFold(n, k = 5, shuffle = false) {
-  if (k < 2 || k > n) {
+  if (!Number.isInteger(k) || k < 2 || k > n) {
     throw new Error(`k must be between 2 and ${n}`);
   }
 
@@ -261,15 +261,17 @@ function baseKFold(n, k = 5, shuffle = false) {
     indices = shuffleUtil(indices);
   }
 
-  const foldSize = Math.floor(n / k);
+  const baseSize = Math.floor(n / k);
+  const remainder = n % k;
   const folds = [];
 
+  let cursor = 0;
   for (let i = 0; i < k; i++) {
-    const start = i * foldSize;
-    const end = i === k - 1 ? n : (i + 1) * foldSize;
-
-    const testIndices = indices.slice(start, end);
-    const trainIndices = [...indices.slice(0, start), ...indices.slice(end)];
+    const size = baseSize + (i < remainder ? 1 : 0);
+    const end = cursor + size;
+    const testIndices = indices.slice(cursor, end);
+    const trainIndices = [...indices.slice(0, cursor), ...indices.slice(end)];
+    cursor = end;
 
     folds.push({
       trainIndices,
@@ -286,7 +288,7 @@ function baseKFold(n, k = 5, shuffle = false) {
 function baseStratifiedKFold(y, k = 5) {
   const n = y.length;
 
-  if (k < 2 || k > n) {
+  if (!Number.isInteger(k) || k < 2 || k > n) {
     throw new Error(`k must be between 2 and ${n}`);
   }
 
@@ -298,40 +300,46 @@ function baseStratifiedKFold(y, k = 5) {
     classIndices.get(label).push(idx);
   });
 
-  for (const [label, indices] of classIndices) {
-    classIndices.set(label, shuffleUtil(indices));
-  }
-
-  const folds = Array.from({ length: k }, () => ({ train: [], test: [] }));
+  // Assign each class's shuffled items round-robin with a shared cursor so class
+  // remainders spread across folds and total fold sizes stay within one sample.
+  const testFolds = Array.from({ length: k }, () => []);
+  let cursor = 0;
 
   for (const [, indices] of classIndices) {
-    const classSize = indices.length;
-    const foldSize = Math.floor(classSize / k);
-
-    for (let i = 0; i < k; i++) {
-      const start = i * foldSize;
-      const end = i === k - 1 ? classSize : (i + 1) * foldSize;
-      const testIndices = indices.slice(start, end);
-      const trainIndices = [...indices.slice(0, start), ...indices.slice(end)];
-
-      folds[i].test.push(...testIndices);
-      folds[i].train.push(...trainIndices);
+    const shuffled = shuffleUtil(indices);
+    for (const idx of shuffled) {
+      testFolds[cursor % k].push(idx);
+      cursor++;
     }
   }
 
-  return folds.map((fold, i) => ({
-    trainIndices: fold.train,
-    testIndices: fold.test,
-    fold: i + 1,
-    nSplits: k,
-    description: 'StratifiedKFold',
-  }));
+  return testFolds.map((testIndices, i) => {
+    const testSet = new Set(testIndices);
+    const trainIndices = [];
+    for (let idx = 0; idx < n; idx++) {
+      if (!testSet.has(idx)) {
+        trainIndices.push(idx);
+      }
+    }
+
+    return {
+      trainIndices,
+      testIndices,
+      fold: i + 1,
+      nSplits: k,
+      description: 'StratifiedKFold',
+    };
+  });
 }
 
 function baseGroupKFold(groups, k = 5) {
   const _n = groups.length;
   const uniqueGroups = [...new Set(groups)];
   const nGroups = uniqueGroups.length;
+
+  if (!Number.isInteger(k) || k < 2) {
+    throw new Error(`k must be an integer >= 2 (got ${k})`);
+  }
 
   if (k > nGroups) {
     throw new Error(`k (${k}) cannot be greater than number of groups (${nGroups})`);

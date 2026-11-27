@@ -162,6 +162,47 @@ describe('Hyperparameter Tuning', () => {
       expect(result.bestModel).toBeDefined();
       expect(result.results.length).toBe(2);
     });
+
+    it('should reuse one shared fold split across all candidates', () => {
+      const splitsByCandidate = new Map();
+      const XUneven = Array.from({ length: 11 }, (_, i) => [i + 1]);
+      const yUneven = XUneven.map((x) => 2 * x[0]);
+
+      const fitFn = (Xtrain, ytrain, params) => {
+        const key = String(params.c);
+        if (!splitsByCandidate.has(key)) {
+          splitsByCandidate.set(key, []);
+        }
+        // Only record CV fits (full-data refits have length 11)
+        if (ytrain.length < yUneven.length) {
+          splitsByCandidate.get(key).push({ train: ytrain });
+        }
+        return fitLinearModel(Xtrain, ytrain);
+      };
+
+      const scoreFn = (model, Xtest, ytest) => {
+        return metrics.r2(ytest, model.predict(Xtest));
+      };
+
+      const result = GridSearchCV(
+        fitFn,
+        scoreFn,
+        XUneven,
+        yUneven,
+        { c: [1, 2, 3, 4] },
+        { k: 4, shuffle: true, seed: 7, verbose: false },
+      );
+
+      expect(result.results).toHaveLength(4);
+      const baseline = splitsByCandidate.get('1');
+      expect(baseline).toHaveLength(4);
+      // 11 items across 4 folds => test sizes [3,3,3,2], train sizes [8,8,8,9]
+      expect(baseline.map((f) => f.train.length)).toEqual([8, 8, 8, 9]);
+
+      for (const c of ['2', '3', '4']) {
+        expect(splitsByCandidate.get(c)).toEqual(baseline);
+      }
+    });
   });
 
   describe('RandomSearchCV', () => {
@@ -267,6 +308,41 @@ describe('Hyperparameter Tuning', () => {
 
       expect(result.results).toHaveLength(2);
       expect(result.bestModel).toBeDefined();
+    });
+
+    it('should reuse one shared fold split across all random candidates', () => {
+      const splitsByIter = [];
+      let currentIterSplits = null;
+      const XUneven = Array.from({ length: 11 }, (_, i) => [i + 1]);
+      const yUneven = XUneven.map((x) => 3 * x[0]);
+
+      const fitFn = (Xtrain, ytrain, _params) => {
+        if (ytrain.length < yUneven.length) {
+          if (!currentIterSplits || currentIterSplits.length === 4) {
+            currentIterSplits = [];
+            splitsByIter.push(currentIterSplits);
+          }
+          currentIterSplits.push(ytrain);
+        }
+        return fitLinearModel(Xtrain, ytrain);
+      };
+
+      const scoreFn = (model, Xtest, ytest) => metrics.r2(ytest, model.predict(Xtest));
+
+      const result = RandomSearchCV(
+        fitFn,
+        scoreFn,
+        XUneven,
+        yUneven,
+        { alpha: distributions.uniform(0, 1) },
+        { nIter: 5, k: 4, shuffle: true, seed: 99, verbose: false },
+      );
+
+      expect(result.results).toHaveLength(5);
+      expect(splitsByIter).toHaveLength(5);
+      for (let i = 1; i < splitsByIter.length; i++) {
+        expect(splitsByIter[i]).toEqual(splitsByIter[0]);
+      }
     });
   });
 

@@ -7,7 +7,8 @@ import {
   modelSelectionPlot,
   aicWeightPlot,
   coefficientComparisonPlot,
-  crossValidate
+  crossValidate,
+  crossValidateModels
 } from '../src/stats/index.js';
 
 describe('Model Comparison', () => {
@@ -323,6 +324,34 @@ describe('Model Comparison', () => {
       expect(cvMSE.mean).toBeGreaterThanOrEqual(0);
       expect(cvMAE.mean).toBeGreaterThanOrEqual(0);
       expect(cvRMSE.mean).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should spread remainders evenly across folds and share one split in crossValidateModels', () => {
+      const X = [[1], [2], [3], [4], [5], [6], [7]];
+      const y = [2, 4, 6, 8, 10, 12, 14];
+      const splitsA = [];
+      const splitsB = [];
+
+      const makeRecorder = (sink) => () => ({
+        fit(_XTrain, yTrain) {
+          sink.push(yTrain);
+        },
+        predict(XTest) {
+          return XTest.map(([v]) => 2 * v);
+        }
+      });
+
+      const compared = crossValidateModels(
+        [makeRecorder(splitsA), makeRecorder(splitsB)],
+        X,
+        y,
+        { k: 3, shuffle: true }
+      );
+
+      expect(compared.results).toHaveLength(2);
+      // 7 samples across 3 folds => test sizes [3, 2, 2], train sizes [4, 5, 5]
+      expect(splitsA.map(s => s.length)).toEqual([4, 5, 5]);
+      expect(splitsB).toEqual(splitsA);
     });
   });
 });

@@ -185,6 +185,28 @@ describe('ML Validation', () => {
       expect(folds[0].train.metadata).toBeDefined();
       expect(folds[0].train.metadata.columns).toEqual(['x']);
     });
+
+    it('should spread remainders evenly across folds with full coverage', () => {
+      const n = 14;
+      const X = Array.from({ length: n }, (_, i) => [i]);
+      const y = Array.from({ length: n }, (_, i) => i);
+
+      const folds = kFold(X, y, 5, false);
+      const testSizes = folds.map((f) => f.testIndices.length);
+
+      expect(testSizes).toEqual([3, 3, 3, 3, 2]);
+      const allTest = folds.flatMap((f) => f.testIndices);
+      expect(allTest).toHaveLength(n);
+      expect(new Set(allTest).size).toBe(n);
+
+      folds.forEach((f) => {
+        expect(f.trainIndices.length).toBeGreaterThan(0);
+        expect(f.testIndices.length).toBeGreaterThan(0);
+        const testSet = new Set(f.testIndices);
+        expect(f.trainIndices.some((idx) => testSet.has(idx))).toBe(false);
+        expect(f.trainIndices.length + f.testIndices.length).toBe(n);
+      });
+    });
   });
 
   describe('stratifiedKFold', () => {
@@ -226,6 +248,59 @@ describe('ML Validation', () => {
         expect(new Set(trainLabels).size).toBe(2); // both classes present
         expect(fold.train.columns).toEqual(['f1']);
       });
+    });
+
+    it('should spread class remainders across folds and balance fold sizes', () => {
+      const y = [
+        ...Array(7).fill('A'),
+        ...Array(7).fill('B'),
+        ...Array(7).fill('C'),
+      ];
+      const X = y.map((_, i) => [i]);
+      const k = 5;
+
+      const folds = stratifiedKFold(X, y, k);
+      const testSizes = folds.map((f) => f.testIndices.length);
+
+      expect(testSizes).toEqual([5, 4, 4, 4, 4]);
+
+      for (const cls of ['A', 'B', 'C']) {
+        const counts = folds.map(
+          (f) => f.testIndices.filter((idx) => y[idx] === cls).length,
+        );
+        expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+        expect(counts.reduce((a, b) => a + b, 0)).toBe(7);
+      }
+
+      const covered = folds.flatMap((f) => f.testIndices);
+      expect(covered).toHaveLength(y.length);
+      expect(new Set(covered).size).toBe(y.length);
+
+      folds.forEach((f) => {
+        expect(f.trainIndices.length).toBeGreaterThan(0);
+        expect(f.testIndices.length).toBeGreaterThan(0);
+        const testSet = new Set(f.testIndices);
+        expect(f.trainIndices.some((idx) => testSet.has(idx))).toBe(false);
+        expect(f.trainIndices.length + f.testIndices.length).toBe(y.length);
+      });
+    });
+
+    it('should keep all train and test sets nonempty when class count < k', () => {
+      const y = ['A', 'A', 'A', 'B', 'B', 'B'];
+      const X = y.map((_, i) => [i]);
+
+      const folds = stratifiedKFold(X, y, 5);
+      const testSizes = folds.map((f) => f.testIndices.length);
+
+      expect(testSizes).toEqual([2, 1, 1, 1, 1]);
+      folds.forEach((f) => {
+        expect(f.testIndices.length).toBeGreaterThan(0);
+        expect(f.trainIndices.length).toBeGreaterThan(0);
+        expect(f.trainIndices.length + f.testIndices.length).toBe(y.length);
+      });
+
+      const covered = new Set(folds.flatMap((f) => f.testIndices));
+      expect(covered.size).toBe(y.length);
     });
   });
 

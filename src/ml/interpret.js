@@ -246,7 +246,18 @@ export function learningCurve(fitFn, scoreFn, X, y, {
   cv = 5 
 } = {}) {
   const n = X.length;
-  const foldSize = Math.floor(n / cv);
+  if (!Number.isInteger(cv) || cv < 2 || cv > n) {
+    throw new Error(`cv must be between 2 and ${n}`);
+  }
+  const baseSize = Math.floor(n / cv);
+  const remainder = n % cv;
+  const foldBounds = [];
+  let cursor = 0;
+  for (let fold = 0; fold < cv; fold++) {
+    const size = baseSize + (fold < remainder ? 1 : 0);
+    foldBounds.push([cursor, cursor + size]);
+    cursor += size;
+  }
   
   const results = {
     trainSizes: [],
@@ -263,8 +274,7 @@ export function learningCurve(fitFn, scoreFn, X, y, {
     
     // Cross-validation at this training size
     for (let fold = 0; fold < cv; fold++) {
-      const testStart = fold * foldSize;
-      const testEnd = fold === cv - 1 ? n : (fold + 1) * foldSize;
+      const [testStart, testEnd] = foldBounds[fold];
       
       const trainIndices = [];
       const testIndices = [];

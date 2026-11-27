@@ -7,6 +7,13 @@ import { crossValidate, kFold } from './validation.js';
 import { random as seededRandom, setSeed } from './utils.js';
 import { prepareXY } from '../core/table.js';
 
+function resolveSearchFolds(dataX, dataY, k, shuffle, providedFolds) {
+  if (Array.isArray(providedFolds) && providedFolds.length > 0) {
+    return providedFolds;
+  }
+  return kFold(dataX, dataY, k, shuffle);
+}
+
 /**
  * Grid Search Cross-Validation
  * @param {Function} fitFn - Function (X, y, params) => model
@@ -14,15 +21,21 @@ import { prepareXY } from '../core/table.js';
  * @param {Array} X - Feature matrix
  * @param {Array} y - Target values
  * @param {Object} paramGrid - Parameter grid {param1: [values], param2: [values]}
- * @param {Object} options - {k, shuffle, metric}
+ * @param {Object} options - {k, shuffle, seed, folds, verbose}
  * @returns {Object} {bestParams, bestScore, bestModel, results}
  */
 export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
   const {
     k = 5,
     shuffle = true,
+    seed = null,
+    folds: providedFolds = null,
     verbose = true,
   } = options;
+
+  if (seed !== null) {
+    setSeed(seed);
+  }
 
   const { dataX, dataY } = normalizeTuningInput(X, y, 'GridSearchCV');
 
@@ -32,6 +45,9 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
   if (verbose) {
     console.log(`GridSearchCV: ${paramCombinations.length} parameter combinations to try`);
   }
+
+  // Build one shared fold split so every candidate is evaluated on identical folds
+  const folds = resolveSearchFolds(dataX, dataY, k, shuffle, providedFolds);
 
   let bestScore = -Infinity;
   let bestParams = null;
@@ -47,10 +63,7 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
     }
 
     try {
-      // Create folds for cross-validation
-      const folds = kFold(dataX, dataY, k, shuffle);
-
-      // Cross-validate with these parameters
+      // Cross-validate with these parameters on the shared split
       const cvResult = crossValidate(
         (Xtrain, ytrain) => fitFn(Xtrain, ytrain, params),
         scoreFn,
@@ -117,7 +130,7 @@ export function GridSearchCV(fitFn, scoreFn, X, y, paramGrid, options = {}) {
  * @param {Array} X - Feature matrix
  * @param {Array} y - Target values
  * @param {Object} paramDistributions - Parameter distributions
- * @param {Object} options - {nIter, k, shuffle, seed}
+ * @param {Object} options - {nIter, k, shuffle, seed, folds, verbose}
  * @returns {Object} {bestParams, bestScore, bestModel, results}
  */
 export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options = {}) {
@@ -126,6 +139,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
     k = 5,
     shuffle = true,
     seed = null,
+    folds: providedFolds = null,
     verbose = true,
   } = options;
 
@@ -138,6 +152,9 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
   }
 
   const { dataX, dataY } = normalizeTuningInput(X, y, 'RandomSearchCV');
+
+  // Build one shared fold split so every candidate is evaluated on identical folds
+  const folds = resolveSearchFolds(dataX, dataY, k, shuffle, providedFolds);
 
   let bestScore = -Infinity;
   let bestParams = null;
@@ -154,10 +171,7 @@ export function RandomSearchCV(fitFn, scoreFn, X, y, paramDistributions, options
     }
 
     try {
-      // Create folds for cross-validation
-      const folds = kFold(dataX, dataY, k, shuffle);
-
-      // Cross-validate with these parameters
+      // Cross-validate with these parameters on the shared split
       const cvResult = crossValidate(
         (Xtrain, ytrain) => fitFn(Xtrain, ytrain, params),
         scoreFn,
