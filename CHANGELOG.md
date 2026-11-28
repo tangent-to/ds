@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-28
+
+### Added
+
+- **A `Pipeline` reads named rows and saves itself.** Given the ordered
+  feature names, `new Pipeline(steps, { columns })` fits, transforms and
+  predicts from records: fields may arrive in any order, extra fields are
+  ignored, and a record missing a feature is refused, naming it, instead of
+  dropping its row. `pipeline.save()` writes the fitted pipeline as JSON (the
+  feature order, each step's fitted state) and `Pipeline.load` restores it;
+  `StandardScaler`, `GLM` and `MLPRegressor` steps are supported, and a step
+  that cannot be serialized is refused when saving.
+- `StandardScaler.toJSON` and `StandardScaler.fromJSON`.
+- User guide chapter 8, *A neural regressor, from folds to a saved model*:
+  a linear model and an MLP compared on identical folds, the better one
+  refit, saved, reloaded and used on named records.
+
+### Validation
+
+- On shared folds and shared starting weights, in float64, the fitted
+  scaling, the first forward pass, a training step, the predictions, the
+  scores and a reload in a fresh process are compared with R
+  (`tests_compare-to-R/tabular_regression.R`) and NumPy
+  (`tests_compare-to-python/tabular_regression.py`); run with
+  `TANGENT_REGRESSION_REFERENCES=1`.
+
 ## [0.16.1] - 2026-11-27
 
 ### Fixed
@@ -254,7 +280,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   also covers a Matérn summed with a `WhiteKernel`, in either child order, so
   learning a noise level does not fall back to the derivative-free search.
 
-[Unreleased]: https://github.com/tangent-to/ds/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/tangent-to/ds/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/tangent-to/ds/compare/v0.16.1...v0.17.0
+[0.16.1]: https://github.com/tangent-to/ds/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/tangent-to/ds/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/tangent-to/ds/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/tangent-to/ds/compare/v0.13.1...v0.14.0
